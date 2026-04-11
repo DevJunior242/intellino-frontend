@@ -1,0 +1,83 @@
+import React, { useState } from "react";
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  Stack,
+  Button,
+  Avatar,
+  Chip,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import SettingsIcon from "@mui/icons-material/Settings";
+import MemberLeagueForm from "./MemberLeagueForm";
+import Membres from "./Membres";
+
+// Couleurs exactes de ton interface
+const theme = {
+  bg: "#1a1d21",
+  card: "#2c3035",
+  textMain: "#ffffff",
+  textSecondary: "#8b90a0",
+  accent: "#e8c84a", // Jaune
+  chipBg: "rgba(255, 255, 255, 0.05)",
+};
+
+export default function BureauRoles() {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  return (
+    <Box sx={{ p: 4, bgcolor: theme.bg, minHeight: "100vh" }}>
+      {/* Titre de la page */}
+      <Typography
+        variant="h5"
+        sx={{ color: theme.textMain, fontWeight: 700, mb: 4 }}
+      >
+        Bureau & rôles
+      </Typography>
+
+      {/* Boutons d'action supérieurs */}
+      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          sx={{
+            color: "#fff",
+            borderColor: "rgba(255,255,255,0.2)",
+            borderRadius: 2,
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            "&:hover": {
+              borderColor: "#fff",
+              bgcolor: "rgba(255,255,255,0.05)",
+            },
+          }}
+          onClick={handleOpen}
+        >
+          + Ajouter membre
+        </Button>
+        <Button
+          variant="outlined"
+          sx={{
+            color: "#fff",
+            borderColor: "rgba(255,255,255,0.2)",
+            borderRadius: 2,
+            textTransform: "none",
+            px: 3,
+            "&:hover": {
+              borderColor: "#fff",
+              bgcolor: "rgba(255,255,255,0.05)",
+            },
+          }}
+        >
+          Gérer les rôles
+        </Button>
+      </Stack>
+      <Membres />
+      <MemberLeagueForm open={open} handleClose={handleClose} />
+    </Box>
+  );
+}

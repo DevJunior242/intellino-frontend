@@ -1,0 +1,130 @@
+import { useCallback, useEffect, useState } from "react";
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import { UseAuth } from "../../../Api/AuthContext";
+import { Instance } from "../../../Api/Axios";
+import ConfigSkeleton from "../ConfigSkeleton";
+
+export default function ExamenStats() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const { activeClubId } = UseAuth();
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await Instance.get(
+        `/api/examens/stats?club_id=${activeClubId}`,
+      );
+      console.log(response);
+      setStats(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des statistiques :", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeClubId]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const StatCard = ({ title, value }) => (
+    <Card elevation={3} sx={{ borderRadius: 3 }}>
+      <CardContent sx={{ backgroundColor: "background.default" }}>
+        <Typography variant="body2" color="text.secondary">
+          {title}
+        </Typography>
+        <Typography variant="h5" fontWeight="bold">
+          {value}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) return <ConfigSkeleton />;
+
+  if (!stats)
+    return (
+      <Typography align="center" mt={10}>
+        Erreur chargement statistiques
+      </Typography>
+    );
+
+  return (
+    <Box p={4} sx={{ backgroundColor: "background.default" }}>
+      {/* SECTION SESSIONS */}
+      <Typography variant="h6" mb={2}>
+        Statistiques Examens
+      </Typography>
+
+      <Grid container spacing={2} mb={5}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Box sx={{ bgcolor: "primary.light", borderRadius: 3, p: 1 }}>
+            <StatCard title="Total" value={stats.total} />
+          </Box>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Programmées" value={stats.scheduled} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="En cours" value={stats.ongoing} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Terminées" value={stats.completed} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Annulées" value={stats.cancelled} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Reportées" value={stats.postponed} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Fiabilité %" value={stats.reliability_rate + "%"} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Taux annulation %" value={stats.cancel_rate + "%"} />
+        </Grid>
+      </Grid>
+
+      {/* SECTION ANALYTICS */}
+      <Typography variant="h6" mb={2}>
+        Analytics avancées
+      </Typography>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={4}>
+          <StatCard
+            title="Examens réellement en retard"
+            value={stats.late_sessions}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <StatCard
+            title="Durée moyenne réelle (min)"
+            value={
+              (stats.avg_duration_minutes ?? 0) +
+              " min" +
+              ((stats.avg_duration_minutes ?? 0) > 1 ? "s" : "")
+            }
+          />
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <StatCard
+            title="Taux remplacement instructeur"
+            value={(stats.replacement_rate ?? 0) + "%"}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}

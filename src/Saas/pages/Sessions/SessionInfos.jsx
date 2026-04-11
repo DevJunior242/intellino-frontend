@@ -1,0 +1,279 @@
+import {
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Divider,
+  Chip,
+  CircularProgress,
+  Alert,
+  AlertTitle,
+} from "@mui/material";
+import {
+  School,
+  Place,
+  CalendarToday,
+  EventBusy,
+  Update,
+} from "@mui/icons-material";
+import { useCallback, useEffect, useState } from "react";
+import { UseAuth } from "../../../Api/AuthContext";
+import { Instance } from "../../../Api/Axios";
+
+const SessionStatusAlert = ({ session }) => {
+  // 1. CAS : SESSION ANNULÉE
+  if (session.status === "cancelled") {
+    return (
+      <Alert
+        severity="error"
+        icon={<EventBusy fontSize="large" />}
+        sx={{ mb: 3, borderRadius: 2, border: "1px solid #ffa39e" }}
+      >
+        <AlertTitle sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+          Session Annulée
+        </AlertTitle>
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="body2">
+            <strong>Motif de l'annulation :</strong>{" "}
+            {session.cancel_reason || "Non spécifié"}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{ display: "block", mt: 0.5, opacity: 0.8 }}
+          >
+            Annulé le :{" "}
+            {session.cancelled_at
+              ? new Date(session.cancelled_at).toLocaleString()
+              : "Date inconnue"}
+          </Typography>
+        </Box>
+      </Alert>
+    );
+  }
+
+  // 2. CAS : SESSION REPORTÉE
+  // (On détecte le report si la date/heure actuelle est différente de la date de création ou via un flag 'is_rescheduled')
+  if (session.parent_session_id || session.old_session_date) {
+    return (
+      <Alert
+        severity="info"
+        icon={<Update fontSize="large" />}
+        sx={{ mb: 3, borderRadius: 2, border: "1px solid #91d5ff" }}
+      >
+        <AlertTitle sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+          Session Reportée
+        </AlertTitle>
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="body2">
+            Cette séance a été déplacée vers une nouvelle plage horaire.
+          </Typography>
+          <Divider sx={{ my: 1, opacity: 0.2 }} />
+          <Box sx={{ display: "flex", gap: 4 }}>
+            {/* <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                }}
+              >
+                    ANCIENNE DATE
+              </Typography>
+              <Typography variant="body1" fontWeight="bold">
+                {session.old_session_date}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                }}
+              >
+                ANCIEN HORAIRE
+              </Typography>
+              <Typography variant="body1" fontWeight="bold">
+                {session.replacement_start_time?.slice(0, 5)} -{" "}
+                {session.replacement_end_time?.slice(0, 5)}
+              </Typography>
+            </Box> */}
+            <Box sx={{ backgroundColor: "background.default" }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                }}
+              >
+                NOUVELLE DATE
+              </Typography>
+              <Typography variant="body1" fontWeight="bold">
+                {session.session_date}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                }}
+              >
+                NOUVEL HORAIRE
+              </Typography>
+              <Typography variant="body1" fontWeight="bold">
+                {session.start_time.slice(0, 5)} -{" "}
+                {session.end_time.slice(0, 5)}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Alert>
+    );
+  }
+
+  return null;
+};
+
+const SessionInfos = ({ sessionId }) => {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { activeClubId } = UseAuth();
+
+  const fetchSessionData = useCallback(async () => {
+    try {
+      setLoading(true);
+      // On récupère les détails complets de la session
+      const response = await Instance.get(
+        `/api/sessions/${sessionId}/show?club_id=${activeClubId}`,
+      );
+      setSession(response.data.session);
+      console.log(response);
+    } catch (error) {
+      console.error("Erreur chargement session", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId, activeClubId]);
+  useEffect(() => {
+    fetchSessionData();
+  }, [fetchSessionData]);
+
+  if (loading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  if (!session) return <Typography>Session introuvable</Typography>;
+  return (
+    <Box sx={{ backgroundColor: "Background.default" }}>
+      <SessionStatusAlert session={session} />
+      <Grid container spacing={3}>
+        {/* Colonne Gauche : Académique */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              backdropFilter: "blur(5px)",
+              backgroundColor: "background.default",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+            >
+              <School color="primary" /> Programme Académique
+            </Typography>
+            <Box sx={{ ml: 4 }}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                {session.course?.name}
+              </Typography>
+              <Chip
+                label={session.course?.grade?.name}
+                size="small"
+                color="error"
+                sx={{ mt: 1, fontWeight: "bold" }}
+              />
+              <Typography
+                variant="body2"
+                sx={{ mt: 2, color: "text.secondary", fontStyle: "italic" }}
+              >
+                {session.description ||
+                  "Aucune description spécifique pour cette séance."}
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Colonne Droite : Logistique */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              backdropFilter: "blur(5px)",
+              backgroundColor: "background.default",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+            >
+              <Place color="primary" /> Détails Logistiques
+            </Typography>
+            <Box sx={{ ml: 4 }}>
+              <Typography variant="body1">
+                <b>Club :</b> {session.course?.club?.name}
+              </Typography>
+              <Typography variant="body1">
+                <b>Lieu :</b> {session.course?.club?.country}
+              </Typography>
+              <Divider sx={{ my: 1.5 }} />
+              <Typography
+                variant="body1"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <CalendarToday fontSize="small" /> {session.session_date}
+              </Typography>
+              <Typography variant="body1">
+                <b>Horaire :</b> {session.start_time.slice(0, 5)} -{" "}
+                {session.end_time.slice(0, 5)}
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Full Width : Historique/Admin */}
+        <Grid item xs={12}>
+          <Paper
+            sx={{
+              p: 2,
+              bgcolor: "#f8f9fa",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backdropFilter: "blur(5px)",
+              backgroundColor: "background.default",
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              ID Session : {session.id}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Créé le : {new Date(session.created_at).toLocaleDateString()}
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default SessionInfos;
