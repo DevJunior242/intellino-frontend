@@ -241,51 +241,29 @@ export const AuthProvider = ({ children }) => {
     async (credentials) => {
       try {
         const res = await Instance.post("api/login", credentials);
-        console.log(res);
-        if (!res.data) {
-          throw new Error("Données de connexion invalides");
-        }
+
         const { token, user, role, memberships, roleSuperAdmin } = res.data;
+
+        if (!token) {
+          throw {
+            response: {
+              status: 401,
+              data: { message: "Identifiants incorrects" },
+            },
+          };
+        }
+
         const saveRoleSuperAdmin = Array.isArray(roleSuperAdmin)
           ? roleSuperAdmin
           : [];
         const saveRole = Array.isArray(role) ? role : [];
         const saveMemberships = Array.isArray(memberships) ? memberships : [];
-        setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
-        console.log(
-          "Role after login:",
-          saveRole,
-          "RoleSuperAdmin:",
-          saveRoleSuperAdmin,
-        );
-        if (!token) {
-          const errorMsg =
-            res.data.message || "Token manquant dans la réponse du serveur";
 
-          const fakError = {
-            response: {
-              status: 401,
-              data: {
-                message: errorMsg,
-              },
-            },
-            message: errorMsg,
-          };
-          throw fakError;
-        }
-        // verifier le role et rediriger en consequence
-        console.log(
-          "Redirect with role:",
-          saveRole,
-          "length:",
-          saveRole.length,
-          "saveRoleSuperAdmin:",
-          saveRoleSuperAdmin,
-        );
+        setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
 
         const hasRole = Array.isArray(saveRole) && saveRole.length > 0;
-
         navigate(hasRole ? "/dashboard" : "/");
+
         return { success: true, user };
       } catch (error) {
         console.error("Login error:", error);
