@@ -33,12 +33,11 @@ function StoreExamen() {
   const getError = (field) => error?.[field]?.join(", ");
   const navigate = useNavigate();
 
-  const { activeClubId } = UseAuth();
   //obtenir les medals
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance(`/api/grade?club_id=${activeClubId}`);
+      const response = await Instance(`/api/grade`);
       console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
@@ -46,7 +45,7 @@ function StoreExamen() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeClubId]);
+  }, []);
   useEffect(() => {
     getGrade();
   }, [getGrade]);
