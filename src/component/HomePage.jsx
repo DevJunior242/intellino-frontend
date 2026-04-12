@@ -281,7 +281,7 @@ function HomePage() {
                 transition: "all 0.3s ease",
               }}
             >
-              Créer un club →
+              Créer un club
             </Button>
             {/* <Button
               component={Link}

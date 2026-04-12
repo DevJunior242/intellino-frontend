@@ -6,9 +6,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ErrorGlobal from "../../component/ErrorGlobal";
 import { UseAuth } from "../../Api/AuthContext";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -42,7 +42,6 @@ function Login() {
       };
       await login(dataSend);
     } catch (err) {
-      console.log("err", err);
       ErrorGlobal({ error: err, setError });
       setTimeout(() => {
         setError({});
