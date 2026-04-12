@@ -56,7 +56,6 @@ function StoreExamen() {
     end_date: null,
     start_time: null,
     end_time: null,
-    club_id: activeClubId,
   });
 
   useEffect(() => {
@@ -83,7 +82,6 @@ function StoreExamen() {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
       };
       const response = await Instance.post("/api/examens", dataSend);
       console.log(response);
