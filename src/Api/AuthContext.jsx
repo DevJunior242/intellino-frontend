@@ -239,8 +239,7 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
   const login = useCallback(
     async (credentials) => {
-      try {
-        const res = await Instance.post("api/login", credentials);
+         const res = await Instance.post("api/login", credentials);
 
         const { token, user, role, memberships, roleSuperAdmin } = res.data;
 
@@ -265,10 +264,7 @@ export const AuthProvider = ({ children }) => {
         navigate(hasRole ? "/dashboard" : "/");
 
         return { success: true, user };
-      } catch (error) {
-        console.error("Login error:", error);
-        throw error;
-      }
+      
     },
     [navigate, setAuthData],
   );
