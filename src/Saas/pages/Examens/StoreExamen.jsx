@@ -7,10 +7,6 @@ import {
   TextField,
   Typography,
   Autocomplete,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import { motion } from "motion/react";
 import { useState } from "react";
