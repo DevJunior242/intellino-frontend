@@ -15,24 +15,14 @@ export const AxiosInterceptor = () => {
 
         if (status === 401) {
           if (isRedirecting.current) return Promise.reject(error);
+
+          if (location.pathname === "/login") {
+            return Promise.reject(error);
+          }
+
           isRedirecting.current = true;
-
           localStorage.clear();
-
           window.location.replace("/login");
-
-          // if (location.pathname === "/login" || isRedirecting.current) {
-          //   return Promise.reject(error);
-          // }
-
-          // isRedirecting.current = true;
-          // localStorage.removeItem("token");
-
-          // navigate("/login", { replace: true });
-
-          // setTimeout(() => {
-          //   isRedirecting.current = false;
-          // }, 2000);
           return;
         }
 
