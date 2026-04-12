@@ -119,9 +119,9 @@ function ClubStore() {
 
         setError({});
         //navigate to club dashboard after 2 seconds
-        // setTimeout(() => {
-        //   navigate("/dashboard");
-        // }, 2000);
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
       } else {
         setError({ general: response.data.message });
         setSuccess(false);
