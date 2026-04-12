@@ -19,6 +19,7 @@ import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { useNavigate } from "react-router-dom";
+import { UseAuth } from "../../../Api/AuthContext";
 
 function StoreExamen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,12 +32,14 @@ function StoreExamen() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const navigate = useNavigate();
+  const { activeClubId } = UseAuth();
 
   //obtenir les medals
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance("/api/grade");
+      const response = await Instance(`/api/grade`);
+      console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
       console.error(error);
@@ -80,6 +83,7 @@ function StoreExamen() {
     try {
       const dataSend = {
         ...formData,
+        club_id: activeClubId,
       };
       const response = await Instance.post("/api/examens", dataSend);
       console.log(response);
