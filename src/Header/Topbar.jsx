@@ -21,7 +21,7 @@ import { UseAuth } from "../Api/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../ThemeToggle";
 
-const TopBar = ({ setMode }) => {
+const TopBar = () => {
   const theme = useTheme();
   const { auth, logout } = UseAuth();
   const navigate = useNavigate();
@@ -46,17 +46,15 @@ const TopBar = ({ setMode }) => {
       sx={{
         width: { sm: `calc(100% - 250px)` },
         ml: { sm: `250px` },
-        backgroundColor: 'background.default',
+        backgroundColor: "background.default",
         boxShadow: "none",
         borderBottom: `1px solid ${theme.palette.divider}`,
         zIndex: 1000,
       }}
     >
-   
       <Toolbar>
-        
-         <Box sx={{ flexGrow: 1 }} />
-       
+        <Box sx={{ flexGrow: 1 }} />
+
         <Box display="flex" alignItems="center">
           <ThemeToggle />
 
@@ -108,7 +106,6 @@ const TopBar = ({ setMode }) => {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          
           <MenuItem onClick={() => navigate("/settings")}>
             <Settings sx={{ mr: 1 }} />
             Paramètres

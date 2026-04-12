@@ -126,7 +126,7 @@ function Navbar() {
         ))}
 
         {/* User Account */}
-        {auth && (
+        {isLogged && (
           <>
             <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
               <Tooltip title="Account settings">
