@@ -19,7 +19,6 @@ import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { useNavigate } from "react-router-dom";
-import { UseAuth } from "../../../Api/AuthContext";
 
 function StoreExamen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,8 +36,7 @@ function StoreExamen() {
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance(`/api/grade`);
-      console.log(response);
+      const response = await Instance("/api/grade");
       setGrade(response.data.grades || []);
     } catch (error) {
       console.error(error);
