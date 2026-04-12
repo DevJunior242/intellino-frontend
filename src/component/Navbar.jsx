@@ -209,7 +209,7 @@ function Navbar() {
       {/* Mobile Menu */}
       <Box sx={{ display: { xs: "block", md: "none" } }}>
         <Button onClick={handleOpenMenu}>
-          <MenuIcon />
+          <MenuIcon sx={{ color: "#fff" }} />
         </Button>
 
         <Menu

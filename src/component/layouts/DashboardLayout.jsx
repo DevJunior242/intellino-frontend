@@ -562,21 +562,21 @@ export default function DashboardLayout() {
       </Box>
 
       {/* BOUTON MENU MOBILE */}
-     <IconButton
-  onClick={() => setMobileOpen(true)}
-  sx={{
-    color: "#fff",
-    position: "fixed",
-    top: 16,
-    left: 16,
-    zIndex: (theme) => theme.zIndex.drawer + 1,
-    display: { xs: "flex", md: "none" },
-    bgcolor: "background.paper",
-    boxShadow: 3,
-  }}
->
-  <MenuIcon />
-</IconButton>
+      <IconButton
+        onClick={() => setMobileOpen(true)}
+        sx={{
+          color: "primary.main",
+          position: "fixed",
+          top: 16,
+          left: 16,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          display: { xs: "flex", md: "none" },
+          bgcolor: "background.paper",
+          boxShadow: 3,
+        }}
+      >
+        <MenuIcon />
+      </IconButton>
     </Box>
   );
 }
