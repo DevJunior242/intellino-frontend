@@ -1,4 +1,4 @@
-import { Box, Grid } from "@mui/material";
+import { Box, darken, Grid } from "@mui/material";
 import {
   Groups,
   School,
@@ -12,6 +12,10 @@ import { useEffect, useState } from "react";
 import { Instance } from "../../Api/Axios";
 import PulseLoader from "react-spinners/PulseLoader";
 import AbonnementActif from "../../Saas/pages/AbonnementActif";
+import StatCard from "./StatCard";
+import { blue, green, orange, yellow } from "@mui/material/colors";
+import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
+import { UseAuth } from "../../Api/AuthContext";
 
 function SuperAdminDashboard() {
   const [stats, setStats] = useState({
@@ -43,6 +47,9 @@ function SuperAdminDashboard() {
     fetchStats();
   }, []);
 
+  const { activeRole } = UseAuth();
+  console.log("Active Role:", activeRole);
+
   if (loading) {
     return (
       <Box
@@ -53,7 +60,7 @@ function SuperAdminDashboard() {
           height: "100vh",
         }}
       >
-        <PulseLoader />
+        <ConfigSkeleton />
       </Box>
     );
   }
@@ -74,10 +81,11 @@ function SuperAdminDashboard() {
         minHeight={50}
       >
         <Grid item xs={12} sm={6} md={4}>
-          <StartCard
+          <StatCard
             title="Clubs inscrits"
             value={stats.total_clubs}
             icon={<Groups />}
+            color={green}
           />
         </Grid>
 
@@ -86,6 +94,7 @@ function SuperAdminDashboard() {
             title="Élèves"
             value={stats.total_students}
             icon={<School />}
+            color={yellow}
           />
         </Grid>
 
@@ -94,6 +103,7 @@ function SuperAdminDashboard() {
             title="Instructors"
             value={stats.total_instructors}
             icon={<PeopleAlt />}
+            color={blue}
           />
         </Grid>
 
@@ -102,29 +112,31 @@ function SuperAdminDashboard() {
             title="Parents"
             value={stats.total_parents}
             icon={<Person />}
+            color={orange}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} md={4}>
+        {/* <Grid item xs={12} sm={6} md={4}>
           <StartCard
             title="Abonnements actifs"
             value={stats.active_subscriptions}
             icon={<MonetizationOn />}
           />
-        </Grid>
+        </Grid> */}
 
-        <Grid item xs={12} sm={6} md={4}>
+        {/* <Grid item xs={12} sm={6} md={4}>
           <StartCard
             title="Total des abonnements"
             value={stats.total_subscriptions}
             icon={<MonetizationOn />}
           />
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} sm={6} md={4}>
           <StartCard
             title="Revenu mensuel"
             value={stats.total_revenue_mensuel}
             icon={<MonetizationOn />}
+            color={darken(green[500], 0.2)}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -132,6 +144,7 @@ function SuperAdminDashboard() {
             title="Revenu annuel"
             value={stats.total_revenue_annuel}
             icon={<MonetizationOn />}
+            color={darken(green[500], 0.2)}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -139,12 +152,10 @@ function SuperAdminDashboard() {
             title="Revenu total"
             value={stats.total_revenue}
             icon={<MonetizationOn />}
+            color={darken(green[500], 0.2)}
           />
         </Grid>
       </Grid>
-      <Box mt={1} mb={2}>
-        <AbonnementActif />
-      </Box>
     </Box>
   );
 }

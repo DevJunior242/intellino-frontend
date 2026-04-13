@@ -9,11 +9,13 @@ import {
   useMediaQuery,
   Avatar,
   Chip,
+  IconButton,
 } from "@mui/material";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { UseAuth } from "../Api/AuthContext";
-
+// import ClubCount from "../Saas/pages/ClubCount";
+import EastIcon from "@mui/icons-material/East";
 /* ─── DATA ─────────────────────────────────────────────────── */
 
 const features = [
@@ -56,7 +58,7 @@ const features = [
 ];
 
 const stats = [
-  { value: 500, suffix: "+", label: "Clubs inscrits" },
+  { value: 100, suffix: "+", label: "Clubs inscrits" },
   // { value: 12000, suffix: "+", label: "Élèves actifs" },
   { value: 98, suffix: "%", label: "Satisfaction" },
   { value: 3, suffix: "x", label: "Plus rapide" },
@@ -142,9 +144,6 @@ function HomePage() {
   const heroRef = useRef(null);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 120]);
-
-  const { auth } = UseAuth();
-  console.log(auth);
 
   return (
     <Box
@@ -282,7 +281,9 @@ function HomePage() {
               }}
             >
               Créer un club
+              <EastIcon sx={{ ml: 2, fontSize: "1.2rem" }} />
             </Button>
+
             {/* <Button
               component={Link}
               to="/league/store"
@@ -395,6 +396,8 @@ function HomePage() {
             gap: 4,
           }}
         >
+          {/* <ClubCount /> */}
+
           {stats.map((stat, i) => (
             <motion.div
               key={i}
@@ -525,7 +528,12 @@ function HomePage() {
                     {f.icon}
                   </Box>
                   <Typography
-                    sx={{ fontWeight: 700, fontSize: "1.05rem", mb: 1.5 }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "1.05rem",
+                      mb: 1.5,
+                      color: "white",
+                    }}
                   >
                     {f.title}
                   </Typography>
@@ -665,20 +673,6 @@ function HomePage() {
         </Grid>
       </Section>
 
-      {/* ── EXAMS TABLE ──────────────────────────────────────── */}
-      {/* <Section sx={{ px: { xs: 2, md: 8 }, pb: 6 }}>
-        <Box
-          sx={{
-            bgcolor: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: "24px",
-            overflow: "hidden",
-          }}
-        >
-          <ClubExamsTable />
-        </Box>
-      </Section> */}
-
       {/* ── FINAL CTA ────────────────────────────────────────── */}
       <Section>
         <Box
@@ -768,7 +762,8 @@ function HomePage() {
               transition: "all 0.3s ease",
             }}
           >
-            Commencer gratuitement →
+            Commencer gratuitement
+            <EastIcon sx={{ ml: 2, fontSize: "1.2rem" }} />
           </Button>
         </Box>
       </Section>

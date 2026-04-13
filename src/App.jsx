@@ -102,6 +102,9 @@ import VuePubliqueKata from "./Saas/pages/League/competion/VuePubliqueKata";
 import ParentDet from "./Saas/pages/ParentDet";
 import DebtPage from "./Saas/pages/DebtPage";
 import Program from "./Saas/pages/Program";
+import StudentList from "./Saas/pages/Students/StudentList";
+import Users from "./Saas/pages/Users";
+import ClubAdmin from "./Saas/pages/ClubAdmin.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -172,7 +175,6 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={ALL_ROLES} />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-
             <Route path="/dashboard/member/list" element={<MemberTable />} />
             <Route
               path="/dashboard/student/list"
@@ -268,7 +270,14 @@ const AppRoutes = () => {
                 element={<EquipmentLoan />}
               />
             </Route>
-            <Route element={<ProtectedRoute allowedRoles={["super_admin"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
+              <Route path="/dashboard/clubs" element={<ClubAdmin />} />
+              <Route path="/dashboard/users" element={<Users />} />
+              <Route
+                path="/dashboard/karateka/list"
+                element={<StudentList />}
+              />
+
               <Route path="/dashboard/plan/store" element={<Plan />} />
               <Route
                 path="/dashboard/discipline/store"

@@ -58,7 +58,7 @@ const ContextSwitcher = () => {
               {currentMembership?.name ?? "Club Inconnu"}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {currentMembership?.role}
+              {currentMembership?.role.replace("_", " ")}
             </Typography>
           </Box>
         </Box>

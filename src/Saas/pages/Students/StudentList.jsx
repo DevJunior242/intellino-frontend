@@ -18,22 +18,22 @@ import EditStudent from "../EditStudent";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import ConfigSkeleton from "../ConfigSkeleton";
+import Message from "../Message";
 function StudentList() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const { auth, activeClubId } = UseAuth();
-  const [error, setError] = useState({});
+  const [error, setError] = useState("");
 
   //
 
   const getStudents = useCallback(async () => {
-    if (!activeClubId) return;
     setLoading(true);
+    setError("");
     try {
       const response = await Instance(`/api/students?club_id=${activeClubId}`);
-      console.log(response);
       setStudents(
         (response.data.students || []).map((student) => ({
           id: student.id,
@@ -48,6 +48,7 @@ function StudentList() {
       );
     } catch (error) {
       console.error(error);
+      setError("Erreur lors de la récupération des étudiants");
     } finally {
       setLoading(false);
     }
@@ -250,6 +251,7 @@ function StudentList() {
       >
         Liste des étudiants
       </Typography>
+      {error && <Message text={error} type="error" />}
 
       <Box sx={{ height: "70vh", width: "100%", minWidth: 0 }}>
         <DataGrid

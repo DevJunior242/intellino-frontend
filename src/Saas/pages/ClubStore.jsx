@@ -33,7 +33,7 @@ function ClubStore() {
     city: "",
     address: "",
   });
-
+  const [submitting, setSubmitting] = useState(false);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   //fetch disciplines from api/disciplines
@@ -69,6 +69,7 @@ function ClubStore() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
+    setSubmitting(true);
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
     formDataInitial.append("phone", formData.phone);
@@ -128,6 +129,8 @@ function ClubStore() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -277,8 +280,9 @@ function ClubStore() {
             variant="contained"
             fullWidth
             sx={{ mt: 2, textTransform: "none" }}
+            disabled={submitting}
           >
-            ajouter un club
+            {submitting ? "Loading..." : "ajouter un club"}
           </Button>
         </form>
       </Box>

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Typography,
@@ -29,19 +28,19 @@ const footerLinks = [
   {
     title: "À Propos",
     links: [
-      { label: "Notre Histoire", href: "/histoire" },
-      { label: "Nos Instructeurs", href: "/instructeurs" },
-      { label: "Galerie", href: "/galerie" },
-      { label: "Actualités", href: "/actualites" },
+      { label: "Notre Histoire", href: "#" },
+      { label: "Nos Instructeurs", href: "#" },
+      { label: "Galerie", href: "#" },
+      { label: "Actualités", href: "#" },
     ],
   },
   {
     title: "Rejoindre",
     links: [
-      { label: "Inscription", href: "/inscription" },
-      { label: "Tarifs & Abonnements", href: "/tarifs" },
-      { label: "Essai Gratuit", href: "/essai" },
-      { label: "Contact", href: "/contact" },
+      { label: "Inscription", href: "#" },
+      { label: "Tarifs & Abonnements", href: "#" },
+      { label: "Essai Gratuit", href: "#" },
+      { label: "Contact", href: "#" },
     ],
   },
 ];

@@ -40,6 +40,7 @@ import TopBar from "../../Header/Topbar";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
+import { Groups, PeopleAlt } from "@mui/icons-material";
 
 const DRAWER_EXPANDED = 240;
 const DRAWER_COLLAPSED = 60;
@@ -56,7 +57,7 @@ export default function DashboardLayout() {
 
   const hasAccess = (allowedRoles = []) => {
     if (!auth) return false;
-    if (auth?.roleSuperAdmin?.includes("super_admin")) return true;
+    // if (auth?.roleSuperAdmin?.includes("super_admin")) return true;
     return allowedRoles.includes(activeRole);
   };
 
@@ -103,10 +104,29 @@ export default function DashboardLayout() {
       section: "Gestion",
       items: [
         {
+          title: "Clubs",
+          icon: <Groups fontSize="small" />,
+          to: "/dashboard/clubs",
+          role: ["super_admin"],
+        },
+
+        {
+          title: "Users",
+          icon: <PeopleAlt fontSize="small" />,
+          to: "/dashboard/users",
+          role: ["super_admin"],
+        },
+        {
+          title: "Karateka",
+          icon: <PeopleAlt fontSize="small" />,
+          to: "/dashboard/karateka/list",
+          role: ["super_admin"],
+        },
+        {
           title: "Élèves",
           icon: <SchoolIcon fontSize="small" />,
           to: "/dashboard/student/list",
-          role: ["super_admin", "admin_club", "instructeur", "secretaire"],
+          role: ["admin_club", "instructeur", "secretaire"],
         },
         {
           title: "Membres du club",
@@ -143,7 +163,7 @@ export default function DashboardLayout() {
           title: "Gestion des tarifs",
           icon: <TuneIcon fontSize="small" />,
           to: "/dashboard/payment/settings",
-          role: ["admin_club", "secretaire", "super_admin"],
+          role: ["admin_club", "secretaire"],
         },
         {
           title: "Dettes",
@@ -155,20 +175,13 @@ export default function DashboardLayout() {
           title: "Paiements",
           icon: <PaymentIcon fontSize="small" />,
           to: "/dashboard/payment/store",
-          role: ["admin_club", "secretaire", "super_admin"],
+          role: ["admin_club", "secretaire"],
         },
         {
           title: "Factures",
           icon: <ReceiptIcon fontSize="small" />,
           to: "/dashboard/payment/factures",
-          role: [
-            "admin_club",
-
-            "secretaire",
-            "super_admin",
-            "karateka",
-            "parent",
-          ],
+          role: ["admin_club", "secretaire", "karateka", "parent"],
         },
       ],
     },
@@ -196,7 +209,7 @@ export default function DashboardLayout() {
           title: "Catalogue",
           icon: <ShoppingCartIcon fontSize="small" />,
           to: "/dashboard/catalogue",
-          role: ["super_admin", "admin_club", "secretaire"],
+          role: ["admin_club", "secretaire"],
         },
         {
           title: "FAQ",
@@ -276,7 +289,7 @@ export default function DashboardLayout() {
                 noWrap
                 sx={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}
               >
-                {isSuperAdmin ? "super_admin" : activeRole?.replace("_", " ")}
+                {activeRole?.replace("_", " ")}
               </Typography>
             </Box>
           </Box>

@@ -15,7 +15,7 @@ import Message from "./Message";
 function Register() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const { register } = UseAuth();
 
   const [formData, setFormData] = useState({
@@ -31,12 +31,15 @@ function Register() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     setError({});
     try {
       await register(formData);
       setSuccess(true);
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -147,10 +150,11 @@ function Register() {
             variant="contained"
             fullWidth
             sx={{ mt: 2, textTransform: "none" }}
+            disabled={submitting}
           >
-            S'inscrire
+            {submitting ? "Loading..." : "s'inscrire"}
           </Button>
-          <Box sx={{ display: "flex",justifyContent:'space-between'}}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Typography
               fullWidth
               sx={{ mt: 2, textTransform: "none" }}
@@ -161,8 +165,8 @@ function Register() {
             <Link
               fullWidth
               sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
-               to="/login"
-             >
+              to="/login"
+            >
               Se connecter
             </Link>
           </Box>

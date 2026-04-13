@@ -17,7 +17,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { ArrowBack, Visibility } from "@mui/icons-material";
-import StudentGradeTimeline from "./StudentGradeTimeline"; // Le composant pour la Timeline
+import StudentGradeTimeline from "./StudentGradeTimeline";
 import { UseAuth } from "../../Api/AuthContext";
 import { Instance } from "../../Api/Axios";
 import ConfigSkeleton from "./ConfigSkeleton";
@@ -145,10 +145,10 @@ function StudentsGradesOverview() {
 
       {/* Le Drawer (panneau latéral) */}
       <Drawer
-        anchor="right" // Le panneau vient de la droite
+        anchor="right"
         open={drawerOpen}
         onClose={handleCloseDrawer}
-        PaperProps={{ sx: { width: { xs: "100%", sm: 450 } } }} // Largeur responsive
+        PaperProps={{ sx: { width: { xs: "100%", sm: 450 } } }}
       >
         <Box
           sx={{
@@ -178,6 +178,7 @@ function StudentsGradesOverview() {
 
           {selectedStudent && (
             <StudentGradeTimeline
+              activeClubId={activeClubId}
               studentId={selectedStudent.id}
               student={selectedStudent}
               onClose={handleCloseDrawer}

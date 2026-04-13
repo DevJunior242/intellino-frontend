@@ -81,6 +81,7 @@ const AnimatedMemberCard = ({ member, index, isSuperAdmin }) => {
 
 function MemberList() {
   const [members, setMembers] = useState([]);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pagination, setPagination] = useState({});
   const [openModal, setOpenModal] = useState(false);
@@ -92,6 +93,7 @@ function MemberList() {
   const getMembers = useCallback(
     async (page = 1) => {
       setIsLoading(true);
+      setError("");
       try {
         const response = await Instance(
           `/api/members?page=${page}&club_id=${activeClubId}`,
@@ -109,6 +111,7 @@ function MemberList() {
         });
       } catch (error) {
         console.error(error);
+        setError(error.message || "Eureur lors de la récupération des membres");
       } finally {
         setIsLoading(false);
       }
@@ -122,10 +125,6 @@ function MemberList() {
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
-
-  if (isLoading) {
-    return <ConfigSkeleton />;
-  }
 
   return (
     <Box sx={{ py: 10, px: 2 }}>

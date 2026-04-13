@@ -133,7 +133,7 @@ function MemberTable() {
     ...(auth?.roleSuperAdmin.includes("super_admin")
       ? [
           {
-            field: "clubName",
+            field: "club",
             headerName: "Club",
             flex: 1,
             minWidth: 120,

@@ -48,41 +48,72 @@ export const AuthProvider = ({ children }) => {
   //  ////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO INITIALIZE ACTIVE ROLE AND CLUB ID
   //////////////////////////////////////////////////////////////////////////////////
-  useEffect(() => {
-    if (!auth.isLogin) {
-      setLoading(false);
-      return;
-    }
+  // useEffect(() => {
+  //   if (!auth.isLogin) {
+  //     setLoading(false);
+  //     return;
+  //   }
 
-    if (auth?.isLogin && auth?.role?.length > 0) {
+  //   if (auth?.isLogin && auth?.role?.length > 0) {
+  //     const savedRole = localStorage.getItem("activeRole");
+  //     const savedClubId = localStorage.getItem("activeClubId");
+
+  //     if (savedRole && savedClubId) {
+  //       setActiveRole(savedRole);
+  //       setActiveClubId(savedClubId);
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     if (auth.user?.current_club_id) {
+  //       const clubId = auth.user.current_club_id;
+
+  //       setActiveClubId(clubId);
+
+  //       const role = auth.role?.[0] || auth.roleSuperAdmin?.[0] || null;
+  //       setActiveRole(role);
+
+  //       localStorage.setItem("activeClubId", clubId);
+  //       if (role) {
+  //         localStorage.setItem("activeRole", role);
+  //       }
+  //     }
+
+  //     setLoading(false);
+  //   }
+
+  //   setLoading(false);
+  // }, [auth, setActiveClubId, setActiveRole]);
+  useEffect(() => {
+    if (auth?.isLogin) {
       const savedRole = localStorage.getItem("activeRole");
       const savedClubId = localStorage.getItem("activeClubId");
 
-      if (savedRole && savedClubId) {
+      if (savedRole && (savedClubId || savedRole === "super_admin")) {
         setActiveRole(savedRole);
-        setActiveClubId(savedClubId);
+        if (savedClubId) setActiveClubId(savedClubId);
         setLoading(false);
         return;
       }
 
-      if (auth.user?.current_club_id) {
+      const role = auth.roleSuperAdmin?.[0] || auth.role?.[0] || null;
+
+      if (role === "super_admin") {
+        setActiveRole("super_admin");
+        localStorage.setItem("activeRole", "super_admin");
+      } else if (auth.user?.current_club_id) {
         const clubId = auth.user.current_club_id;
-
         setActiveClubId(clubId);
-
-        const role = auth.role?.[0] || null;
         setActiveRole(role);
 
         localStorage.setItem("activeClubId", clubId);
-        if (role) {
-          localStorage.setItem("activeRole", role);
-        }
+        if (role) localStorage.setItem("activeRole", role);
       }
 
       setLoading(false);
+    } else {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [auth, setActiveClubId, setActiveRole]);
   //////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO SWITCH ROLE
@@ -239,32 +270,31 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
   const login = useCallback(
     async (credentials) => {
-         const res = await Instance.post("api/login", credentials);
+      const res = await Instance.post("api/login", credentials);
 
-        const { token, user, role, memberships, roleSuperAdmin } = res.data;
+      const { token, user, role, memberships, roleSuperAdmin } = res.data;
 
-        if (!token) {
-          throw {
-            response: {
-              status: 401,
-              data: { message: "Identifiants incorrects" },
-            },
-          };
-        }
+      if (!token) {
+        throw {
+          response: {
+            status: 401,
+            data: { message: "Identifiants incorrects" },
+          },
+        };
+      }
 
-        const saveRoleSuperAdmin = Array.isArray(roleSuperAdmin)
-          ? roleSuperAdmin
-          : [];
-        const saveRole = Array.isArray(role) ? role : [];
-        const saveMemberships = Array.isArray(memberships) ? memberships : [];
+      const saveRoleSuperAdmin = Array.isArray(roleSuperAdmin)
+        ? roleSuperAdmin
+        : [];
+      const saveRole = Array.isArray(role) ? role : [];
+      const saveMemberships = Array.isArray(memberships) ? memberships : [];
 
-        setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
+      setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
 
-        const hasRole = Array.isArray(saveRole) && saveRole.length > 0;
-        navigate(hasRole ? "/dashboard" : "/");
+      const hasRole = Array.isArray(saveRole) && saveRole.length > 0;
+      navigate(hasRole ? "/dashboard" : "/");
 
-        return { success: true, user };
-      
+      return { success: true, user };
     },
     [navigate, setAuthData],
   );

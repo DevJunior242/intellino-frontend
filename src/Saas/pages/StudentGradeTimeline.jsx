@@ -12,35 +12,34 @@ import {
 } from "@mui/material";
 import { CheckCircle, Lock } from "@mui/icons-material";
 import { Instance } from "../../Api/Axios";
-import { UseAuth } from "../../Api/AuthContext";
+import ConfigSkeleton from "./ConfigSkeleton";
 
-function StudentGradeTimeline({ student }) {
-  console.log("StudentGradeTimeline - student:", student);
+function StudentGradeTimeline({ student, activeClubId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState({
     all_club_grades: [],
     student_history: [],
   });
-  const { activeClubId } = UseAuth();
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await Instance.get(
-        `/api/student-grades/${student.id}/history?club_id=${activeClubId}`,
-      );
-      console.log(response);
-      setData(response.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeClubId, student.id]);
-
   useEffect(() => {
+    if (!student || !activeClubId) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await Instance.get(
+          `/api/student-grades/${student.id}/history?club_id=${activeClubId}`,
+        );
+        setData(response.data);
+      } catch (error) {
+        setError("Erreur...");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
-  }, [fetchData]);
+  }, [student, activeClubId]);
 
   //definir le style de grade color config
   const gradeColorConfig = {
@@ -53,19 +52,26 @@ function StudentGradeTimeline({ student }) {
     "centure grise": { color: "#8884d8" },
     "centure orange": { color: "#ff9800" },
     "centure marron": { color: "#f44336" },
-
   };
 
   if (loading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
+        <ConfigSkeleton />
       </Box>
     );
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <Box sx={{ px: 2, pb: 2, flexGrow: 1, overflowY: "auto",backgroundColor:"background.default" }}>
+    <Box
+      sx={{
+        px: 2,
+        pb: 2,
+        flexGrow: 1,
+        overflowY: "auto",
+        backgroundColor: "background.default",
+      }}
+    >
       <Stepper orientation="vertical">
         {data.all_club_grades.map((grade) => {
           const achievement = data.student_history.find(
@@ -82,7 +88,7 @@ function StudentGradeTimeline({ student }) {
           const isCurrent = grade.id === lastAwardedGradeId;
 
           const config = gradeColorConfig[grade.name.toLowerCase()];
-          const displayColor = config ? config.color : "#bdbdbd";  
+          const displayColor = config ? config.color : "#bdbdbd";
 
           return (
             <Step key={grade.id} active={isAchieved} completed={isAchieved}>
@@ -103,7 +109,9 @@ function StudentGradeTimeline({ student }) {
                     variant="h6"
                     component="span"
                     sx={{
-                      color: isAchieved ? gradeColorConfig[grade?.name]?.color : "text.disabled",
+                      color: isAchieved
+                        ? gradeColorConfig[grade?.name]?.color
+                        : "text.disabled",
                       fontWeight: isCurrent ? "bold" : "normal",
                     }}
                   >
