@@ -6,13 +6,18 @@ import {
   Paper,
   Pagination,
   Button,
+  Stack,
+  Divider,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SchoolIcon from "@mui/icons-material/School";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
-
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import BusinessIcon from "@mui/icons-material/Business";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import Chip from "@mui/material/Chip";
 import PulseLoader from "react-spinners/PulseLoader";
 import { useNavigate } from "react-router-dom";
@@ -22,11 +27,28 @@ import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import { Schedule } from "@mui/icons-material";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorGlobal from "../../../component/ErrorGlobal";
+import Message from "../Message";
+import EditSession from "./EditSession";
 function SessionList() {
   const [sessions, setsessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const { activeRole, activeClubId } = UseAuth();
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState({});
+  const [openModal, setOpenModal] = useState(false);
+
+  const [selectedSession, setSelectedSession] = useState(null);
+
+  const handleOpenModal = (session) => {
+    setSelectedSession(session);
+    setOpenModal(true);
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedSession(null);
+  };
 
   const allowAccess = [
     "admin_club",
@@ -66,6 +88,33 @@ function SessionList() {
     getSession();
   }, [getSession]);
 
+  //supprimer une session
+  const handleDelete = async (sessionId) => {
+    if (!window.confirm(`Supprimer la session ${sessionId} ?`) || !activeClubId)
+      return;
+    setError({});
+    setSuccess("");
+    try {
+      const response = await Instance.delete(
+        `/api/sessions/remove/${sessionId}?club_id=${activeClubId}`,
+      );
+      console.log("Réponse API après suppression :", response.data);
+      if (response.data.success) {
+        setSuccess(response.data.message);
+        setTimeout(() => {
+          setSuccess("");
+        }, 3000);
+        setError({});
+        getSession();
+      } else {
+        setError(response.data.message);
+        setSuccess("");
+      }
+    } catch (error) {
+      ErrorGlobal({ error, setError });
+    }
+  };
+
   //status
   const statusConfig = {
     scheduled: { color: "primary", label: "Planifié" },
@@ -82,14 +131,19 @@ function SessionList() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          mt: 10,
           flexDirection: "row",
           alignItems: "center",
           gap: 2,
+          m: 2,
         }}
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Liste des sessions
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          gutterBottom
+          sx={{ fontSize: { xs: 12, md: 20 } }}
+        >
+          Liste des cours
         </Typography>
         <Button
           variant="contained"
@@ -97,38 +151,57 @@ function SessionList() {
           to="/dashboard/course/store"
           sx={{ textTransform: "none" }}
         >
-          Programmer une session
+          Programmer cours
         </Button>
       </Box>
+      {success && <Message text={success} type="success" />}
+      {error?.general && <Message text={error.general} type="error" />}
 
       {loading ? (
         <ConfigSkeleton />
       ) : sessions.length > 0 ? (
-        <Grid container spacing={2} sx={{ pb: 2 }}>
+        <Grid
+          container
+          spacing={3}
+          alignItems="stretch"
+          sx={{ pb: 2, justifyContent: "center" }}
+        >
           {sessions.map((session, index) => {
             const currentStatus =
               statusConfig[session.status] || statusConfig.draft;
-
             return (
               <Grid
+                key={session.id}
+                item
+                xs={12}
+                sm={6}
+                md={6}
+                lg={4}
+                xl={3}
                 sx={{
                   display: "flex",
-                  justifyContent: "center",
-                  mt: 2,
-                  mx: "auto",
-                  borderRadius: 2,
+                  minWidth: 0,
                 }}
-                minHeight={200}
-                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                key={session.id}
               >
                 <Paper
-                  elevation={3}
+                  elevation={0}
                   sx={{
-                    p: 4,
-                    textAlign: "center",
-                    bgcolor: "background.default",
+                    backgroundColor: "background.default",
+                    p: 3,
+                    width: "300px",
+                    overflow: "hidden",
+                    borderRadius: 3,
                     cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      transform: "translateY(-2px)",
+                      boxShadow: 4,
+                    },
                   }}
                   data-aos="fade-up"
                   data-aos-delay={index * 200}
@@ -138,54 +211,141 @@ function SessionList() {
                     )
                   }
                 >
-                  <Typography variant="h6" fontWeight="bold">
-                    {session.course?.name}
-                  </Typography>
-                  {/* status */}
-                  <Chip
-                    label={currentStatus?.label}
-                    color={currentStatus?.color}
-                    size="small"
-                    sx={{ mt: 1 }}
-                  />
+                  {/* Header: Title + Status */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      sx={{
+                        fontSize: { xs: 13, md: 16 },
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        minHeight: "2.6em",
+                        lineHeight: 1.3,
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {session.course?.name}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      sx={{
+                        fontSize: { xs: 5, md: 10 },
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        minHeight: "2.6em",
+                        lineHeight: 1.3,
+                        wordBreak: "break-word",
+                        color: "text.secondary",
+                      }}
+                    >
+                      session: {session.title}
+                    </Typography>
+                    <Chip
+                      label={currentStatus?.label}
+                      color={currentStatus?.color}
+                      size="small"
+                      sx={{ mt: 1, fontWeight: 600, fontSize: 11 }}
+                    />
+                  </Box>
 
-                  {/* Club */}
-                  <Typography
-                    sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                    color="text.secondary"
-                  >
-                    <LocationCityIcon fontSize="small" sx={{ mr: 1 }} />
-                    {session.course?.club?.name}
-                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
 
-                  {/* Date */}
-                  <Typography
-                    sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                  >
-                    <CalendarMonthIcon fontSize="small" sx={{ mr: 1 }} />
-                    {session.session_date}
-                  </Typography>
-                  {/* Time */}
-                  <Typography
-                    sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                  >
-                    <AccessTimeIcon fontSize="small" sx={{ mr: 1 }} />
-                    {session.start_time.slice(0, 5)}-
-                    {session.end_time.slice(0, 5)}
-                  </Typography>
+                  {/* Infos */}
+                  <Stack spacing={1.2} sx={{ flexGrow: 1 }}>
+                    {/* Club */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <BusinessIcon
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        noWrap
+                        sx={{ fontSize: 13 }}
+                      >
+                        {session.course?.club?.name}
+                      </Typography>
+                    </Box>
 
-                  {/* Level */}
-                  <Typography
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      alignItems: "center",
-                      mt: 1,
-                    }}
-                  >
-                    <SchoolIcon fontSize="small" sx={{ mr: 1 }} />
-                    {session.course?.grade?.name}
-                  </Typography>
+                    {/* Date */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CalendarTodayIcon
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {session.session_date}
+                      </Typography>
+                    </Box>
+
+                    {/* Time */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <AccessTimeIcon
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {session.start_time.slice(0, 5)} –{" "}
+                        {session.end_time.slice(0, 5)}
+                      </Typography>
+                    </Box>
+
+                    {/* Level */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <SchoolIcon
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="body2" sx={{ fontSize: 13 }}>
+                        {session.course?.grade?.name}
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  {/* Actions */}
+                  <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+                      sx={{
+                        flex: 1,
+                        fontSize: 12,
+                        textTransform: "none",
+                        borderRadius: 2,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("click bouton", session);
+                        handleOpenModal(session);
+                      }}
+                    >
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      startIcon={<DeleteIcon sx={{ fontSize: 14 }} />}
+                      sx={{
+                        flex: 1,
+                        fontSize: 12,
+                        textTransform: "none",
+                        borderRadius: 2,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(session.id);
+                      }}
+                    >
+                      Supprimer
+                    </Button>
+                  </Stack>
                 </Paper>
               </Grid>
             );
@@ -228,6 +388,15 @@ function SessionList() {
           />
         )}
       </Box>
+      {selectedSession && (
+        <EditSession
+          open={openModal}
+          handleClose={handleCloseModal}
+          session={selectedSession}
+          getSession={getSession}
+          activeClubId={activeClubId}
+        />
+      )}
     </Box>
   );
 }

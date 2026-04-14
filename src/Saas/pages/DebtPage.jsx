@@ -52,15 +52,15 @@ const DebtPage = () => {
   }, [activeClubId, fetchDebts]);
 
   const sendWhatsApp = (student, amount) => {
-    const message = `Bonjour, le club vous informe que le reliquat pour ${student.first_name} est de ${amount} F. Merci de passer régulariser.`;
+    const message = `Bonjour, ${student?.club?.name} vous informe que le reliquat pour ${student.fullname} est de ${amount} F. Merci de passer régulariser.`;
     window.open(
-      `https://wa.me/${student.phone_parent}?text=${encodeURIComponent(message)}`,
+      `https://wa.me/${student.parents[0]?.user?.phone}?text=${encodeURIComponent(message)}`,
       "_blank",
     );
   };
 
   const handleSolder = (debt) => {
-    navigate("payment/store", {
+    navigate("/dashboard/payment/store", {
       state: {
         prefill: {
           student: debt.student,

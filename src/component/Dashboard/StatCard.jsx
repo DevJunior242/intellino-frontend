@@ -4,6 +4,8 @@ const StatCard = ({ title, value, icon, color, subtitle }) => (
   <Paper
     elevation={0}
     sx={{
+      height: 100,
+      width: 250,
       p: 3,
       borderRadius: 4,
       display: "flex",
@@ -26,7 +28,12 @@ const StatCard = ({ title, value, icon, color, subtitle }) => (
       >
         {title.toUpperCase()}
       </Typography>
-      <Typography variant="h4" fontWeight="800" color="text.primary">
+      <Typography
+        variant="h4"
+        fontWeight="800"
+        color="text.primary"
+        sx={{ fontSize: { xs: 10, md: 20 } }}
+      >
         {value.toLocaleString()}
       </Typography>
       {subtitle && (

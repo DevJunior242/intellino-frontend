@@ -342,7 +342,6 @@ function Program({ activeClubId, role = "admin" }) {
           mb: 2,
           backgroundColor: "background.default",
           borderRadius: 4,
-          overflow: "hidden",
         }}
       >
         <Typography

@@ -12,8 +12,6 @@ import {
 } from "@mui/material";
 import {
   PersonAdd,
-  Event,
-  School,
   EmojiEvents,
   History,
   Category,
@@ -123,7 +121,11 @@ function ActivityFeed() {
                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                           <Typography
                             variant="body2"
-                            sx={{ fontWeight: "bold", noWrap: true }}
+                            sx={{
+                              fontWeight: "bold",
+                              noWrap: true,
+                              fontSize: { xs: 12, md: 16 },
+                            }}
                           >
                             {activity?.user?.fullname}
                           </Typography>
@@ -145,7 +147,11 @@ function ActivityFeed() {
                       <Box sx={{ mt: 2 }}>
                         <Typography
                           variant="body2"
-                          sx={{ color: "text.primary", mb: 1 }}
+                          sx={{
+                            color: "text.primary",
+                            mb: 1,
+                            fontSize: { xs: 8, md: 10 },
+                          }}
                         >
                           {activity.description}
                         </Typography>
