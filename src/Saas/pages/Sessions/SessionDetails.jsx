@@ -14,12 +14,9 @@ function SessionDetails() {
 
   const { activeRole } = UseAuth();
 
-  const allowAccess = [
-    "admin_club",
-    "instructeur",
-    "secretaire",
-    "super_admin",
-  ].includes(activeRole);
+  const allowAccess = ["admin_club", "instructeur", "super_admin"].includes(
+    activeRole,
+  );
   const tabs = [
     ...(allowAccess ? [{ label: "Gestion des cours", key: "cours" }] : []),
 

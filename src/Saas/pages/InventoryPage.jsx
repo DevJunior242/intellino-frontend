@@ -5,18 +5,23 @@ import { Box, Button, CircularProgress } from "@mui/material";
 import EquipmentManager from "./EquipmentManager";
 import EquipmentTable from "./EquipmentTable";
 import { Link } from "react-router-dom";
+import ErrorBlock from "./ErrorBlock";
+import ConfigSkeleton from "./ConfigSkeleton";
 
 const InventoryPage = () => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   //activeClubId
   const { activeClubId } = UseAuth();
   // La fonction qui rafraîchit les données
   const fetchInventory = useCallback(
     async (page = 1) => {
+      if (!activeClubId) return;
       setLoading(true);
+      setError("");
       try {
         const res = await Instance.get(
           `/api/inventory/equipments?page=${page}&club_id=${activeClubId}`,
@@ -32,6 +37,7 @@ const InventoryPage = () => {
         });
       } catch (error) {
         console.error("Erreur lors de la récupération des catégories :", error);
+        setError("Erreur lors de la récupération des equipements");
       } finally {
         setLoading(false);
       }
@@ -43,6 +49,14 @@ const InventoryPage = () => {
     fetchInventory();
   }, [fetchInventory]);
 
+  if (loading) return <ConfigSkeleton />;
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les équipements"
+        onRetry={fetchInventory}
+      />
+    );
   return (
     <Box>
       {/* On passe la fonction au formulaire */}

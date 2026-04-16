@@ -1,6 +1,5 @@
 import axios from "axios";
-const BASE_URL =
-  import.meta.env.VITE_API_URL || "https://intellino-app.netlify.app";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://intelino.netlify.app";
 export const Instance = axios.create({
   baseURL: BASE_URL,
   timeout: 60000,

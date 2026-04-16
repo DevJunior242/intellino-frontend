@@ -24,6 +24,7 @@ import AddMemberForm from "../AddMemberForm";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 function MemberTable() {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,7 @@ function MemberTable() {
   //erreur & ssuccess
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
+  const [errorMembers, setErrorMembers] = useState("");
 
   //
   const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
@@ -43,6 +45,7 @@ function MemberTable() {
   const getMembers = useCallback(
     async (page = 1) => {
       setIsLoading(true);
+      setErrorMembers("");
       try {
         const response = await Instance(
           `/api/members?page=${page}&club_id=${activeClubId}`,
@@ -53,6 +56,7 @@ function MemberTable() {
         setMembers(membersData.data ?? []);
       } catch (error) {
         console.error(error);
+        setErrorMembers("Erreur lors de la récupération des membres");
       } finally {
         setIsLoading(false);
       }
@@ -195,6 +199,13 @@ function MemberTable() {
     },
   ];
 
+  if (errorMembers)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les membres"
+        onRetry={getMembers}
+      />
+    );
   return (
     <Box
       sx={{

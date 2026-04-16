@@ -15,7 +15,9 @@ import {
   InputBase,
   Typography,
   ListItemText,
+  Drawer,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
@@ -102,25 +104,44 @@ function Navbar() {
       </Box>
 
       {/* Desktop Navigation */}
-      <List sx={{ display: { xs: "none", md: "flex" }, gap: 2, ml: 4 }}>
+      <List
+        sx={{
+          display: { xs: "none", md: "flex" },
+          gap: 1,
+          ml: 4,
+          alignItems: "center",
+        }}
+      >
         {filteredItems.map((item) => (
-          <ListItem
-            key={item.title}
-            sx={{
-              display: "inline",
-              width: "auto",
-              p: 1,
-              cursor: "pointer",
-            }}
-          >
-            <NavLink
-              to={item.href}
-              style={{
-                textDecoration: "none",
-                color: "white",
-              }}
-            >
-              {item.title}
+          <ListItem key={item.title} sx={{ width: "auto", p: 0 }}>
+            <NavLink to={item.href} style={{ textDecoration: "none" }}>
+              {({ isActive }) => (
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    position: "relative",
+                    cursor: "pointer",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.75)",
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: 15,
+                    bgcolor: isActive
+                      ? "rgba(255,255,255,0.15)"
+                      : "transparent",
+                    border: isActive
+                      ? "1px solid rgba(255,255,255,0.3)"
+                      : "1px solid transparent",
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      color: "#fff",
+                      bgcolor: "rgba(255,255,255,0.1)",
+                    },
+                  }}
+                >
+                  {item.title}
+                </Box>
+              )}
             </NavLink>
           </ListItem>
         ))}
@@ -212,63 +233,120 @@ function Navbar() {
           <MenuIcon sx={{ color: "#fff" }} />
         </Button>
 
-        <Menu
-          anchorReference="none"
+        <Drawer
+          anchor="right"
           open={openMenu}
           onClose={handleCloseMenu}
           PaperProps={{
             sx: {
-              position: "fixed",
-              top: 0,
-              left: 0,
               width: "100%",
               height: "100%",
-              maxHeight: "100vh",
-              maxWidth: "100vw",
-              backgroundColor: "background.default",
+              bgcolor: "#0606CF",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 2,
+              px: 4,
+              py: 3,
             },
           }}
         >
-          <Button
-            onClick={handleCloseMenu}
-            sx={{ fontSize: 50, fontWeight: "bold", color: "#0606CF" }}
-          >
-            x
-          </Button>
+          {/* Header du drawer */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <IconButton onClick={handleCloseMenu}>
+              <CloseIcon sx={{ color: "#fff", fontSize: 30 }} />
+            </IconButton>
+          </Box>
 
-          {filteredItems.map((item) => (
-            <MenuItem key={item.title} onClick={handleCloseMenu}>
+          {/* Avatar en haut si connecté */}
+          {auth && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
+              <Avatar
+                sx={{
+                  width: 48,
+                  height: 48,
+                  bgcolor: "#fff",
+                  color: "#0606CF",
+                  fontWeight: "bold",
+                }}
+              >
+                {user?.fullname?.charAt(0)}
+              </Avatar>
+              <Typography sx={{ color: "#fff", fontWeight: 500, fontSize: 16 }}>
+                {user?.name}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Liens */}
+          <Box
+            sx={{ display: "flex", flexDirection: "column", gap: 1, flex: 1 }}
+          >
+            {filteredItems.map((item) => (
               <NavLink
+                key={item.title}
                 to={item.href}
+                onClick={handleCloseMenu}
                 style={({ isActive }) => ({
-                  color: isActive ? "#FD1D1D" : "#141499",
-                  textDecoration: isActive ? "underline" : "none",
-                  fontSize: 24,
+                  textDecoration: "none",
                 })}
               >
-                {item.title}
+                {({ isActive }) => (
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      borderRadius: 2,
+                      bgcolor: isActive
+                        ? "rgba(255,255,255,0.15)"
+                        : "transparent",
+                      borderLeft: isActive
+                        ? "4px solid #fff"
+                        : "4px solid transparent",
+                      transition: "all 0.2s",
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: "#fff",
+                        fontSize: 18,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                  </Box>
+                )}
               </NavLink>
-            </MenuItem>
-          ))}
+            ))}
+          </Box>
 
-          {/* Mobile Account */}
+          {/* Footer */}
           {auth && (
-            <Box sx={{ mt: 4 }}>
+            <Box
+              sx={{
+                borderTop: "1px solid rgba(255,255,255,0.2)",
+                pt: 2,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
               <Tooltip title="Account settings">
                 <IconButton onClick={handleClickAccount} size="small">
-                  <Avatar sx={{ width: 32, height: 32 }}>
-                    {user?.name?.charAt(0)}
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: "#fff",
+                      color: "#0606CF",
+                    }}
+                  >
+                    {user?.fullname?.charAt(0)}
                   </Avatar>
                 </IconButton>
               </Tooltip>
             </Box>
           )}
-        </Menu>
+        </Drawer>
       </Box>
     </Box>
   );

@@ -21,6 +21,8 @@ import PulseLoader from "react-spinners/PulseLoader";
 import { Instance } from "../../Api/Axios";
 import { UseAuth } from "../../Api/AuthContext";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import ErrorBlock from "./ErrorBlock";
+import ConfigSkeleton from "./ConfigSkeleton";
 
 function PaymentIndex() {
   const [paiements, setPaiements] = useState([]);
@@ -28,9 +30,11 @@ function PaymentIndex() {
   const [pagination, setPagination] = useState({});
   const { activeClubId } = UseAuth();
   const [downloadingId, setDownloadingId] = useState(null);
+  const [error, setError] = useState("");
   const getPayment = useCallback(
     async (page = 1) => {
       setLoading(true);
+      setError("");
       try {
         const response = await Instance.get(
           `/api/payments?page=${page}&club_id=${activeClubId}`,
@@ -45,6 +49,7 @@ function PaymentIndex() {
           total: payment.total,
         });
       } catch (error) {
+        setError("Erreur lors de la récupération des payments :");
         console.error("Erreur lors de la récupération des payments :", error);
       } finally {
         setLoading(false);
@@ -81,20 +86,13 @@ function PaymentIndex() {
     }
   };
 
-  if (loading) {
+  if (error)
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <PulseLoader />
-      </Box>
+      <ErrorBlock
+        message="Impossible de charger les paiements"
+        onRetry={getPayment}
+      />
     );
-  }
   return (
     <Box>
       <Box sx={{ backgroundColor: "background.default" }}>
@@ -118,7 +116,7 @@ function PaymentIndex() {
 
           {loading ? (
             <Box display="flex" justifyContent="center" py={5}>
-              <CircularProgress />
+              <ConfigSkeleton />
             </Box>
           ) : (
             <TableContainer sx={{ overflowX: "auto", maxWidth: "100%" }}>

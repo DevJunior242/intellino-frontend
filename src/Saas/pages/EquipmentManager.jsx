@@ -22,14 +22,17 @@ import { ErrorOutlined } from "@mui/icons-material";
 import ErrorGlobal from "../../component/ErrorGlobal";
 import Message from "./Message";
 import ConfigSkeleton from "./ConfigSkeleton";
+import ErrorBlock from "./ErrorBlock";
 
 const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
   const [categories, setCategories] = useState([]);
   const [openCat, setOpenCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
+  const { errorCategory, setErrorCategory } = useState("");
 
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
@@ -45,14 +48,15 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
   const fetchData = useCallback(async () => {
     if (activeClubId == null) return;
     setLoading(true);
+    setErrorCategory("");
     try {
       const res = await Instance.get(
         `/api/inventory/categories?club_id=${activeClubId}`,
       );
-      console.log(res.data);
       setCategories(res.data.categories || []);
     } catch (error) {
       console.error("Erreur lors de la récupération des catégories :", error);
+      setErrorCategory("Erreur lors de la récupération des catégories");
     } finally {
       setLoading(false);
     }
@@ -65,9 +69,9 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
   // Création rapide de catégorie
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    setError("");
+    setError({});
     if (!newCatName) return;
-
+    setSubmitting(true);
     try {
       const res = await Instance.post("/api/inventory/categories", {
         name: newCatName,
@@ -87,6 +91,8 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -95,6 +101,7 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     setIsSubmitting(true);
     setError({});
     setSuccess("");
+
     try {
       const dataSend = {
         ...formData,
@@ -116,6 +123,13 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
       setIsSubmitting(false);
     }
   };
+  if (errorCategory)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les catégories"
+        onRetry={fetchData}
+      />
+    );
 
   return (
     <Paper
@@ -240,8 +254,13 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCat(false)}>Annuler</Button>
-          <Button onClick={handleAddCategory} variant="contained">
-            Créer
+          <Button
+            onClick={handleAddCategory}
+            variant="contained"
+            sx={{ fontSize: { xs: 10, md: 14 }, textTransform: "none" }}
+            disabled={submitting}
+          >
+            {submitting ? "Enregistrement..." : "Créer"}
           </Button>
         </DialogActions>
       </Dialog>

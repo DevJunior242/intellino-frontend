@@ -16,12 +16,13 @@ import PulseLoader from "react-spinners/PulseLoader";
 import Message from "./Message";
 import { UseAuth } from "../../Api/AuthContext";
 import ConfigSkeleton from "./ConfigSkeleton";
+import StudentAutocomplete from "./StudentAutocomplete";
 
 function StudentGradCreate() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [students, setStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [selectStudent, setSelectStudent] = useState(null);
   const { activeClubId } = UseAuth();
   const [grade, setGrade] = useState([]);
@@ -63,24 +64,6 @@ function StudentGradCreate() {
 
   //
 
-  const getStudents = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await Instance(`/api/students?club_id=${activeClubId}`);
-      console.log(response);
-      const studentData = response.data.students || [];
-      setStudents(studentData);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeClubId]);
-
-  useEffect(() => {
-    getStudents();
-  }, [getStudents]);
-
   //mettre a jour club_id
   useEffect(() => {
     if (selectStudent) {
@@ -105,6 +88,7 @@ function StudentGradCreate() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       const dataSend = {
         ...formData,
@@ -133,6 +117,8 @@ function StudentGradCreate() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -165,30 +151,20 @@ function StudentGradCreate() {
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
         <form onSubmit={handleSubmit}>
-          <Autocomplete
-            disablePortal
-            options={Array.isArray(students) ? students : []}
-            getOptionLabel={(student) =>
-              `${student.fullname || ""}-${student.birthdate || ""}`
-            }
+          <StudentAutocomplete
+            activeClubId={activeClubId}
             value={selectStudent}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            onChange={(e, newValue) => setSelectStudent(newValue)}
-            renderInput={(params) => (
-              <TextField
-                error={!!error.student_id}
-                {...params}
-                fullWidth
-                margin="normal"
-                label="il vous faut choisir un eleve"
-                required
-              />
-            )}
+            onChange={(newValue) => setSelectStudent(newValue)}
+            hasError={hasError}
+            getError={getError}
+            label="il vous faut choisir un eleve"
           />
-          {hasError("student_id") && (
-            <FormHelperText error>{getError("student_id")}</FormHelperText>
-          )}
           <Autocomplete
+            slotProps={{
+              paper: {
+                sx: { backgroundColor: "background.default" },
+              },
+            }}
             disablePortal
             options={Array.isArray(grade) ? grade : []}
             isOptionEqualToValue={(option, value) => option.id === value?.id}
@@ -242,8 +218,9 @@ function StudentGradCreate() {
             variant="contained"
             fullWidth
             sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
+            disabled={submitting}
           >
-            ajouter
+            {submitting ? "Enregistrement..." : "Association de grade"}
           </Button>
         </form>
       </Box>

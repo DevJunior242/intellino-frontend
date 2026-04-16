@@ -19,19 +19,21 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import ConfigSkeleton from "../ConfigSkeleton";
 import Message from "../Message";
+import ErrorBlock from "../ErrorBlock";
 function StudentList() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const { auth, activeClubId } = UseAuth();
-  const [error, setError] = useState("");
+  const [errorStudent, setErrorStudent] = useState("");
+  const { error, setError } = useState({});
 
   //
 
   const getStudents = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setErrorStudent("");
     try {
       const response = await Instance(`/api/students?club_id=${activeClubId}`);
       setStudents(
@@ -48,7 +50,7 @@ function StudentList() {
       );
     } catch (error) {
       console.error(error);
-      setError("Erreur lors de la récupération des étudiants");
+      setErrorStudent("Erreur lors de la récupération des étudiants");
     } finally {
       setLoading(false);
     }
@@ -57,6 +59,16 @@ function StudentList() {
   useEffect(() => {
     getStudents();
   }, [getStudents]);
+  //retry
+  const retryStudents = useCallback(async () => {
+    setErrorStudent("");
+    try {
+      const res = await Instance.get("/api/students");
+      setStudents(res.data.data || []);
+    } catch (err) {
+      setErrorStudent("Erreur réseau.veuillez réessayer");
+    }
+  }, []);
 
   const handleOpenEditModal = (student) => {
     setSelectedStudent(student);
@@ -235,9 +247,17 @@ function StudentList() {
       return oldRow;
     }
   };
-  if (loading) {
-    return <ConfigSkeleton />;
-  }
+  // if (loading) {
+  //   return <ConfigSkeleton />;
+  // }
+
+  if (errorStudent)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les étudiants"
+        onRetry={retryStudents}
+      />
+    );
   return (
     <Box
       sx={{
@@ -259,7 +279,6 @@ function StudentList() {
           columns={columns}
           getRowId={(row) => row.id}
           processRowUpdate={processRowUpdate}
-          onProcessRowUpdateError={(error) => console.log(error)}
           pageSizeOptions={[5, 10, 20]}
           loading={loading}
           checkboxSelection

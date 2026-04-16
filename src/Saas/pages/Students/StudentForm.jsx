@@ -359,6 +359,8 @@ const StudentForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isOwnResponsible, setIsOwnResponsible] = useState(false);
   const [error, setError] = useState({});
+  const hasError = (field) => !!error?.[field];
+  const getError = (field) => error?.[field]?.join(", ");
   const [success, setSuccess] = useState("");
   // État pour le Parent (affiché seulement si !isOwnResponsible)
   const [parentData, setParentData] = useState({
@@ -495,7 +497,11 @@ const StudentForm = () => {
       {success && <Message text={success} type="success" />}
       {error.general && <Message text={error.general} type="error" />}
       <form onSubmit={handleSubmit}>
-        <Typography variant="h5" gutterBottom>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{ fontSize: { xs: 10, md: 20 } }}
+        >
           Inscription Élève(s)
         </Typography>
 
@@ -509,6 +515,11 @@ const StudentForm = () => {
           }
           label="L'élève (ou le groupe) est son propre responsable légal"
           sx={{ mb: 2 }}
+          componentsProps={{
+            typography: {
+              sx: { fontSize: { xs: 10, md: 14 } },
+            },
+          }}
         />
 
         {/* SECTION PARENT (Affichée uniquement si non responsable) */}
@@ -517,12 +528,17 @@ const StudentForm = () => {
             sx={{
               mb: 4,
               p: 2,
-              bgcolor: "info.main",
-              color: "white",
-              borderRadius: 2,
             }}
           >
-            <Typography variant="h6">
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 2,
+                bgcolor: "info.main",
+                p: 2,
+                fontSize: { xs: 10, md: 20 },
+              }}
+            >
               Informations du Parent / Tuteur
             </Typography>
             <Grid
@@ -530,14 +546,13 @@ const StudentForm = () => {
               spacing={2}
               sx={{
                 mt: 1,
-                backgroundColor: "background.default",
                 borderRadius: 2,
               }}
             >
               <Grid item xs={12} md={6}>
                 <TextField
-                  error={!!error.parent_fullname}
-                  helperText={error.parent_fullname}
+                  error={hasError("parent_fullname")}
+                  helperText={getError("parent_fullname")}
                   value={parentData.fullname}
                   label="Nom Parent"
                   fullWidth
@@ -550,8 +565,8 @@ const StudentForm = () => {
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
-                  error={!!error.parent_email}
-                  helperText={error.parent_email}
+                  error={hasError("parent_email")}
+                  helperText={getError("parent_email")}
                   value={parentData.email}
                   label="Email Parent"
                   fullWidth
@@ -621,6 +636,11 @@ const StudentForm = () => {
                 <FormControl fullWidth error={!!getStudentError("sex")}>
                   <InputLabel>Sexe</InputLabel>
                   <Select
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { bgcolor: "background.default" },
+                      },
+                    }}
                     value={student.sex}
                     label="Sexe"
                     onChange={(e) =>
@@ -652,6 +672,11 @@ const StudentForm = () => {
                 }
                 label="Créer un compte d'accès pour cet élève"
                 sx={{ mt: 2 }}
+                componentsProps={{
+                  typography: {
+                    sx: { fontSize: { xs: 10, md: 14 } },
+                  },
+                }}
               />
               {/* Champs conditionnels email/phone */}
               {(student.createAccount || isOwnResponsible) && (
@@ -690,7 +715,7 @@ const StudentForm = () => {
             setStudents([...students, { fullname: "", createAccount: false }])
           }
           startIcon={<AddIcon />}
-          sx={{ mb: 3 }}
+          sx={{ mb: 3, fontSize: { xs: 10, md: 14, textTransform: "none" } }}
         >
           Ajouter un enfant à la fratrie
         </Button>
@@ -701,6 +726,7 @@ const StudentForm = () => {
           fullWidth
           size="large"
           disabled={submitting}
+          sx={{ fontSize: { xs: 10, md: 14 }, textTransform: "none" }}
         >
           {submitting ? "Enregistrement..." : "Finaliser l'inscription"}
         </Button>

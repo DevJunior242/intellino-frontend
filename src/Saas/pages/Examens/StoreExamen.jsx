@@ -16,9 +16,11 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 function StoreExamen() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [grade, setGrade] = useState([]);
   const [selectCurrentGrade, setSelectCurrentGrade] = useState(null);
@@ -76,6 +78,7 @@ function StoreExamen() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       const dataSend = {
         ...formData,
@@ -101,22 +104,13 @@ function StoreExamen() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <PulseLoader />
-      </Box>
-    );
+    return <ConfigSkeleton />;
   }
   return (
     <Container maxWidth="md" sx={{ mt: 10 }}>
@@ -247,8 +241,14 @@ function StoreExamen() {
               margin="dense"
             />
           </Box>
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-            ajouter
+          <Button
+            disabled={submitting}
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            {submitting ? "Loading..." : "créer un examen"}
           </Button>
         </form>
       </Box>

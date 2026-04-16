@@ -21,12 +21,13 @@ import StudentGradeTimeline from "./StudentGradeTimeline";
 import { UseAuth } from "../../Api/AuthContext";
 import { Instance } from "../../Api/Axios";
 import ConfigSkeleton from "./ConfigSkeleton";
+import ErrorBlock from "./ErrorBlock";
 
 function StudentsGradesOverview() {
   const [studentGrades, setStudentGrades] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const { activeClubId } = UseAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -43,7 +44,9 @@ function StudentsGradesOverview() {
 
   //get Students Grades
   const getParcours = useCallback(async () => {
+    if (!activeClubId) return;
     setLoading(true);
+    setError("");
     try {
       const response = await Instance(
         `/api/student-grades?club_id=${activeClubId}`,
@@ -52,6 +55,7 @@ function StudentsGradesOverview() {
       setStudentGrades(response.data.studentGrades || []);
     } catch (error) {
       console.error(error);
+      setError("Erreur lors de la récupération des notes");
     } finally {
       setLoading(false);
     }
@@ -71,6 +75,13 @@ function StudentsGradesOverview() {
     "centure orange": { color: "#ff9800" },
     "centure marron": { color: "#f44336" },
   };
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les notes"
+        onRetry={getParcours}
+      />
+    );
   return (
     <Box
       sx={{ p: 3, backgroundColor: "background.default", minHeight: "100vh" }}

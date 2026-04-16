@@ -29,7 +29,6 @@ import Login from "./Saas/pages/Login";
 import Register from "./Saas/pages/Register";
 import { AxiosInterceptor } from "./Api/AxiosInterceptor";
 
-import MemberList from "./Saas/pages/member/MemberList";
 import Forbidden from "./Saas/pages/Forbidden";
 import StoreGrade from "./Saas/pages/StoreGrade";
 import StudentGradCreate from "./Saas/pages/StudentGradCreate";
@@ -37,7 +36,6 @@ import AttendanceCreate from "./Saas/pages/AttendanceReate";
 import AttendanceIndex from "./Saas/pages/AttendanceIndex";
 import About from "./component/About";
 import FAQSection from "./component/Dashboard/FAQSection";
-import Profile from "./Saas/pages/Profile";
 
 import NotFound from "./Saas/pages/NotFound";
 import StoreExamen from "./Saas/pages/Examens/StoreExamen";

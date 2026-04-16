@@ -30,6 +30,7 @@ import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import EditSession from "./EditSession";
+import ErrorBlock from "../ErrorBlock";
 function SessionList() {
   const [sessions, setsessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,7 @@ function SessionList() {
   const { activeRole, activeClubId } = UseAuth();
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
+  const [errorSessions, setErrorSessions] = useState("");
   const [openModal, setOpenModal] = useState(false);
 
   const [selectedSession, setSelectedSession] = useState(null);
@@ -50,23 +52,20 @@ function SessionList() {
     setSelectedSession(null);
   };
 
-  const allowAccess = [
-    "admin_club",
-    "instructeur",
-    "secretaire",
-    "super_admin",
-  ].includes(activeRole);
+  const allowAccess = ["admin_club", "instructeur", "super_admin"].includes(
+    activeRole,
+  );
   const navigate = useNavigate();
   //obtenir les tournois
   const getSession = useCallback(
     async (page = 1) => {
       if (!activeClubId) return;
       setLoading(true);
+      setErrorSessions("");
       try {
         const response = await Instance(
           `/api/sessions?page=${page}&club_id=${activeClubId}`,
         );
-        console.log(response);
         const session = response.data.sessions || [];
         const sessionArray = session.data ? session.data : session;
         setsessions(sessionArray);
@@ -78,6 +77,7 @@ function SessionList() {
         });
       } catch (error) {
         console.error(error);
+        setErrorSessions("Erreur lors de la récupération des sessions");
       } finally {
         setLoading(false);
       }
@@ -122,6 +122,13 @@ function SessionList() {
     completed: { color: "success", label: "Terminé" },
     cancelled: { color: "error", label: "Annulé" },
   };
+  if (errorSessions)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les sessions"
+        onRetry={getSession}
+      />
+    );
 
   return (
     <Box
@@ -308,44 +315,46 @@ function SessionList() {
                   </Stack>
 
                   {/* Actions */}
-                  <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-                      sx={{
-                        flex: 1,
-                        fontSize: 12,
-                        textTransform: "none",
-                        borderRadius: 2,
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("click bouton", session);
-                        handleOpenModal(session);
-                      }}
-                    >
-                      Modifier
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      startIcon={<DeleteIcon sx={{ fontSize: 14 }} />}
-                      sx={{
-                        flex: 1,
-                        fontSize: 12,
-                        textTransform: "none",
-                        borderRadius: 2,
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(session.id);
-                      }}
-                    >
-                      Supprimer
-                    </Button>
-                  </Stack>
+                  {allowAccess && (
+                    <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+                        sx={{
+                          flex: 1,
+                          fontSize: 12,
+                          textTransform: "none",
+                          borderRadius: 2,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("click bouton", session);
+                          handleOpenModal(session);
+                        }}
+                      >
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon sx={{ fontSize: 14 }} />}
+                        sx={{
+                          flex: 1,
+                          fontSize: 12,
+                          textTransform: "none",
+                          borderRadius: 2,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(session.id);
+                        }}
+                      >
+                        Supprimer
+                      </Button>
+                    </Stack>
+                  )}
                 </Paper>
               </Grid>
             );

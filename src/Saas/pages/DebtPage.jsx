@@ -14,6 +14,7 @@ import {
   Alert,
   Chip,
   Button,
+  Pagination,
 } from "@mui/material";
 import { Instance } from "../../Api/Axios";
 import PulseLoader from "react-spinners/PulseLoader";
@@ -21,30 +22,45 @@ import { useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../Api/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ConfigSkeleton from "./ConfigSkeleton";
+import ErrorBlock from "./ErrorBlock";
 
 const DebtPage = () => {
   const [debts, setDebts] = useState([]);
+  const [pagination, setPagination] = useState({});
   const [totalUnpaid, setTotalUnpaid] = useState(0);
   const { activeClubId } = UseAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [errorDebts, setErrorDebts] = useState("");
 
-  const fetchDebts = useCallback(async () => {
-    if (!activeClubId) return;
-    setLoading(true);
-    try {
-      const response = await Instance.get(
-        `/api/payments/finance/debts?club_id=${activeClubId}`,
-      );
-      console.log("Debts response:", response);
-      setDebts(response.data.data || []);
-      setTotalUnpaid(response.data.total_unpaid);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des débits :", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeClubId]);
+  const fetchDebts = useCallback(
+    async (page = 1) => {
+      if (!activeClubId) return;
+      setLoading(true);
+      setErrorDebts("");
+      try {
+        const response = await Instance.get(
+          `/api/payments/finance/debts?club_id=${activeClubId}&page=${page}`,
+        );
+        console.log("Debts response:", response);
+        const debts = response.data.data;
+        setDebts(debts.data || []);
+        setPagination({
+          currentPage: debts.current_page,
+          lastPage: debts.last_page,
+          perPage: debts.per_page,
+          total: debts.total,
+        });
+        setTotalUnpaid(response.data.total_unpaid || 0);
+      } catch (error) {
+        setErrorDebts("Erreur réseau.veuillez réessayer");
+        console.error("Erreur lors de la récupération des débits :", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeClubId],
+  );
 
   useEffect(() => {
     if (!activeClubId) return;
@@ -70,6 +86,14 @@ const DebtPage = () => {
       },
     });
   };
+
+  if (errorDebts)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les débits"
+        onRetry={fetchDebts}
+      />
+    );
   return (
     <Box sx={{ p: 2, backgroundColor: "background.default" }}>
       <Typography variant="h4" fontWeight="800">
@@ -79,7 +103,7 @@ const DebtPage = () => {
       {/* Résumé de la dette totale du club */}
       <Alert severity="warning" sx={{ my: 3, borderRadius: 3 }}>
         <Typography variant="h6">
-          Total à recouvrer :{" "}
+          Total à recouvrer : &nbsp;
           <strong>
             {totalUnpaid ? parseFloat(totalUnpaid).toLocaleString() : 0}
           </strong>{" "}
@@ -165,6 +189,16 @@ const DebtPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        {pagination.lastPage > 1 && (
+          <Pagination
+            count={pagination.lastPage}
+            page={pagination.currentPage}
+            onChange={(e, value) => fetchDebts(value)}
+            color="primary"
+          />
+        )}
+      </Box>
     </Box>
   );
 };

@@ -11,16 +11,19 @@ import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import AttendanceIndex from "../../pages/AttendanceIndex";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 export default function SessionStats() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const { activeClubId } = UseAuth();
 
   const fetchStats = useCallback(async () => {
     if (!activeClubId) return;
     setLoading(true);
+    setError("");
     try {
       const response = await Instance.get(
         `/api/sessions/session-stats?club_id=${activeClubId}`,
@@ -29,6 +32,7 @@ export default function SessionStats() {
       setStats(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des statistiques :", error);
+      setError("Erreur lors de la récupération des statistiques");
     } finally {
       setLoading(false);
     }
@@ -52,6 +56,14 @@ export default function SessionStats() {
   );
 
   if (loading) return <ConfigSkeleton />;
+
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les statistiques"
+        onRetry={fetchStats}
+      />
+    );
 
   if (!stats)
     return (

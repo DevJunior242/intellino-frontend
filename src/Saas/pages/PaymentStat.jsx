@@ -35,13 +35,18 @@ import {
 import { Instance } from "../../Api/Axios";
 import { UseAuth } from "../../Api/AuthContext";
 import ConfigSkeleton from "./ConfigSkeleton";
+import ErrorBlock from "./ErrorBlock";
 
 export default function PaymentStat() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const { activeClubId } = UseAuth();
+  const [error, setError] = useState("");
 
   const fetchStats = useCallback(async () => {
+    if (!activeClubId) return;
+    setLoading(true);
+    setError("");
     try {
       const res = await Instance.get(
         `/api/payments/statistiques?club_id=${activeClubId}`,
@@ -50,6 +55,7 @@ export default function PaymentStat() {
       setStats(res.data.data);
     } catch (error) {
       console.error(error);
+      setError("Erreur lors de la récupération des statistiques");
     } finally {
       setLoading(false);
     }
@@ -83,6 +89,13 @@ export default function PaymentStat() {
       icon: <ReceiptIcon fontSize="large" color="warning" />,
     },
   ];
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les statistiques"
+        onRetry={fetchStats}
+      />
+    );
 
   return (
     <Box

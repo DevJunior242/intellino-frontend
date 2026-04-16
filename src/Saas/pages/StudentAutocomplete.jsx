@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import { Autocomplete, TextField, FormHelperText } from "@mui/material";
 import { Instance } from "../../Api/Axios";
 import { Save, Receipt, Person, LocalOffer, Event } from "@mui/icons-material";
+import ErrorBlock from "./ErrorBlock";
 
 const StudentAutocomplete = ({
   activeClubId,
@@ -12,19 +13,19 @@ const StudentAutocomplete = ({
   label = "Choisir un élève",
 }) => {
   const [students, setStudents] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const getStudents = useCallback(async () => {
     if (!activeClubId) return;
 
-    setIsLoading(true);
+    setLoading(true);
     try {
       const response = await Instance(`/api/students?club_id=${activeClubId}`);
       setStudents(response.data.students || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, [activeClubId]);
 
@@ -35,8 +36,13 @@ const StudentAutocomplete = ({
   return (
     <>
       <Autocomplete
+        slotProps={{
+          paper: {
+            sx: { backgroundColor: "background.default" },
+          },
+        }}
         disablePortal
-        loading={isLoading}
+        loading={loading}
         options={Array.isArray(students) ? students : []}
         getOptionLabel={(student) =>
           `${student.fullname || ""} - ${student.birthdate || ""}`

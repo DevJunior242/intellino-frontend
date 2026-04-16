@@ -33,6 +33,7 @@ import StatCard from "./StatCard";
 import DebtPage from "../../Saas/pages/DebtPage";
 import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
 import ClubCount from "../../Saas/pages/ClubCount";
+import ErrorBlock from "../../Saas/pages/ErrorBlock";
 function ClubAdminDashboard() {
   const [stats, setStats] = useState({
     total_students: 0,
@@ -43,9 +44,12 @@ function ClubAdminDashboard() {
 
   const { activeClubId } = UseAuth();
   console.log("activeClubId", activeClubId);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const fetchStats = useCallback(async () => {
+    if (!activeClubId) return;
     setLoading(true);
+    setError("");
     try {
       const response = await Instance.get(
         `/api/dashboard/stats?club_id=${activeClubId}`,
@@ -54,6 +58,7 @@ function ClubAdminDashboard() {
       setStats(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des statistiques :", error);
+      setError("Erreur lors de la récupération des statistiques");
     } finally {
       setLoading(false);
     }
@@ -68,6 +73,13 @@ function ClubAdminDashboard() {
   if (loading) {
     return <ConfigSkeleton />;
   }
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les statistiques"
+        onRetry={fetchStats}
+      />
+    );
   return (
     <Box sx={{ mt: 1, px: 2 }}>
       <motion.div

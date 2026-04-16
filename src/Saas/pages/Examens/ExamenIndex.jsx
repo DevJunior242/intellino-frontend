@@ -21,9 +21,11 @@ import { tokenTheme } from "../../../theme";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAllowAccess } from "../../../Hook/useAllowAccess";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 function ExamenIndex() {
   const [examens, setExamens] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
   const { activeClubId } = UseAuth();
   const theme = useTheme();
@@ -32,7 +34,9 @@ function ExamenIndex() {
   const navigate = useNavigate();
   const GetExamens = useCallback(
     async (page = 1) => {
+      if (!activeClubId) return;
       setIsLoading(true);
+      setError("");
       try {
         const response = await Instance(
           `/api/examens?page=${page}&club_id=${activeClubId}`,
@@ -50,6 +54,7 @@ function ExamenIndex() {
         });
       } catch (error) {
         console.error(error);
+        setError("Erreur lors de la récupération des examens");
       } finally {
         setIsLoading(false);
       }
@@ -69,8 +74,13 @@ function ExamenIndex() {
     cancelled: { color: "error", label: "Annulé" },
   };
 
-  if (isLoading) {
-    return <ConfigSkeleton />;
+  if (error) {
+    return (
+      <ErrorBlock
+        message="Impossible de charger les examens"
+        onRetry={GetExamens}
+      />
+    );
   }
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
@@ -165,6 +175,7 @@ function ExamenIndex() {
           transition={{ duration: 1 }}
         />
       </Box>
+      {isLoading && <ConfigSkeleton />}
 
       {examens.length === 0 && (
         <Box
