@@ -271,6 +271,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(
     async (credentials) => {
       const res = await Instance.post("api/login", credentials);
+      console.log(res);
 
       const { token, user, role, memberships, roleSuperAdmin } = res.data;
 
@@ -291,7 +292,9 @@ export const AuthProvider = ({ children }) => {
 
       setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
 
-      const hasRole = Array.isArray(saveRole) && saveRole.length > 0;
+      const hasRole =
+        (Array.isArray(saveRole) && saveRole.length > 0) ||
+        saveRoleSuperAdmin.length > 0;
       navigate(hasRole ? "/dashboard" : "/");
 
       return { success: true, user };

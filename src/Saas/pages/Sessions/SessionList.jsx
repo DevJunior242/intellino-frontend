@@ -36,6 +36,7 @@ function SessionList() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const { activeRole, activeClubId } = UseAuth();
+
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const [errorSessions, setErrorSessions] = useState("");

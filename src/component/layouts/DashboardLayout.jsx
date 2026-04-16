@@ -172,6 +172,12 @@ export default function DashboardLayout() {
           role: ["admin_club", "secretaire"],
         },
         {
+          title: "Dette",
+          icon: <ShoppingCartIcon fontSize="small" />,
+          to: "/dashboard/caisse",
+          role: ["parent"],
+        },
+        {
           title: "Paiements",
           icon: <PaymentIcon fontSize="small" />,
           to: "/dashboard/payment/store",

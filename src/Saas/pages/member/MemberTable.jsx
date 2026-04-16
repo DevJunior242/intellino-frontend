@@ -38,10 +38,7 @@ function MemberTable() {
   const [errorMembers, setErrorMembers] = useState("");
 
   //
-  const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
-  const hasAccessRoles = ["super_admin", "admin_club"];
-  const allowAccess = isSuperAdmin || hasAccessRoles.includes(activeRole);
-
+  const allowAccess = ["admin_club", "super_admin"].includes(activeRole);
   const getMembers = useCallback(
     async (page = 1) => {
       setIsLoading(true);
@@ -172,31 +169,35 @@ function MemberTable() {
           <Avatar>{params.row.fullname.charAt(0)}</Avatar>
         ),
     },
-    {
-      field: "actions",
-      headerName: "Action",
-      flex: 1,
-      minWidth: 130,
-      sortable: false,
-      renderCell: (params) => (
-        <>
-          <IconButton
-            size="small"
-            color="success"
-            onClick={() => handleOpenEditModal(params.row)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleDeleteMember(params.row)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </>
-      ),
-    },
+    ...(allowAccess
+      ? [
+          {
+            field: "actions",
+            headerName: "Action",
+            flex: 1,
+            minWidth: 130,
+            sortable: false,
+            renderCell: (params) => (
+              <>
+                <IconButton
+                  size="small"
+                  color="success"
+                  onClick={() => handleOpenEditModal(params.row)}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDeleteMember(params.row)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </>
+            ),
+          },
+        ]
+      : []),
   ];
 
   if (errorMembers)

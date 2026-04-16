@@ -41,7 +41,7 @@ function About() {
     },
   ];
   return (
-    <Box>
+    <Box sx={{ mt: 10, mb: 10 }}>
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,7 +51,12 @@ function About() {
           variant="h3"
           component="h1"
           gutterBottom
-          sx={{ fontWeight: "bold", textAlign: "center", fontSize: { xs: 14, md: 32 }, mt:4 }}
+          sx={{
+            fontWeight: "bold",
+            textAlign: "center",
+            fontSize: { xs: 14, md: 32 },
+            mt: 4,
+          }}
         >
           À propos de Intellino
         </Typography>
@@ -59,7 +64,12 @@ function About() {
           variant="h6"
           component="p"
           gutterBottom
-          sx={{ textAlign: "center", color: "text.secondary", mb: 6, fontSize: { xs: 16, md: 24 } }}
+          sx={{
+            textAlign: "center",
+            color: "text.secondary",
+            mb: 6,
+            fontSize: { xs: 16, md: 24 },
+          }}
         >
           Simplifiez la gestion des clubs, élèves et parents avec une plateforme
           moderne, sécurisée et intuitive.
@@ -69,7 +79,14 @@ function About() {
       <Typography
         variant="h5"
         gutterBottom
-        sx={{ fontWeight: "bold", ml: 10, mt: 1, mb: 2, fontSize: { xs: 16, md: 24 },textAlign:'center' }}
+        sx={{
+          fontWeight: "bold",
+          ml: 10,
+          mt: 1,
+          mb: 2,
+          fontSize: { xs: 16, md: 24 },
+          textAlign: "center",
+        }}
       >
         Pour qui ?
       </Typography>

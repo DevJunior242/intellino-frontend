@@ -14,24 +14,24 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import { motion } from "framer-motion";
 import { tokenTheme } from "../theme";
+import { NavLink } from "react-router-dom";
 
 const footerLinks = [
   {
     title: "Navigation",
     links: [
       { label: "Accueil", href: "/" },
-      { label: "Disciplines", href: "/disciplines" },
-      { label: "Cours & Horaires", href: "/cours" },
-      { label: "Événements", href: "/evenements" },
+      { label: "A Propos", href: "/about" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
     title: "À Propos",
     links: [
-      { label: "Notre Histoire", href: "#" },
-      { label: "Nos Instructeurs", href: "#" },
-      { label: "Galerie", href: "#" },
-      { label: "Actualités", href: "#" },
+      { label: "Notre Histoire", href: "/about" },
+      { label: "Faq", href: "/faq" },
+      // { label: "Galerie", href: "#" },
+      // { label: "Actualités", href: "#" },
     ],
   },
   {
@@ -78,7 +78,7 @@ function Footer() {
         borderTop: `2px solid ${colors.redAccent?.[500] ?? "#c0392b"}`,
         mt: 0,
         pt: 2,
-        pb: 30,
+        pb: 50,
         px: { xs: 3, md: 8 },
         position: "relative",
         overflow: "hidden",
@@ -123,12 +123,12 @@ function Footer() {
                     lineHeight: 1,
                   }}
                 >
-                  ArtsMartiaux
+                  Intellino
                   <Box
                     component="span"
                     sx={{ color: colors.redAccent?.[400] ?? "#e74c3c" }}
                   >
-                    +
+                    Martial Saas
                   </Box>
                 </Typography>
               </Stack>
@@ -205,34 +205,36 @@ function Footer() {
                       whileHover={{ x: 4 }}
                       transition={{ type: "spring", stiffness: 400 }}
                     >
-                      <Link
-                        href={href}
-                        underline="none"
-                        sx={{
-                          color: colors.gray?.[400] ?? "#888",
-                          fontSize: "0.83rem",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          transition: "color 0.2s ease",
-                          "&:hover": {
-                            color: "#ffffff",
-                          },
-                          "&::before": {
-                            content: '"›"',
-                            opacity: 0,
-                            transform: "translateX(-4px)",
-                            transition: "all 0.2s ease",
-                            color: colors.redAccent?.[400] ?? "#e74c3c",
-                          },
-                          "&:hover::before": {
-                            opacity: 1,
-                            transform: "translateX(0)",
-                          },
-                        }}
-                      >
-                        {label}
-                      </Link>
+                      <NavLink to={href} style={{ textDecoration: "none" }}>
+                        <Box
+                          component={motion.div}
+                          whileHover={{ y: -2 }}
+                          sx={{
+                            color: colors.gray?.[400] ?? "#888",
+                            fontSize: "0.83rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            transition: "color 0.2s ease",
+                            "&:hover": {
+                              color: "#ffffff",
+                            },
+                            "&::before": {
+                              content: '"›"',
+                              opacity: 0,
+                              transform: "translateX(-4px)",
+                              transition: "all 0.2s ease",
+                              color: colors.redAccent?.[400] ?? "#e74c3c",
+                            },
+                            "&:hover::before": {
+                              opacity: 1,
+                              transform: "translateX(0)",
+                            },
+                          }}
+                        >
+                          {label}
+                        </Box>
+                      </NavLink>
                     </motion.div>
                   ))}
                 </Stack>
@@ -263,7 +265,7 @@ function Footer() {
               variant="caption"
               sx={{ color: colors.gray?.[500] ?? "#555", fontSize: "0.75rem" }}
             >
-              © {year} ArtsMartiaux+ — Tous droits réservés
+              © {year} Intellino Martial Saas — Tous droits réservés
             </Typography>
 
             <Stack direction="row" spacing={2}>
@@ -272,19 +274,37 @@ function Footer() {
                 { label: "Confidentialité", href: "/confidentialite" },
                 { label: "CGU", href: "/cgu" },
               ].map(({ label, href }) => (
-                <Link
+                <NavLink
                   key={label}
                   href={href}
-                  underline="hover"
-                  sx={{
-                    color: colors.gray?.[500] ?? "#555",
-                    fontSize: "0.72rem",
-                    transition: "color 0.2s",
-                    "&:hover": { color: "#ccc" },
-                  }}
+                  style={{ textDecoration: "none" }}
                 >
-                  {label}
-                </Link>
+                  <Box
+                    component={motion.div}
+                    whileHover={{ y: -2 }}
+                    sx={{
+                      color: colors.gray?.[500] ?? "#555",
+                      fontSize: "0.72rem",
+                      transition: "color 0.2s",
+                      "&:hover": {
+                        color: "#ffffff",
+                      },
+                      "&::before": {
+                        content: '"›"',
+                        opacity: 0,
+                        transform: "translateX(-4px)",
+                        transition: "all 0.2s ease",
+                        color: colors.redAccent?.[400] ?? "#e74c3c",
+                      },
+                      "&:hover::before": {
+                        opacity: 1,
+                        transform: "translateX(0)",
+                      },
+                    }}
+                  >
+                    {label}
+                  </Box>
+                </NavLink>
               ))}
             </Stack>
           </Stack>

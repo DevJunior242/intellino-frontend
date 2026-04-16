@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTheme } from "@mui/material/styles";
+import { motion } from "framer-motion";
 import {
   Box,
   IconButton,
@@ -84,23 +85,28 @@ function Navbar() {
         justifyContent: "space-between",
         alignItems: "center",
         p: 2,
-        backgroundColor: "blue",
-        color: "white",
+        backgroundColor: "white",
       }}
     >
       <Box sx={{ display: "flex" }}>
         <ThemeToggle />
 
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{
-            fontSize: "2rem",
-            display: { xs: "none", md: "block" },
+        <motion.img
+          src="/logo.jpeg"
+          alt="logo"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            width: "60px",
+            height: "60px",
+            borderRadius: "50%",
+            objectFit: "cover",
+            boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
+            cursor: "pointer",
           }}
-        >
-          ArtsMartiaux+
-        </Typography>
+        />
       </Box>
 
       {/* Desktop Navigation */}
@@ -117,29 +123,46 @@ function Navbar() {
             <NavLink to={item.href} style={{ textDecoration: "none" }}>
               {({ isActive }) => (
                 <Box
+                  component={motion.div}
+                  whileHover={{ y: -2 }}
                   sx={{
                     px: 2,
                     py: 1,
                     borderRadius: 2,
                     position: "relative",
                     cursor: "pointer",
-                    color: isActive ? "#fff" : "rgba(255,255,255,0.75)",
-                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? "#1976d2" : "#555",
+                    fontWeight: isActive ? 700 : 500,
                     fontSize: 15,
                     bgcolor: isActive
-                      ? "rgba(255,255,255,0.15)"
+                      ? "rgba(25, 118, 210, 0.08)"
                       : "transparent",
                     border: isActive
-                      ? "1px solid rgba(255,255,255,0.3)"
+                      ? "1px solid rgba(25, 118, 210, 0.2)"
                       : "1px solid transparent",
-                    transition: "all 0.2s",
+                    // ---------------------------
+                    transition: "all 0.3s ease",
                     "&:hover": {
-                      color: "#fff",
-                      bgcolor: "rgba(255,255,255,0.1)",
+                      color: "#1976d2",
+                      bgcolor: "rgba(0, 0, 0, 0.04)",
                     },
                   }}
                 >
                   {item.title}
+                  {isActive && (
+                    <motion.div
+                      layoutId="underline"
+                      style={{
+                        position: "absolute",
+                        bottom: "2px",
+                        left: "20%",
+                        right: "20%",
+                        height: "2px",
+                        background: "#1976d2",
+                        borderRadius: "2px",
+                      }}
+                    />
+                  )}
                 </Box>
               )}
             </NavLink>
@@ -230,7 +253,7 @@ function Navbar() {
       {/* Mobile Menu */}
       <Box sx={{ display: { xs: "block", md: "none" } }}>
         <Button onClick={handleOpenMenu}>
-          <MenuIcon sx={{ color: "#fff" }} />
+          <MenuIcon sx={{ color: "#0312b8" }} />
         </Button>
 
         <Drawer
@@ -241,7 +264,7 @@ function Navbar() {
             sx: {
               width: "100%",
               height: "100%",
-              bgcolor: "#0606CF",
+              bgcolor: "white",
               display: "flex",
               flexDirection: "column",
               px: 4,
@@ -252,7 +275,7 @@ function Navbar() {
           {/* Header du drawer */}
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <IconButton onClick={handleCloseMenu}>
-              <CloseIcon sx={{ color: "#fff", fontSize: 30 }} />
+              <CloseIcon sx={{ color: "#100b9f", fontSize: 30 }} />
             </IconButton>
           </Box>
 
@@ -263,14 +286,16 @@ function Navbar() {
                 sx={{
                   width: 48,
                   height: 48,
-                  bgcolor: "#fff",
-                  color: "#0606CF",
+                  bgcolor: "#030691",
+                  color: "rgb(243, 243, 245)",
                   fontWeight: "bold",
                 }}
               >
                 {user?.fullname?.charAt(0)}
               </Avatar>
-              <Typography sx={{ color: "#fff", fontWeight: 500, fontSize: 16 }}>
+              <Typography
+                sx={{ color: "#3500a7", fontWeight: 500, fontSize: 16 }}
+              >
                 {user?.name}
               </Typography>
             </Box>
@@ -285,35 +310,36 @@ function Navbar() {
                 key={item.title}
                 to={item.href}
                 onClick={handleCloseMenu}
-                style={({ isActive }) => ({
-                  textDecoration: "none",
-                })}
+                style={{ textDecoration: "none" }}
               >
                 {({ isActive }) => (
                   <Box
+                    component={motion.div}
+                    whileHover={{ y: -2 }}
                     sx={{
                       px: 2,
-                      py: 1.5,
+                      py: 1,
                       borderRadius: 2,
+                      position: "relative",
+                      cursor: "pointer",
+                      color: isActive ? "#1976d2" : "#555",
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: 15,
                       bgcolor: isActive
-                        ? "rgba(255,255,255,0.15)"
+                        ? "rgba(25, 118, 210, 0.08)"
                         : "transparent",
-                      borderLeft: isActive
-                        ? "4px solid #fff"
-                        : "4px solid transparent",
-                      transition: "all 0.2s",
-                      "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+                      border: isActive
+                        ? "1px solid rgba(25, 118, 210, 0.2)"
+                        : "1px solid transparent",
+                      // ---------------------------
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        color: "#1976d2",
+                        bgcolor: "rgba(0, 0, 0, 0.04)",
+                      },
                     }}
                   >
-                    <Typography
-                      sx={{
-                        color: "#fff",
-                        fontSize: 18,
-                        fontWeight: isActive ? 600 : 400,
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
+                    {item.title}
                   </Box>
                 )}
               </NavLink>

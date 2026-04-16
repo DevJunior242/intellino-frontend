@@ -9,9 +9,13 @@ const ThemeToggle = () => {
   return (
     <IconButton onClick={colorMode.toggleColorMode}>
       {theme.palette.mode === "dark" ? (
-        <LightModeOutlined />
+        <IconButton sx={{ color: "rgba(21, 8, 8, 0.88)" }}>
+          <LightModeOutlined />
+        </IconButton>
       ) : (
-        <DarkModeOutlined />
+        <IconButton>
+          <DarkModeOutlined />
+        </IconButton>
       )}
     </IconButton>
   );

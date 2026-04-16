@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { UseAuth } from "../Api/AuthContext";
 // import ClubCount from "../Saas/pages/ClubCount";
 import EastIcon from "@mui/icons-material/East";
+import { grey, indigo } from "@mui/material/colors";
 /* ─── DATA ─────────────────────────────────────────────────── */
 
 const features = [
@@ -66,22 +67,22 @@ const stats = [
 
 const testimonials = [
   {
-    name: "Ali  Kabore",
-    role: "Sensei – Dakar Judo Club",
+    name: "Maitre Hermane OUEDRAOGO",
+    role: "Responsable du club SINAI Club et President DE LA LIGUE DU Centre",
     avatar: "K",
     text: "ArtsMartiaux+ a révolutionné la gestion de mon dojo. Les examens et les présences sont désormais automatisés.",
     bg: "#ff6900",
   },
   {
-    name: "Moussa Koné",
-    role: "Directrice – École de Taekwondo Abidjan",
-    avatar: "F",
+    name: "Maitre Corneil MARE ",
+    role: "Responsable du club DAKOUPA Club et DTN DE LA FEDERATION BURKINABE DE KARATE DO",
+    avatar: "M",
     text: "L'interface est intuitive et mes élèves adorent suivre leurs progrès en temps réel.",
     bg: "#7c3aed",
   },
   {
-    name: "Razack Sawadogo",
-    role: "Coach – Ouagadougou Karaté",
+    name: "Maitre Judicael GOUENNE",
+    role: "Responsable du club ELSHADAI Club DE MANGA",
     avatar: "M",
     text: "La gestion des compétitions n'a jamais été aussi simple. Je recommande vivement !",
     bg: "#059669",
@@ -530,9 +531,9 @@ function HomePage() {
                   <Typography
                     sx={{
                       fontWeight: 700,
-                      fontSize: "1.05rem",
+                      fontSize: { xs: 14, md: 16 },
                       mb: 1.5,
-                      color: "white",
+                      color: "white !important",
                     }}
                   >
                     {f.title}
@@ -653,7 +654,13 @@ function HomePage() {
                       {t.avatar}
                     </Avatar>
                     <Box>
-                      <Typography sx={{ fontWeight: 700, fontSize: "0.95rem" }}>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: { xs: 12, md: 14 },
+                          color: grey[100],
+                        }}
+                      >
                         {t.name}
                       </Typography>
                       <Typography

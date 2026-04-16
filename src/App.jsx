@@ -282,7 +282,6 @@ const AppRoutes = () => {
                 element={<StoreDisp />}
               />
             </Route>
-            <Route path="/faq" element={<FAQSection />} />
           </Route>
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["super_admin"]} />}>
@@ -361,6 +360,7 @@ const AppRoutes = () => {
           </Route>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQSection />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/settings" element={<AccountSettings />} />
           <Route path="/403" element={<Forbidden />} />
