@@ -8,6 +8,7 @@ import {
   Pagination,
   Button,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
@@ -30,6 +31,8 @@ function ExamenIndex() {
   const { activeClubId } = UseAuth();
   const theme = useTheme();
   const colors = tokenTheme(theme.palette.mode);
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const { allowAccess } = useAllowAccess();
   const navigate = useNavigate();
   const GetExamens = useCallback(
@@ -154,26 +157,28 @@ function ExamenIndex() {
         </motion.div>
 
         {/* Image section */}
-        <motion.div
-          style={{
-            display: { xs: "none", md: "block" },
-            flex: 1,
-            width: "100%",
-            height: "350px",
-            borderRadius: "16px",
-            backgroundImage: `
+        {!isMobile && (
+          <motion.div
+            style={{
+              display: { xs: "none", md: "block" },
+              flex: 1,
+              width: "100%",
+              height: "350px",
+              borderRadius: "16px",
+              backgroundImage: `
   url('https://maliactu.net/wp-content/uploads/2025/09/542640937_806957088505277_6446405435339140521_n-600x365.jpg')
 `,
 
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-            marginTop: "30px",
-          }}
-          initial={{ opacity: 0, x: 60 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
-        />
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+              marginTop: "30px",
+            }}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
+          />
+        )}
       </Box>
       {isLoading && <ConfigSkeleton />}
 
