@@ -29,15 +29,15 @@ import ThemeToggle from "../ThemeToggle";
 
 const items = [
   { title: "Accueil", href: "/" },
-  { title: "About", href: "/about" },
+  { title: "A Propos", href: "/about" },
   // { title: "Compétitions", href: "/competitions" },
 
   { title: "Examens", href: "/examen" },
 
   { title: "Contact", href: "/contact" },
-  { title: "Register", href: "/register" },
-  { title: "Login", href: "/login" },
-  { title: "Dashboard", href: "/dashboard" },
+  { title: "Inscription", href: "/register" },
+  { title: "Connexion", href: "/login" },
+  { title: "Tableau de bord", href: "/dashboard" },
 ];
 
 function Navbar() {
@@ -66,12 +66,15 @@ function Navbar() {
     (Array.isArray(auth?.role) && auth.role.length > 0) ||
     (Array.isArray(auth?.roleSuperAdmin) && auth.roleSuperAdmin.length > 0);
   const filteredItems = items.filter((item) => {
-    if (isLogged && ["login", "register"].includes(item.title.toLowerCase())) {
+    if (
+      isLogged &&
+      ["connexion", "inscription"].includes(item.title.toLowerCase())
+    ) {
       return false;
     }
     if (
       !hasRole &&
-      ["examens", "dashboard"].includes(item.title.toLowerCase())
+      ["examens", "tableau de bord"].includes(item.title.toLowerCase())
     ) {
       return false;
     }
@@ -92,7 +95,7 @@ function Navbar() {
         <ThemeToggle />
 
         <motion.img
-          src="/logo.jpeg"
+          src="/Intellino-Logo.png"
           alt="logo"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

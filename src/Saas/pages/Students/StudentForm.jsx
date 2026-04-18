@@ -443,12 +443,12 @@ const StudentForm = () => {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      console.log("Réponse de l'API :", res);
       if (res.data.success) {
+        setSuccess(res.data.message || "Inscription réussie !");
+
         setTimeout(() => {
-          setSuccess(res.data.message || "Inscription réussie !");
+          setSuccess("");
         }, 3000);
-        // reset
         setParentData({ fullname: "", email: "", phone: "" });
         setStudents([
           {

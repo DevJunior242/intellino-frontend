@@ -25,12 +25,15 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
+import { useSearchParams } from "react-router-dom";
 function MemberTable() {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const { auth, activeRole, activeClubId } = UseAuth();
+  const allowAccess = ["admin_club"].includes(activeRole);
+
   const [openModal, setOpenModal] = useState(false);
   //erreur & ssuccess
   const [error, setError] = useState({});
@@ -38,14 +41,17 @@ function MemberTable() {
   const [errorMembers, setErrorMembers] = useState("");
 
   //
-  const allowAccess = ["admin_club", "super_admin"].includes(activeRole);
+
+  const [params] = useSearchParams();
+  const clubIdFromUrl = params.get("club_id");
+  const clubId = activeRole === "super_admin" ? clubIdFromUrl : activeClubId;
   const getMembers = useCallback(
     async (page = 1) => {
       setIsLoading(true);
       setErrorMembers("");
       try {
         const response = await Instance(
-          `/api/members?page=${page}&club_id=${activeClubId}`,
+          `/api/members?page=${page}&club_id=${clubId}`,
         );
         console.log(response);
         const membersData = response?.data?.members ?? { data: [] };

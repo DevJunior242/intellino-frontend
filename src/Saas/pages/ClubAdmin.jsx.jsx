@@ -8,12 +8,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import Message from "./Message";
 import ConfigSkeleton from "./ConfigSkeleton";
+import { useNavigate } from "react-router-dom";
 
 function ClubAdmin() {
   const [error, setError] = useState("");
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   const getClubs = async () => {
     setLoading(true);
     setError("");
@@ -149,6 +150,9 @@ function ClubAdmin() {
           rows={clubs}
           columns={columns}
           getRowId={(row) => row.id}
+          onRowClick={(params) => {
+            navigate(`/dashboard/members?club_id=${params.row.id}`);
+          }}
           //   processRowUpdate={processRowUpdate}
           /// onProcessRowUpdateError={(error) => console.log(error)}
           pageSizeOptions={[5, 10, 20]}

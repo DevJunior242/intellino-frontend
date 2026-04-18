@@ -103,6 +103,10 @@ import Program from "./Saas/pages/Program";
 import StudentList from "./Saas/pages/Students/StudentList";
 import Users from "./Saas/pages/Users";
 import ClubAdmin from "./Saas/pages/ClubAdmin.jsx";
+import AuthPage from "./Saas/pages/Auth/AuthPage.jsx";
+import MentionsLegales from "./Saas/pages/legal/MentionsLegales.jsx";
+import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
+import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -164,7 +168,7 @@ const AppRoutes = () => {
           <Route element={<GuestRoute />}>
             <Route path="/login" element={<Login />} />
           </Route>
-
+          <Route path="/auth/page" element={<AuthPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -173,7 +177,7 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={ALL_ROLES} />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/member/list" element={<MemberTable />} />
+            <Route path="/dashboard/members" element={<MemberTable />} />
             <Route
               path="/dashboard/student/list"
               element={<StudentDetails />}
@@ -341,6 +345,9 @@ const AppRoutes = () => {
         </Route>
 
         <Route element={<LayoutMain />}>
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
+          <Route path="/cgu" element={<TermsOfService />} />
+          <Route path="/confidentialite" element={<PrivacyPolicy />} />
           <Route
             path="/public/tatami/:configId"
             element={<VuePubliqueKata />}

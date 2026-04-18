@@ -34,15 +34,15 @@ const footerLinks = [
       // { label: "Actualités", href: "#" },
     ],
   },
-  {
-    title: "Rejoindre",
-    links: [
-      { label: "Inscription", href: "#" },
-      { label: "Tarifs & Abonnements", href: "#" },
-      { label: "Essai Gratuit", href: "#" },
-      { label: "Contact", href: "#" },
-    ],
-  },
+  // {
+  //   title: "Rejoindre",
+  //   links: [
+  //     { label: "Inscription", href: "#" },
+  //     { label: "Tarifs & Abonnements", href: "#" },
+  //     { label: "Essai Gratuit", href: "#" },
+  //     { label: "Contact", href: "#" },
+  //   ],
+  // },
 ];
 
 const socialLinks = [
@@ -276,7 +276,7 @@ function Footer() {
               ].map(({ label, href }) => (
                 <NavLink
                   key={label}
-                  href={href}
+                  to={href}
                   style={{ textDecoration: "none" }}
                 >
                   <Box

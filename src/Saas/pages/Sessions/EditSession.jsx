@@ -58,8 +58,20 @@ function EditSession({ session, open, handleClose, getSession, activeClubId }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Modifier l'étudiant</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
+      <DialogTitle>Modifier la session</DialogTitle>
       {success && <Message text={success} type="success" />}
       {error?.global && <ErrorGlobal error={error.global} />}
       <DialogContent

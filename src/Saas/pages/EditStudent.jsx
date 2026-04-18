@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   Avatar,
+  Paper,
 } from "@mui/material";
 import { Instance } from "../../Api/Axios";
 import ErrorGlobal from "../../component/ErrorGlobal";
@@ -102,7 +103,19 @@ export default function EditStudent({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
       <DialogTitle>Modifier l'étudiant</DialogTitle>
       <DialogContent
         sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}

@@ -717,7 +717,6 @@ function HomePage() {
               bgcolor: "rgba(255,255,255,0.05)",
             }}
           />
-
           <Typography
             variant="h3"
             sx={{

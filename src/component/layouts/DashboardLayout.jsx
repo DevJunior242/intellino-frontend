@@ -131,9 +131,8 @@ export default function DashboardLayout() {
         {
           title: "Membres du club",
           icon: <PeopleOutlineOutlinedIcon fontSize="small" />,
-          to: "/dashboard/member/list",
+          to: "/dashboard/members",
           role: [
-            "super_admin",
             "admin_club",
             "instructeur",
             "parent",
