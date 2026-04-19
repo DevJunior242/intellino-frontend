@@ -23,9 +23,10 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAllowAccess } from "../../../Hook/useAllowAccess";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
+
 function ExamenIndex() {
   const [examens, setExamens] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
   const { activeClubId } = UseAuth();
@@ -38,7 +39,7 @@ function ExamenIndex() {
   const GetExamens = useCallback(
     async (page = 1) => {
       if (!activeClubId) return;
-      setIsLoading(true);
+      setLoading(true);
       setError("");
       try {
         const response = await Instance(
@@ -59,7 +60,7 @@ function ExamenIndex() {
         console.error(error);
         setError("Erreur lors de la récupération des examens");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     },
     [activeClubId],
@@ -165,9 +166,7 @@ function ExamenIndex() {
               width: "100%",
               height: "350px",
               borderRadius: "16px",
-              backgroundImage: `
-  url('https://maliactu.net/wp-content/uploads/2025/09/542640937_806957088505277_6446405435339140521_n-600x365.jpg')
-`,
+              backgroundImage: `url('https://maliactu.net/wp-content/uploads/2025/09/542640937_806957088505277_6446405435339140521_n-600x365.jpg')`,
 
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -180,9 +179,86 @@ function ExamenIndex() {
           />
         )}
       </Box>
-      {isLoading && <ConfigSkeleton />}
 
-      {examens.length === 0 && (
+      {loading ? (
+        <ConfigSkeleton />
+      ) : examens.length > 0 ? (
+        <Grid container spacing={2} sx={{ pb: 2 }}>
+          {examens.map((examen, index) => {
+            const currentStatus =
+              statusConfig[examen.status] || statusConfig.draft;
+            return (
+              <Grid
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 2,
+                  mx: "auto",
+                  borderRadius: 2,
+                }}
+                minHeight={200}
+                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                key={examen.id}
+              >
+                <Paper
+                  elevation={3}
+                  sx={{
+                    p: 4,
+                    textAlign: "center",
+                    bgcolor: "background.default",
+                    cursor: "pointer",
+                  }}
+                  data-aos="fade-up"
+                  data-aos-delay={index * 200}
+                  onClick={() =>
+                    navigate(`/dashboard/student/${examen.id}/candidates`)
+                  }
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      fontSize: { xs: 10, md: 14 },
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Examen – {examen?.current_grade?.name}{" "}
+                  </Typography>
+                  <Typography
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    {dayjs(examen?.start_date).format("DD MMMM YYYY")}
+                  </Typography>
+                  <Typography
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    {examen?.club?.logo && (
+                      <img
+                        src={examen?.club?.logo}
+                        alt={examen?.club?.name}
+                        style={{ width: "50px", height: "50px" }}
+                      />
+                    )}
+                  </Typography>
+
+                  <Typography
+                    component={"span"}
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    Status :
+                    <Chip
+                      label={statusConfig[examen.status]?.label}
+                      color={currentStatus?.color}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
+                  </Typography>
+                </Paper>
+              </Grid>
+            );
+          })}
+        </Grid>
+      ) : (
         <Box
           sx={{
             display: "flex",
@@ -204,85 +280,11 @@ function ExamenIndex() {
             Aucun examen disponible
           </Typography>
           <Typography variant="body1" color="text.disabled">
-            Il semblerait qu'il n'y ait pas encore de sessions programmées.
+            Il semblerait qu'il n'y ait pas encore un examen programmé.
           </Typography>
         </Box>
       )}
-      <Grid container spacing={2} sx={{ pb: 2 }}>
-        {examens.map((examen, index) => {
-          const currentStatus =
-            statusConfig[examen.status] || statusConfig.draft;
-          return (
-            <Grid
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                mt: 2,
-                mx: "auto",
-                borderRadius: 2,
-              }}
-              minHeight={200}
-              size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-              key={examen.id}
-            >
-              <Paper
-                elevation={3}
-                sx={{
-                  p: 4,
-                  textAlign: "center",
-                  bgcolor: "background.default",
-                  cursor: "pointer",
-                }}
-                data-aos="fade-up"
-                data-aos-delay={index * 200}
-                onClick={() =>
-                  navigate(`/dashboard/student/${examen.id}/candidates`)
-                }
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 2,
-                    fontSize: { xs: 10, md: 14 },
-                    fontWeight: "bold",
-                  }}
-                >
-                  Examen – {examen?.current_grade?.name}{" "}
-                </Typography>
-                <Typography
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                >
-                  {dayjs(examen?.start_date).format("DD MMMM YYYY")}
-                </Typography>
-                <Typography
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                >
-                  {examen?.club?.logo && (
-                    <img
-                      src={examen?.club?.logo}
-                      alt={examen?.club?.name}
-                      style={{ width: "50px", height: "50px" }}
-                    />
-                  )}
-                </Typography>
 
-                <Typography
-                  component={"span"}
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                >
-                  Status :
-                  <Chip
-                    label={statusConfig[examen.status]?.label}
-                    color={currentStatus?.color}
-                    size="small"
-                    sx={{ mt: 1 }}
-                  />
-                </Typography>
-              </Paper>
-            </Grid>
-          );
-        })}
-      </Grid>
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
         {pagination.lastPage > 1 && (
           <Pagination

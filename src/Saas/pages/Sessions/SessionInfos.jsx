@@ -19,6 +19,8 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 const SessionStatusAlert = ({ session }) => {
   // 1. CAS : SESSION ANNULÉE
@@ -144,10 +146,13 @@ const SessionInfos = ({ sessionId }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const { activeClubId } = UseAuth();
+  const [error, setError] = useState("");
 
   const fetchSessionData = useCallback(async () => {
+    if (!sessionId || !activeClubId) return;
     try {
       setLoading(true);
+      setError("");
       // On récupère les détails complets de la session
       const response = await Instance.get(
         `/api/sessions/${sessionId}/show?club_id=${activeClubId}`,
@@ -155,7 +160,7 @@ const SessionInfos = ({ sessionId }) => {
       setSession(response.data.session);
       console.log(response);
     } catch (error) {
-      console.error("Erreur chargement session", error);
+      setError("Erreur lors de la récupération des détails de la session");
     } finally {
       setLoading(false);
     }
@@ -164,13 +169,15 @@ const SessionInfos = ({ sessionId }) => {
     fetchSessionData();
   }, [fetchSessionData]);
 
-  if (loading)
+  if (loading) return <ConfigSkeleton />;
+
+  if (error)
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
-        <CircularProgress />
-      </Box>
+      <ErrorBlock
+        message="Impossible de charger les détails de la session"
+        onRetry={fetchSessionData}
+      />
     );
-  if (!session) return <Typography>Session introuvable</Typography>;
   return (
     <Box sx={{ backgroundColor: "Background.default" }}>
       <SessionStatusAlert session={session} />
@@ -264,7 +271,7 @@ const SessionInfos = ({ sessionId }) => {
             }}
           >
             <Typography variant="caption" color="text.secondary">
-              ID Session : {session.id}
+              ID Session : {session.id.substr(0, 5)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Créé le : {new Date(session.created_at).toLocaleDateString()}

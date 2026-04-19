@@ -143,19 +143,19 @@ const DebtPage = () => {
               <TableRow key={index}>
                 <TableCell>
                   <Typography fontWeight="bold">
-                    {debt.student?.fullname}
+                    {debt?.student?.fullname}
                   </Typography>
-                  <Typography variant="caption">
-                    {debt.student.phone_parent}
-                  </Typography>
+                  {/* <Typography variant="caption">
+                    {debt?.student?.phone_parent}
+                  </Typography> */}
                 </TableCell>
-                <TableCell>{debt.pricing_plan.label}</TableCell>
+                <TableCell>{debt?.pricing_plan?.label}</TableCell>
                 <TableCell>
-                  {parseFloat(debt.total_amount).toLocaleString()} F
+                  {parseFloat(debt?.total_amount).toLocaleString()} F
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={`${parseFloat(debt.balance).toLocaleString()} F`}
+                    label={`${parseFloat(debt?.balance).toLocaleString()} F`}
                     color="error"
                     variant="outlined"
                   />
@@ -164,7 +164,7 @@ const DebtPage = () => {
                   <Stack direction="row" spacing={1} justifyContent="center">
                     <IconButton
                       color="success"
-                      onClick={() => sendWhatsApp(debt.student, debt.balance)}
+                      onClick={() => sendWhatsApp(debt?.student, debt?.balance)}
                     >
                       <WhatsApp />
                     </IconButton>

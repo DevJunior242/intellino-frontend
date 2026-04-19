@@ -32,10 +32,8 @@ function SessionShow() {
 
   const queryParams = new URLSearchParams(location.search);
   const clubId = queryParams.get("club_id");
-  console.log("club_actif", clubId);
-  console.log("club_actif", activeClubId);
+
   const { sessionId } = useParams();
-  console.log(sessionId);
 
   const fetchData = useCallback(
     async (page = 1) => {
@@ -53,8 +51,6 @@ function SessionShow() {
           ),
         ]);
 
-        console.log("studentsRes", studentsRes);
-        console.log("sessionsRes", sessionsRes);
         const rawData = studentsRes?.data?.students;
 
         const ArrayStudents = Array.isArray(rawData?.data)

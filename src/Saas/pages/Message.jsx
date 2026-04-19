@@ -1,4 +1,4 @@
- import { Alert, Stack } from "@mui/material";
+import { Alert, Stack } from "@mui/material";
 
 function Message({ text, type }) {
   if (!text) return null;

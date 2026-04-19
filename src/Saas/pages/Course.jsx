@@ -19,6 +19,7 @@ import PulseLoader from "react-spinners/PulseLoader";
 import Message from "./Message";
 import { UseAuth } from "../../Api/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ConfigSkeleton from "./ConfigSkeleton";
 
 const initialCourseState = {
   name: "",
@@ -36,7 +37,8 @@ const initialSessionState = {
 function Course() {
   const { activeClubId } = UseAuth();
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const [courseData, setCourseData] = useState(initialCourseState);
@@ -80,7 +82,6 @@ function Course() {
   }, [getGrade]);
 
   useEffect(() => {
-    console.log(selectCurrentGrade);
     if (selectCurrentGrade) {
       setCourseData((prev) => ({
         ...prev,
@@ -115,7 +116,6 @@ function Course() {
     }
 
     setError(currentErrors);
-    console.log(Object.keys(currentErrors));
     return Object.keys(currentErrors).length === 0;
   };
 
@@ -187,7 +187,7 @@ function Course() {
 
     setError({});
     setSuccess("");
-
+    setSubmitting(true);
     const finalPayload = {
       course: {
         name: courseData.name,
@@ -230,15 +230,13 @@ function Course() {
           setStep(2);
         }
       }
+    } finally {
+      setSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (isLoading)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
-        <PulseLoader color="#36d7b7" />
-      </Box>
-    );
+  if (isLoading) return <ConfigSkeleton />;
 
   return (
     <Container maxWidth="sm">
@@ -525,6 +523,7 @@ function Course() {
                   );
                 })}
               </List>
+              {error?.general && <Message text={error.general} type="error" />}
 
               <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
                 <Button fullWidth variant="text" onClick={() => setStep(1)}>
@@ -535,8 +534,9 @@ function Course() {
                   variant="contained"
                   color="success"
                   onClick={handleSubmitFinal}
+                  disabled={submitting}
                 >
-                  Enregistrer tout
+                  {submitting ? "Enregistrement..." : "Enregistrer tout"}
                 </Button>
               </Box>
             </motion.div>

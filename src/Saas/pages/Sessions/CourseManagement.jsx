@@ -33,15 +33,18 @@ import { UseAuth } from "../../../Api/AuthContext";
 import ReportSessionModal from "./ReportSessionModal";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 function CourseManagement({ sessionId }) {
   const [openModal, setOpenModal] = useState(false);
   const [openReportModal, setOpenReportModal] = useState(false);
   const [error, setError] = useState({});
+  const [errorSession, setErrorSession] = useState("");
   const [success, setSuccess] = useState("");
 
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reportLoading, setReportLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const { activeClubId } = UseAuth();
@@ -64,6 +67,9 @@ function CourseManagement({ sessionId }) {
 
   const fetchSessionData = useCallback(
     async (isRefresh = false) => {
+      if (!sessionId || !activeClubId) return;
+      setLoading(true);
+      setErrorSession("");
       try {
         if (!isRefresh) setLoading(true);
         // On récupère les détails complets de la session
@@ -72,10 +78,11 @@ function CourseManagement({ sessionId }) {
         );
         setSession(response.data.session);
       } catch (error) {
-        console.error("Erreur chargement session", error);
-        setError({
-          general: "Impossible de charger les données de la session.",
-        });
+        //sentry.captureException(error);
+        // sentry.captureException(error);
+        setErrorSession(
+          "Erreur lors de la récupération des détails de la session",
+        );
       } finally {
         setLoading(false);
       }
@@ -86,8 +93,15 @@ function CourseManagement({ sessionId }) {
     fetchSessionData();
   }, [fetchSessionData]);
 
-  if (!session) return <Typography>Session introuvable</Typography>;
+  if (loading) return <ConfigSkeleton />;
 
+  if (errorSession)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les détails de la session"
+        onRetry={fetchSessionData}
+      />
+    );
   // Couleurs dynamiques selon le statut
   const statusConfig = {
     scheduled: { color: "primary", label: "Planifié" },
@@ -131,6 +145,7 @@ function CourseManagement({ sessionId }) {
         setError(response.data.message);
         setSuccess("");
       }
+      fetchSessionData();
     } catch (error) {
       ErrorGlobal({ error, setError });
     }
@@ -143,7 +158,6 @@ function CourseManagement({ sessionId }) {
       const response = await Instance.post(
         `/api/session/${sessionId}/stop?club_id=${activeClubId}`,
       );
-      // console.log(response);
 
       if (response.data.success) {
         setSuccess(response.data.message);
@@ -155,6 +169,8 @@ function CourseManagement({ sessionId }) {
         setError(response.data.message);
         setSuccess("");
       }
+      setCancelLoading(false);
+      fetchSessionData();
     } catch (error) {
       ErrorGlobal({ error, setError });
     }

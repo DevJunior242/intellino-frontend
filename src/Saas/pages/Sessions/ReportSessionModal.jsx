@@ -50,7 +50,6 @@ const ReportSessionModal = ({
         `/api/session/${sessionId}/reschedule`,
         dataSend,
       );
-      console.log(response);
 
       if (response.data.success) {
         onClose();

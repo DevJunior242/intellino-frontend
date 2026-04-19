@@ -183,24 +183,32 @@ function MemberTable() {
             flex: 1,
             minWidth: 130,
             sortable: false,
-            renderCell: (params) => (
-              <>
-                <IconButton
-                  size="small"
-                  color="success"
-                  onClick={() => handleOpenEditModal(params.row)}
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => handleDeleteMember(params.row)}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </>
-            ),
+            renderCell: (params) => {
+              const isSelf = params.row.id === auth?.user.id;
+
+              if (isSelf) return null;
+
+              return (
+                <>
+                  <IconButton
+                    size="small"
+                    color="success"
+                    onClick={() => handleOpenEditModal(params.row)}
+                    disabled={isSelf}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDeleteMember(params.row)}
+                    disabled={isSelf}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </>
+              );
+            },
           },
         ]
       : []),

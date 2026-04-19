@@ -103,7 +103,6 @@ import Program from "./Saas/pages/Program";
 import StudentList from "./Saas/pages/Students/StudentList";
 import Users from "./Saas/pages/Users";
 import ClubAdmin from "./Saas/pages/ClubAdmin.jsx";
-import AuthPage from "./Saas/pages/Auth/AuthPage.jsx";
 import MentionsLegales from "./Saas/pages/legal/MentionsLegales.jsx";
 import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
@@ -168,7 +167,6 @@ const AppRoutes = () => {
           <Route element={<GuestRoute />}>
             <Route path="/login" element={<Login />} />
           </Route>
-          <Route path="/auth/page" element={<AuthPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
