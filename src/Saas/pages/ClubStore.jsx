@@ -20,7 +20,7 @@ import ConfigSkeleton from "./ConfigSkeleton";
 
 function ClubStore() {
   const [error, setError] = useState({});
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
   const { switchRole, updateAuth } = UseAuth();
   const [disciplines, setDisciplines] = useState([]);
@@ -71,7 +71,7 @@ function ClubStore() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
-    setSubmitting(true);
+    setSubmitting("");
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
     formDataInitial.append("phone", formData.phone);
@@ -88,10 +88,8 @@ function ClubStore() {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      console.log(response);
       if (response?.data?.success) {
         const { user, memberships, new_club } = response.data;
-        console.log("user", user);
 
         // 1. Extraire les noms des rôles pour le State (Format: ["admin_club"])
         // On cherche les rôles dans le premier club car c'est celui qu'on vient de créer
@@ -118,7 +116,9 @@ function ClubStore() {
           city: "",
           address: "",
         });
-        setSuccess(response.data.message);
+        setSuccess(
+          "votre club a été créé avec succès.rendez vous dans le dashboard pour y accéder",
+        );
 
         setError({});
         //navigate to club dashboard after 2 seconds
@@ -127,7 +127,7 @@ function ClubStore() {
         }, 2000);
       } else {
         setError({ general: response.data.message });
-        setSuccess(false);
+        setSuccess("");
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
