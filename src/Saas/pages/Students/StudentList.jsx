@@ -36,6 +36,7 @@ function StudentList() {
     setErrorStudent("");
     try {
       const response = await Instance(`/api/students?club_id=${activeClubId}`);
+      console.log("students", response);
       setStudents(
         (response.data.students || []).map((student) => ({
           id: student.id,
@@ -154,7 +155,7 @@ function StudentList() {
         return (
           <Chip
             label={value ? value : "En attente"}
-            color={value === "actif" ? "success" : "error"}
+            color={value === 0 ? "success" : "error"}
             size="small"
             sx={{ textTransform: "capitalize" }}
           />
