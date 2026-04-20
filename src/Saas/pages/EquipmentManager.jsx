@@ -13,6 +13,9 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SaveIcon from "@mui/icons-material/Save";
@@ -32,7 +35,7 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
-  const { errorCategory, setErrorCategory } = useState("");
+  const [errorCategory, setErrorCategory] = useState("");
 
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
@@ -45,14 +48,14 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
 
   const { activeClubId } = UseAuth();
 
-  const fetchData = useCallback(async () => {
-    if (activeClubId == null) return;
+  const fetchData = async () => {
     setLoading(true);
     setErrorCategory("");
     try {
       const res = await Instance.get(
         `/api/inventory/categories?club_id=${activeClubId}`,
       );
+      console.log(res);
       setCategories(res.data.categories || []);
     } catch (error) {
       console.error("Erreur lors de la récupération des catégories :", error);
@@ -60,11 +63,12 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  };
 
   useEffect(() => {
+    if (activeClubId == null) return;
     fetchData();
-  }, [fetchData]);
+  }, [activeClubId]);
 
   // Création rapide de catégorie
   const handleAddCategory = async (e) => {
@@ -135,7 +139,6 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     <Paper
       sx={{ p: 3, borderRadius: 3, backgroundColor: "background.default" }}
     >
-      {loading && <ConfigSkeleton />}
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
         Ajouter au Catalogue
       </Typography>
@@ -167,38 +170,53 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
             sm={3}
             sx={{ display: "flex", alignItems: "center" }}
           >
-            <TextField
-              error={hasError("equipment_category_id")}
-              helperText={getError("equipment_category_id")}
-              select
+            <FormControl
               fullWidth
-              label="Catégorie"
-              name="equipment_category_id"
-              value={formData.equipment_category_id}
+              error={hasError("equipment_category_id")}
               required
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  equipment_category_id: e.target.value,
-                })
-              }
             >
-              {loading ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} sx={{ mr: 1 }} /> Chargement...
-                </MenuItem>
-              ) : categories.length > 0 ? (
-                categories.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.name}
+              <InputLabel id="category-select-label">Catégorie</InputLabel>
+              <Select
+                labelId="category-select-label"
+                id="category-select"
+                name="equipment_category_id"
+                value={formData.equipment_category_id}
+                label="Catégorie"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    equipment_category_id: e.target.value,
+                  })
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                {loading ? (
+                  <MenuItem disabled>
+                    <CircularProgress size={20} sx={{ mr: 1 }} /> Chargement...
                   </MenuItem>
-                ))
-              ) : (
-                <MenuItem value="" disabled>
-                  Aucune catégorie
-                </MenuItem>
+                ) : categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value="" disabled>
+                    Aucune catégorie
+                  </MenuItem>
+                )}
+              </Select>
+              {hasError("equipment_category_id") && (
+                <FormHelperText>
+                  {getError("equipment_category_id")}
+                </FormHelperText>
               )}
-            </TextField>
+            </FormControl>
+
             <IconButton
               onClick={() => setOpenCat(true)}
               color="primary"

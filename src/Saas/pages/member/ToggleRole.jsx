@@ -77,7 +77,17 @@ function ToggleRole({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
       <DialogTitle>Change Role</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>

@@ -118,10 +118,11 @@ function SessionList() {
 
   //status
   const statusConfig = {
-    scheduled: { color: "primary", label: "Planifié" },
-    ongoing: { color: "warning", label: "En Cours" },
-    completed: { color: "success", label: "Terminé" },
-    cancelled: { color: "error", label: "Annulé" },
+    0: { color: "primary", label: "Planifié" }, // STATUS_SCHEDULED
+    1: { color: "warning", label: "En Cours" }, // STATUS_ONGOING
+    2: { color: "success", label: "Terminé" }, // STATUS_COMPLETED
+    3: { color: "error", label: "Annulé" }, // STATUS_CANCELLED
+    4: { color: "secondary", label: "Reporté" }, // STATUS_POSTPONED
   };
   if (errorSessions)
     return (
@@ -333,6 +334,7 @@ function SessionList() {
                           console.log("click bouton", session);
                           handleOpenModal(session);
                         }}
+                        disabled={session.status !== 0}
                       >
                         Modifier
                       </Button>

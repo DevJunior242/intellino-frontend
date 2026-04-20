@@ -133,6 +133,11 @@ function StoreExamen() {
 
         <form onSubmit={handleSubmit}>
           <Autocomplete
+            slotProps={{
+              paper: {
+                sx: { backgroundColor: "background.default" },
+              },
+            }}
             disablePortal
             options={Array.isArray(grade) ? grade : []}
             isOptionEqualToValue={(option, value) => option.id === value?.id}
@@ -156,6 +161,11 @@ function StoreExamen() {
             </FormHelperText>
           )}
           <Autocomplete
+            slotProps={{
+              paper: {
+                sx: { backgroundColor: "background.default" },
+              },
+            }}
             disablePortal
             options={Array.isArray(grade) ? grade : []}
             isOptionEqualToValue={(option, value) => option.id === value?.id}

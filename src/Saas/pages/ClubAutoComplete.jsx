@@ -53,6 +53,11 @@ const ClubAutoComplete = ({
             }}
           />
         )}
+        slotProps={{
+          paper: {
+            sx: { backgroundColor: "background.default" },
+          },
+        }}
       />
     </>
   );

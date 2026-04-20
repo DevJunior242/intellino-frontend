@@ -103,7 +103,9 @@ function EditSession({ session, open, handleClose, getSession, activeClubId }) {
           label="Début"
           type="time"
           name="start_time"
-          value={sessionData.start_time}
+          value={
+            sessionData.start_time ? sessionData.start_time.substring(0, 5) : ""
+          }
           onChange={handleChange}
           InputLabelProps={{ shrink: true }}
         />
@@ -113,7 +115,9 @@ function EditSession({ session, open, handleClose, getSession, activeClubId }) {
           label="Fin"
           type="time"
           name="end_time"
-          value={sessionData.end_time}
+          value={
+            sessionData.end_time ? sessionData.end_time.substring(0, 5) : ""
+          }
           onChange={handleChange}
           InputLabelProps={{ shrink: true }}
         />

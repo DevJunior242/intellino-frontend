@@ -77,12 +77,26 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
   if (loading) return <CircularProgress />;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
       <Box>
         {success && <Message text={success} type="success" />}
         {error?.general && <Message text={error.general} type="error" />}
         <form onSubmit={handleSubmit}>
-          <DialogTitle>Nouvelle candidature-{examenId}</DialogTitle>
+          <DialogTitle>
+            Nouvelle candidature-{examenId.substr(0, 8)}
+          </DialogTitle>
           <DialogContent
             sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
           >

@@ -21,7 +21,6 @@ import ConfigSkeleton from "./ConfigSkeleton";
 function ClubStore() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
   const { switchRole, updateAuth } = UseAuth();
   const [disciplines, setDisciplines] = useState([]);
   const [selectDiscipline, setSelectDiscipline] = useState(null);
@@ -71,7 +70,7 @@ function ClubStore() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
-    setSubmitting("");
+    setSubmitting(true);
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
     formDataInitial.append("phone", formData.phone);
@@ -293,7 +292,6 @@ function ClubStore() {
               )}
             </Grid>
 
-            {/* <Grid item xs={12}> */}
             <Button
               type="submit"
               variant="contained"

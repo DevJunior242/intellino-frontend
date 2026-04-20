@@ -73,7 +73,7 @@ function CandidatsGrid({ examenId }) {
   const handleRemove = async (candidats) => {
     console.log("candidats", candidats);
     if (!window.confirm("Supprimer le candidat ?")) return;
-     try {
+    try {
       const res = await Instance.delete(
         `/api/candidats/remove/${examenId}/${candidats}?club_id=${activeClubId}`,
       );
@@ -174,19 +174,33 @@ function CandidatsGrid({ examenId }) {
             noResultsOverlayLabel: "Aucun résultat trouvé",
           }}
           sx={{
-            "& .MuiDataGrid-main": {
-              overflowX: "auto",
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "background.default",
+              borderBottom: "1px solid",
             },
             "& .MuiDataGrid-columnHeaderTitle": {
               fontWeight: "bold",
               fontSize: { xs: 8, md: 16 },
             },
-
             "&.MuiDataGrid-root .MuiDataGrid-cell": {
               fontSize: { xs: 8, md: 16 },
               display: "flex",
               alignItems: "center",
             },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "rgba(0, 0, 0, 0.04)",
+              cursor: "pointer",
+            },
+            "& .MuiDataGrid-row.Mui-selected": {
+              backgroundColor: "rgba(255, 255, 255, 0.05) !important",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.1) !important",
+              },
+            },
+
             backgroundColor: "background.default",
             borderRadius: 2,
             boxShadow: 1,
@@ -207,7 +221,6 @@ function CandidatsGrid({ examenId }) {
           handleClose={handleCloseModalCandidat}
           examenId={examenId}
           fetchExamen={fetchExamen}
-          
         />
       </Box>
     </Box>

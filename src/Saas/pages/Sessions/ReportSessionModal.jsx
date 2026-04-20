@@ -72,15 +72,20 @@ const ReportSessionModal = ({
 
   return (
     <Box sx={{ backgroundColor: "background.default" }}>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-        <DialogTitle
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth
+        maxWidth="xs"
+        sx={{
+          "& .MuiDialog-paper": {
+            p: 3,
+            borderRadius: 3,
             backgroundColor: "background.default",
-          }}
-        >
+          },
+        }}
+      >
+        <DialogTitle>
           <Update color="primary" />
           Reporter la séance
         </DialogTitle>
@@ -122,7 +127,9 @@ const ReportSessionModal = ({
                   type="time"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  value={newData.start_time}
+                  value={
+                    newData.start_time ? newData.start_time.substring(0, 5) : ""
+                  }
                   onChange={(e) =>
                     setNewData({ ...newData, start_time: e.target.value })
                   }
@@ -137,7 +144,9 @@ const ReportSessionModal = ({
                   type="time"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  value={newData.end_time}
+                  value={
+                    newData.end_time ? newData.end_time.substring(0, 5) : ""
+                  }
                   onChange={(e) =>
                     setNewData({ ...newData, end_time: e.target.value })
                   }

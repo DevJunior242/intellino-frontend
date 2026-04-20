@@ -16,6 +16,9 @@ import {
   Grid,
   CircularProgress,
   LinearProgress,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import { Add, Delete, Settings } from "@mui/icons-material";
 import { Instance } from "../../Api/Axios";
@@ -163,23 +166,41 @@ const PricingSettings = () => {
             />
           </Grid>
           <Grid item xs={12} md={2}>
-            <TextField
-              error={hasError("payment_category_id")}
-              helperText={getError("payment_category_id")}
-              select
-              fullWidth
-              label="Catégorie"
-              value={newPlan.payment_category_id}
-              onChange={(e) =>
-                setNewPlan({ ...newPlan, payment_category_id: e.target.value })
-              }
-            >
-              {categories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            <FormControl fullWidth error={hasError("payment_category_id")}>
+              <InputLabel id="payment-category-label">Catégorie</InputLabel>
+              <Select
+                labelId="payment-category-label"
+                id="payment-category-select"
+                label="Catégorie"
+                value={newPlan.payment_category_id}
+                onChange={(e) =>
+                  setNewPlan({
+                    ...newPlan,
+                    payment_category_id: e.target.value,
+                  })
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Aucune catégorie disponible</MenuItem>
+                )}
+              </Select>
+              {hasError("payment_category_id") && (
+                <FormHelperText>
+                  {getError("payment_category_id")}
+                </FormHelperText>
+              )}
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={2}>
             <TextField
@@ -208,21 +229,30 @@ const PricingSettings = () => {
             />
           </Grid>
           <Grid item xs={12} md={2}>
-            <TextField
-              error={hasError("duration_unit")}
-              helperText={getError("duration_unit")}
-              select
-              fullWidth
-              label="Unité"
-              value={newPlan.duration_unit}
-              onChange={(e) =>
-                setNewPlan({ ...newPlan, duration_unit: e.target.value })
-              }
-            >
-              <MenuItem value="day">Jours</MenuItem>
-              <MenuItem value="month">Mois</MenuItem>
-              <MenuItem value="year">Années</MenuItem>
-            </TextField>
+            <FormControl fullWidth error={hasError("duration_unit")}>
+              <InputLabel id="duration-unit-label">Unité</InputLabel>
+              <Select
+                labelId="duration-unit-label"
+                id="duration-unit-select"
+                label="Unité"
+                value={newPlan.duration_unit}
+                onChange={(e) =>
+                  setNewPlan({ ...newPlan, duration_unit: e.target.value })
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                <MenuItem value="day">Jours</MenuItem>
+                <MenuItem value="month">Mois</MenuItem>
+                <MenuItem value="year">Années</MenuItem>
+              </Select>
+              {hasError("duration_unit") && (
+                <FormHelperText>{getError("duration_unit")}</FormHelperText>
+              )}
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={1}>
             <Button

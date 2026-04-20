@@ -33,6 +33,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import CancelExamenModal from "./CancelExamenModal";
 import ReportExamenModal from "./ReportExamenModal";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 function ExamenManage({ examenId }) {
   const [openModal, setOpenModal] = useState(false);
@@ -87,23 +88,18 @@ function ExamenManage({ examenId }) {
     fetchExamenData();
   }, [fetchExamenData]);
 
-  if (loading)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
-        <CircularProgress />
-      </Box>
-    );
+  if (loading) return <ConfigSkeleton />;
   if (!examen) return <Typography>examen introuvable</Typography>;
 
   // Couleurs dynamiques selon le statut
   const statusConfig = {
-    scheduled: { color: "primary", label: "Planifié" },
-    ongoing: { color: "warning", label: "En Cours" },
-    completed: { color: "success", label: "Terminé" },
-    cancelled: { color: "error", label: "Annulé" },
+    0: { color: "primary", label: "Planifié" },
+    1: { color: "warning", label: "En Cours" },
+    2: { color: "success", label: "Terminé" },
+    3: { color: "error", label: "Annulé" },
   };
 
-  const currentStatus = statusConfig[examen.status] || statusConfig.scheduled;
+  const currentStatus = statusConfig[examen.status] || statusConfig[0];
 
   //start / stop
 
@@ -204,6 +200,7 @@ function ExamenManage({ examenId }) {
                   disabled={examen.status !== "scheduled"}
                   onClick={() => triggerConfirm("start")}
                   sx={{ py: 2, borderRadius: 2 }}
+                  disabled={examen.status !== 0}
                 >
                   Démarrer
                 </Button>
@@ -221,6 +218,7 @@ function ExamenManage({ examenId }) {
                   }
                   onClick={() => triggerConfirm("stop")}
                   sx={{ py: 2, borderRadius: 2 }}
+                  disabled={examen.status !== 1}
                 >
                   Terminer
                 </Button>
@@ -243,9 +241,7 @@ function ExamenManage({ examenId }) {
                 variant="outlined"
                 startIcon={<EventNote />}
                 onClick={handleOpenReportModal}
-                disabled={
-                  examen.status === "completed" || examen.status === "cancelled"
-                }
+                disabled={examen.status === 2 || examen.status === 3}
               >
                 Reporter
               </Button>
@@ -255,9 +251,7 @@ function ExamenManage({ examenId }) {
                 color="error"
                 startIcon={<Cancel />}
                 onClick={handleOpenModal}
-                disabled={
-                  examen.status === "completed" || examen.status === "cancelled"
-                }
+                disabled={examen.status === 2 || examen.status === 3}
               >
                 Annuler
               </Button>
@@ -298,7 +292,12 @@ function ExamenManage({ examenId }) {
                   >
                     {currentStatus.label}
                   </Typography>
-                  <Chip label={examen.status} size="small" variant="outlined" />
+                  <Chip
+                    label={currentStatus.label}
+                    size="small"
+                    variant="outlined"
+                    color={currentStatus.color}
+                  />
                 </Box>
               </CardContent>
             </Card>
@@ -402,7 +401,17 @@ function ExamenManage({ examenId }) {
         setReportLoading={setReportLoading}
       />
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            p: 3,
+            borderRadius: 3,
+            backgroundColor: "background.default",
+          },
+        }}
+      >
         <DialogTitle sx={{ fontWeight: "bold" }}>
           {pendingAction === "start"
             ? "Démarrer la examen ?"

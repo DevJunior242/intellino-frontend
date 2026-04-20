@@ -49,6 +49,11 @@ const RoleAutoComplete = ({
             helperText={getError("role_id")}
           />
         )}
+        slotProps={{
+          paper: {
+            sx: { backgroundColor: "background.default" },
+          },
+        }}
       />
     </>
   );

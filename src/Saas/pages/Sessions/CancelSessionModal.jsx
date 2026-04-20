@@ -84,15 +84,20 @@ const CancelSessionModal = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: "error.main",
-        }}
-      >
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xs"
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
+      <DialogTitle>
         <WarningAmber color="error" />
         Annulation du cours
       </DialogTitle>
@@ -126,7 +131,7 @@ const CancelSessionModal = ({
           />
         </DialogContent>
 
-        <DialogActions sx={{ p: 2, bgcolor: "#fefefe" }}>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={onClose} color="inherit">
             Ignorer
           </Button>

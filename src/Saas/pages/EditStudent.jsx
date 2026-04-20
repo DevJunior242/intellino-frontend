@@ -61,7 +61,7 @@ export default function EditStudent({
       payload.append("fullname", formData.fullname);
       payload.append("birthdate", formData.birthdate);
       payload.append("sex", formData.sex);
-      payload.append("status", formData.status);
+      // payload.append("status", formData.status);
       payload.append("club_id", activeClubId);
       if (formData.photo) {
         payload.append("photo", formData.photo);
@@ -141,19 +141,28 @@ export default function EditStudent({
         />
         <FormControl error={hasError("sex")} helperText={getError("sex")}>
           <InputLabel>Sexe</InputLabel>
-          <Select name="sex" value={formData.sex} onChange={handleChange}>
+          <Select
+            name="sex"
+            value={formData.sex}
+            onChange={handleChange}
+            MenuProps={{
+              PaperProps: {
+                sx: { backgroundColor: "background.default" },
+              },
+            }}
+          >
             <MenuItem value="M">Homme</MenuItem>
             <MenuItem value="F">Femme</MenuItem>
           </Select>
         </FormControl>
 
-        <FormControl error={hasError("status")} helperText={getError("status")}>
+        {/* <FormControl error={hasError("status")} helperText={getError("status")}>
           <InputLabel>Status</InputLabel>
           <Select name="status" value={formData.status} onChange={handleChange}>
             <MenuItem value="actif">Actif</MenuItem>
             <MenuItem value="inactif">Inactif</MenuItem>
           </Select>
-        </FormControl>
+        </FormControl> */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Avatar src={preview} sx={{ width: 56, height: 56 }} />
           <TextField

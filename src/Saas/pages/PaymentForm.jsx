@@ -14,6 +14,9 @@ import {
   Avatar,
   Alert,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import { Save, Receipt, Person, LocalOffer, Event } from "@mui/icons-material";
 import { UseAuth } from "../../Api/AuthContext";
@@ -200,37 +203,51 @@ const PaymentForm = () => {
 
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12}>
-            <TextField
-              select
-              fullWidth
-              label="Type de Forfait"
-              required
-              value={formData.pricing_plan_id}
-              onChange={(e) => handlePlanChange(e.target.value)}
-              error={hasError("pricing_plan_id")}
-              helperText={getError("pricing_plan_id")}
-            >
-              {plans.map((plan) => (
-                <MenuItem key={plan.id} value={plan.id}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                    }}
-                  >
-                    <Typography>{plan.label}</Typography>
-                    <Typography
-                      variant="body2"
-                      color="primary.main"
-                      fontWeight="bold"
-                    >
-                      {plan.price} XOF
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              ))}
-            </TextField>
+            <FormControl fullWidth error={hasError("pricing_plan_id")} required>
+              <InputLabel id="pricing-plan-label">Type de Forfait</InputLabel>
+              <Select
+                labelId="pricing-plan-label"
+                id="pricing-plan-select"
+                label="Type de Forfait"
+                value={formData.pricing_plan_id}
+                onChange={(e) => handlePlanChange(e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                {plans.length > 0 ? (
+                  plans.map((plan) => (
+                    <MenuItem key={plan.id} value={plan.id}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
+                        <Typography>{plan.label}</Typography>
+                        <Typography
+                          variant="body2"
+                          color="primary.main"
+                          fontWeight="bold"
+                          sx={{ ml: 2 }}
+                        >
+                          {plan.price} XOF
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Aucun forfait disponible</MenuItem>
+                )}
+              </Select>
+              {hasError("pricing_plan_id") && (
+                <FormHelperText>{getError("pricing_plan_id")}</FormHelperText>
+              )}
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} sm={6}>

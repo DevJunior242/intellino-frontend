@@ -72,10 +72,10 @@ function ExamenIndex() {
 
   //status
   const statusConfig = {
-    scheduled: { color: "primary", label: "Planifié" },
-    ongoing: { color: "warning", label: "En Cours" },
-    completed: { color: "success", label: "Terminé" },
-    cancelled: { color: "error", label: "Annulé" },
+    0: { color: "primary", label: "Planifié" },
+    1: { color: "warning", label: "En Cours" },
+    2: { color: "success", label: "Terminé" },
+    3: { color: "error", label: "Annulé" },
   };
 
   if (error) {

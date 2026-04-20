@@ -284,6 +284,11 @@ function Course() {
                 </Typography>
               </label>
               <Autocomplete
+                slotProps={{
+                  paper: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
                 disablePortal
                 options={Array.isArray(grade) ? grade : []}
                 isOptionEqualToValue={(option, value) =>

@@ -310,6 +310,32 @@ function Note() {
             noResultsOverlayLabel: "Aucun résultat trouvé",
           }}
           sx={{
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "background.default",
+              borderBottom: "1px solid",
+            },
+            "& .MuiDataGrid-columnHeaderTitle": {
+              fontWeight: "bold",
+              fontSize: { xs: 8, md: 16 },
+            },
+            "&.MuiDataGrid-root .MuiDataGrid-cell": {
+              fontSize: { xs: 8, md: 16 },
+              display: "flex",
+              alignItems: "center",
+            },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "rgba(0, 0, 0, 0.04)",
+              cursor: "pointer",
+            },
+            "& .MuiDataGrid-row.Mui-selected": {
+              backgroundColor: "rgba(255, 255, 255, 0.05) !important",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.1) !important",
+              },
+            },
             backgroundColor: "background.default",
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "blue !important",

@@ -60,8 +60,7 @@ const CancelExamenModal = ({
         `/api/examens/${examenId}/cancel`,
         dataSend,
       );
-      console.log(response);
-
+ 
       if (response.data.success) {
         setFormData({
           cancel_reason: "",
@@ -71,6 +70,7 @@ const CancelExamenModal = ({
           setSuccess("");
         }, 3000);
         setError({});
+        onClose();
         await fetchExamenData();
       } else {
         setError(response.data.message);
@@ -84,7 +84,19 @@ const CancelExamenModal = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xs"
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
       <DialogTitle
         sx={{
           display: "flex",
@@ -126,7 +138,7 @@ const CancelExamenModal = ({
           />
         </DialogContent>
 
-        <DialogActions sx={{ p: 2, bgcolor: "#fefefe" }}>
+        <DialogActions sx={{ p: 2 }}>
           <Button onClick={onClose} color="inherit">
             Ignorer
           </Button>

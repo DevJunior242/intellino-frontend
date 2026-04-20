@@ -102,19 +102,19 @@ function CourseManagement({ sessionId }) {
         onRetry={fetchSessionData}
       />
     );
-  // Couleurs dynamiques selon le statut
+  // Couleurs dynamiques selon le statutconst statusConfig = {
   const statusConfig = {
-    scheduled: { color: "primary", label: "Planifié" },
-    ongoing: { color: "warning", label: "En Cours" },
-    completed: { color: "success", label: "Terminé" },
-    cancelled: { color: "error", label: "Annulé" },
+    0: { color: "primary", label: "Planifié" }, // STATUS_SCHEDULED
+    1: { color: "warning", label: "En Cours" }, // STATUS_ONGOING
+    2: { color: "success", label: "Terminé" }, // STATUS_COMPLETED
+    3: { color: "error", label: "Annulé" }, // STATUS_CANCELLED
+    4: { color: "secondary", label: "Reporté" }, // STATUS_POSTPONED
   };
 
-  const currentStatus = statusConfig[session.status] || statusConfig.scheduled;
+  const currentStatus = statusConfig[session.status] || statusConfig[0];
 
   //start / stop
 
-  // Cette fonction ouvre le modal au lieu d'appeler l'API directement
   const triggerConfirm = (action) => {
     setPendingAction(action);
     setConfirmOpen(true);
@@ -210,7 +210,7 @@ function CourseManagement({ sessionId }) {
                   color="success"
                   size="large"
                   startIcon={<PlayArrow />}
-                  disabled={session.status !== "scheduled"}
+                  disabled={session.status !== 0}
                   onClick={() => triggerConfirm("start")}
                   sx={{ py: 2, borderRadius: 2 }}
                 >
@@ -224,10 +224,7 @@ function CourseManagement({ sessionId }) {
                   color="warning"
                   size="large"
                   startIcon={<Stop />}
-                  disabled={
-                    session.status === "scheduled" ||
-                    session.status === "completed"
-                  }
+                  disabled={session.status === 0 || session.status === 2}
                   onClick={() => triggerConfirm("stop")}
                   sx={{ py: 2, borderRadius: 2 }}
                 >
@@ -252,10 +249,7 @@ function CourseManagement({ sessionId }) {
                 variant="outlined"
                 startIcon={<EventNote />}
                 onClick={handleOpenReportModal}
-                disabled={
-                  session.status === "completed" ||
-                  session.status === "cancelled"
-                }
+                disabled={session.status === 2 || session.status === 3}
               >
                 Reporter
               </Button>
@@ -265,10 +259,7 @@ function CourseManagement({ sessionId }) {
                 color="error"
                 startIcon={<Cancel />}
                 onClick={handleOpenModal}
-                disabled={
-                  session.status === "completed" ||
-                  session.status === "cancelled"
-                }
+                disabled={session.status === 2 || session.status === 3}
               >
                 Annuler
               </Button>
@@ -310,7 +301,7 @@ function CourseManagement({ sessionId }) {
                     {currentStatus.label}
                   </Typography>
                   <Chip
-                    label={session.status}
+                    label={currentStatus.label}
                     size="small"
                     variant="outlined"
                   />
