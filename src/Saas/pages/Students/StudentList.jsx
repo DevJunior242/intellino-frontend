@@ -102,6 +102,10 @@ function StudentList() {
     }
   };
 
+  const statusConfig = {
+    0: { color: "primary", label: "actif" }, // STATUS_ACTIV
+    2: { color: "success", label: "Inactif" }, // STATUS_INACTIV
+  };
   //columns
 
   const columns = [
@@ -154,8 +158,8 @@ function StudentList() {
         const value = params.value;
         return (
           <Chip
-            label={value ? value : "En attente"}
-            color={value === 0 ? "success" : "error"}
+            label={statusConfig[value]?.label}
+            color={statusConfig[value]?.color}
             size="small"
             sx={{ textTransform: "capitalize" }}
           />
