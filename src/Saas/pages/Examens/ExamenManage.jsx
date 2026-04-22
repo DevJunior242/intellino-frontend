@@ -197,7 +197,6 @@ function ExamenManage({ examenId }) {
                   color="success"
                   size="large"
                   startIcon={<PlayArrow />}
-                  disabled={examen.status !== "scheduled"}
                   onClick={() => triggerConfirm("start")}
                   sx={{ py: 2, borderRadius: 2 }}
                   disabled={examen.status !== 0}
@@ -212,10 +211,6 @@ function ExamenManage({ examenId }) {
                   color="warning"
                   size="large"
                   startIcon={<Stop />}
-                  disabled={
-                    examen.status === "scheduled" ||
-                    examen.status === "completed"
-                  }
                   onClick={() => triggerConfirm("stop")}
                   sx={{ py: 2, borderRadius: 2 }}
                   disabled={examen.status !== 1}

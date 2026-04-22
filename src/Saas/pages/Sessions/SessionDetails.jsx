@@ -18,9 +18,13 @@ function SessionDetails() {
     activeRole,
   );
   const tabs = [
-    ...(allowAccess ? [{ label: "Gestion des cours", key: "cours" }] : []),
+    ...(allowAccess
+      ? [
+          { label: "Gestion des cours", key: "cours" },
+          { label: "Listes des presences", key: "sessions" },
+        ]
+      : []),
 
-    { label: "Listes des presences", key: "sessions" },
     { label: "Infos", key: "informations" },
   ];
 

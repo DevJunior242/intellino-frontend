@@ -31,8 +31,8 @@ const ReportSessionModal = ({
   const getError = (field) => error?.[field]?.join(", ");
   const [newData, setNewData] = useState({
     session_date: session?.session_date || "",
-    start_time: session?.start_time || "",
-    end_time: session?.end_time || "",
+    start_time: session?.start_time?.substring(0, 5) || "",
+    end_time: session?.end_time?.substring(0, 5) || "",
   });
   const { activeClubId } = UseAuth();
 
@@ -46,6 +46,7 @@ const ReportSessionModal = ({
         ...newData,
         club_id: activeClubId,
       };
+      console.log(dataSend);
       const response = await Instance.post(
         `/api/session/${sessionId}/reschedule`,
         dataSend,

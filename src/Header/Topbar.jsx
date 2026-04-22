@@ -20,6 +20,7 @@ import {
 import { UseAuth } from "../Api/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../ThemeToggle";
+import NotificationCenter from "../component/NotificationCenter";
 
 const TopBar = () => {
   const theme = useTheme();
@@ -57,6 +58,7 @@ const TopBar = () => {
 
         <Box display="flex" alignItems="center">
           <ThemeToggle />
+          <NotificationCenter />
 
           <Tooltip title="Compte">
             <IconButton

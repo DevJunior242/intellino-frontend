@@ -32,14 +32,14 @@ const ReportExamenModal = ({
   const [newData, setNewData] = useState({
     start_date: examen?.start_date || "",
     end_date: examen?.end_date || "",
-    start_time: examen?.start_time || "",
-    end_time: examen?.end_time || "",
+    start_time: examen?.start_time?.substring(0, 5) || "",
+    end_time: examen?.end_time?.substring(0, 5) || "",
   });
   const { activeClubId } = UseAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (reportLoading) return;
     setError({});
     setReportLoading(true);
     try {
@@ -53,11 +53,13 @@ const ReportExamenModal = ({
       );
 
       if (response.data.success) {
-        onClose();
+        // onClose();
         setSuccess(response.data.message);
-        setTimeout(() => {
+        setTimeout(async () => {
           setSuccess("");
-        }, 3000);
+          onClose();
+          await fetchExamenData();
+        }, 1500);
         setError({});
         await fetchExamenData();
       } else {

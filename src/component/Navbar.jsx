@@ -26,6 +26,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { UseAuth } from "../Api/AuthContext";
 import { tokenTheme } from "../theme";
 import ThemeToggle from "../ThemeToggle";
+import NotificationCenter from "./NotificationCenter";
 
 const items = [
   { title: "Accueil", href: "/" },
@@ -176,6 +177,8 @@ function Navbar() {
         {isLogged && (
           <>
             <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+              <NotificationCenter />
+
               <Tooltip title="Account settings">
                 <IconButton onClick={handleClickAccount} size="small">
                   <Avatar sx={{ width: 32, height: 32 }}>
@@ -255,6 +258,8 @@ function Navbar() {
 
       {/* Mobile Menu */}
       <Box sx={{ display: { xs: "block", md: "none" } }}>
+        <NotificationCenter />
+
         <Button onClick={handleOpenMenu}>
           <MenuIcon sx={{ color: "#0312b8" }} />
         </Button>
@@ -276,33 +281,37 @@ function Navbar() {
           }}
         >
           {/* Header du drawer */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            {/* Avatar en haut si connecté */}
+            {auth && (
+              <Box
+                sx={{
+                  borderTop: "1px solid rgba(255,255,255,0.2)",
+                  pt: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <Tooltip title="Account settings">
+                  <IconButton onClick={handleClickAccount} size="small">
+                    <Avatar
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        bgcolor: "#fff",
+                        color: "#0606CF",
+                      }}
+                    >
+                      {user?.fullname?.charAt(0)}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
             <IconButton onClick={handleCloseMenu}>
               <CloseIcon sx={{ color: "#100b9f", fontSize: 30 }} />
             </IconButton>
           </Box>
-
-          {/* Avatar en haut si connecté */}
-          {auth && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-              <Avatar
-                sx={{
-                  width: 48,
-                  height: 48,
-                  bgcolor: "#030691",
-                  color: "rgb(243, 243, 245)",
-                  fontWeight: "bold",
-                }}
-              >
-                {user?.fullname?.charAt(0)}
-              </Avatar>
-              <Typography
-                sx={{ color: "#3500a7", fontWeight: 500, fontSize: 16 }}
-              >
-                {user?.name}
-              </Typography>
-            </Box>
-          )}
 
           {/* Liens */}
           <Box
@@ -350,31 +359,6 @@ function Navbar() {
           </Box>
 
           {/* Footer */}
-          {auth && (
-            <Box
-              sx={{
-                borderTop: "1px solid rgba(255,255,255,0.2)",
-                pt: 2,
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <Tooltip title="Account settings">
-                <IconButton onClick={handleClickAccount} size="small">
-                  <Avatar
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: "#fff",
-                      color: "#0606CF",
-                    }}
-                  >
-                    {user?.fullname?.charAt(0)}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-            </Box>
-          )}
         </Drawer>
       </Box>
     </Box>
