@@ -22,7 +22,7 @@ import Message from "./Message";
 import EquipmentAction from "./EquipmentAction";
 
 const EquipmentLoan = () => {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
@@ -37,7 +37,7 @@ const EquipmentLoan = () => {
       setLoading(true);
       try {
         const res = await Instance.get(
-          `/api/inventory/prets?page=${page}&club_id=${activeClubId}`,
+          `/api/inventory/prets?page=${page}&club_id=${activeId}`,
         );
         console.log(res);
         const equipments = res.data.equipments || [];
@@ -57,7 +57,7 @@ const EquipmentLoan = () => {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {

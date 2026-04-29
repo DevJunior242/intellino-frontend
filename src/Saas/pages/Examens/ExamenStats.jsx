@@ -17,15 +17,15 @@ export default function ExamenStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   const fetchStats = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     setLoading(true);
     setError("");
     try {
       const response = await Instance.get(
-        `/api/examens/stats?club_id=${activeClubId}`,
+        `/api/examens/stats?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log(response);
       setStats(response.data);
@@ -35,7 +35,7 @@ export default function ExamenStats() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId, activeType]);
 
   useEffect(() => {
     fetchStats();

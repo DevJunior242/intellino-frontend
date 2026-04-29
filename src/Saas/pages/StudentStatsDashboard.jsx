@@ -30,9 +30,8 @@ import {
 } from "@mui/icons-material";
 import { UseAuth } from "../../Api/AuthContext";
 import { Instance } from "../../Api/Axios";
+import ConfigSkeleton from "./ConfigSkeleton";
 
-
- 
 function StudentStatsDashboard() {
   const [stats, setStats] = useState(null);
   const [gradeDistribution, setGradeDistribution] = useState([]);
@@ -41,13 +40,13 @@ function StudentStatsDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/student-stats?club_id=${activeClubId}`,
+        `/api/student-stats?club_id=${activeId}`,
       );
       console.log(response);
       const data = response.data.data;
@@ -65,17 +64,12 @@ function StudentStatsDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
-  if (loading)
-    return (
-      <Box display="flex" justifyContent="center" py={5}>
-        <CircularProgress />
-      </Box>
-    );
+  if (loading) return <ConfigSkeleton />;
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!stats)
     return (
@@ -85,7 +79,13 @@ function StudentStatsDashboard() {
     );
   //statCard
   const StatCard = ({ title, value, icon, trend }) => (
-    <Card sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.05)",backgroundColor:"background.default" }}>
+    <Card
+      sx={{
+        borderRadius: 2,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        backgroundColor: "background.default",
+      }}
+    >
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
@@ -131,8 +131,18 @@ function StudentStatsDashboard() {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#f8f9fa", minHeight: "100vh",backgroundColor:"background.default" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold",fontSize:{xs:24,md:32} }}>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: "#f8f9fa",
+        minHeight: "100vh",
+        backgroundColor: "background.default",
+      }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", fontSize: { xs: 24, md: 32 } }}
+      >
         Tableau de Bord Statistiques
       </Typography>
 
@@ -153,7 +163,14 @@ function StudentStatsDashboard() {
       <Grid container spacing={3}>
         {/* --- SECTION 2 : RÉPARTITION DES GRADES (PIE CHART) --- */}
         <Grid item xs={12} md={5}>
-          <Paper sx={{ p: 3, borderRadius: 2, height: 400,backgroundColor:"background.default" }}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              height: 400,
+              backgroundColor: "background.default",
+            }}
+          >
             <Typography variant="h6" gutterBottom>
               Répartition par Grade
             </Typography>
@@ -188,7 +205,14 @@ function StudentStatsDashboard() {
 
         {/* --- SECTION 3 : ÉVOLUTION DES PROMOTIONS (BAR CHART) --- */}
         <Grid item xs={12} md={7}>
-          <Paper sx={{ p: 3, borderRadius: 2, height: 400,backgroundColor:"background.default" }}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              height: 400,
+              backgroundColor: "background.default",
+            }}
+          >
             <Typography variant="h6" gutterBottom>
               Promotions des 5 derniers mois
             </Typography>

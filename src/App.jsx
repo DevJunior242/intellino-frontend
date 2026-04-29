@@ -108,7 +108,10 @@ import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
-  const { auth, activeRole, loading } = UseAuth();
+  const { auth, activeRole, loading, activeId, activeType } = UseAuth();
+
+  console.log("activeId", activeId);
+  console.log("activeType", activeType);
 
   if (loading) return <CircularProgress />;
 
@@ -157,6 +160,7 @@ const AppRoutes = () => {
     "admin_club",
     "instructeur",
     "secretaire",
+    "admin_league",
   ];
   const ALL_ROLES = [...STAFF_ROLES, "parent", "karateka"];
   const SUPER_ADMIN = ["super_admin"];
@@ -172,7 +176,7 @@ const AppRoutes = () => {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={ALL_ROLES} />}>
+        <Route>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/members" element={<MemberTable />} />
@@ -248,10 +252,6 @@ const AppRoutes = () => {
               />
 
               <Route
-                path="/dashboard/student/examen/store"
-                element={<StoreExamen />}
-              />
-              <Route
                 path="/dashboard/student/examen/enchainement/store"
                 element={<StoreEnchainement />}
               />
@@ -286,8 +286,12 @@ const AppRoutes = () => {
             </Route>
           </Route>
         </Route>
-        <Route element={<ProtectedRoute allowedRoles={["super_admin"]} />}>
+        <Route>
           <Route element={<DashboardLeagueLayout />}>
+            <Route
+              path="/dashboard/league/:examenId/candidates"
+              element={<ExamenDetails />}
+            />
             <Route
               path="/dashboard/league/clubs/list"
               element={<LeagueClub />}
@@ -362,6 +366,7 @@ const AppRoutes = () => {
           <Route path="/jury/register" element={<JurySelfRegistration />} />
           <Route element={<ProtectedRoute allowedRoles={ALL_ROLES} />}>
             <Route path="/examen" element={<ExamenIndex />} />
+            <Route path="/examen/store" element={<StoreExamen />} />
           </Route>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<About />} />

@@ -18,15 +18,15 @@ export default function SessionStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const fetchStats = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     setLoading(true);
     setError("");
     try {
       const response = await Instance.get(
-        `/api/sessions/session-stats?club_id=${activeClubId}`,
+        `/api/sessions/session-stats?club_id=${activeId}`,
       );
       console.log(response);
       setStats(response.data);
@@ -36,7 +36,7 @@ export default function SessionStats() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchStats();

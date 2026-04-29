@@ -325,8 +325,7 @@ function HomePage() {
                 width: "100%",
                 height: 440,
                 borderRadius: "24px",
-                backgroundImage:
-                  "url('https://www.greatersudbury.ca/sites/sudburyen/cache/file/25E33F1B-FD30-3B9C-1AAA4B6692E55EFE_carouselimage.jpg')",
+                backgroundImage: "url('/sloganintel.jpeg')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 ml: 6,

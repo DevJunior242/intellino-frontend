@@ -28,19 +28,19 @@ const DebtPage = () => {
   const [debts, setDebts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [totalUnpaid, setTotalUnpaid] = useState(0);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [errorDebts, setErrorDebts] = useState("");
 
   const fetchDebts = useCallback(
     async (page = 1) => {
-      if (!activeClubId) return;
+      if (!activeId) return;
       setLoading(true);
       setErrorDebts("");
       try {
         const response = await Instance.get(
-          `/api/payments/finance/debts?club_id=${activeClubId}&page=${page}`,
+          `/api/payments/finance/debts?club_id=${activeId}&page=${page}`,
         );
         console.log("Debts response:", response);
         const debts = response.data.data;
@@ -59,13 +59,13 @@ const DebtPage = () => {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     fetchDebts();
-  }, [activeClubId, fetchDebts]);
+  }, [activeId, fetchDebts]);
 
   const sendWhatsApp = (student, amount) => {
     const message = `Bonjour, ${student?.club?.name} vous informe que le reliquat pour ${student.fullname} est de ${amount} F. Merci de passer régulariser.`;

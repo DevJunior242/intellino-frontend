@@ -19,27 +19,34 @@ import PulseLoader from "react-spinners/PulseLoader";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 function LicenceForm() {
   const [data, setData] = useState([]);
   const [selectStudent, setSelectStudent] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState({});
+  const [errorStudent, setErrorStudent] = useState("");
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const searchParams = new URLSearchParams(window.location.search);
   const clubId = searchParams.get("club");
-  console.log("CLUB ID", clubId);
 
   const getStudents = useCallback(async () => {
     setLoading(true);
+    setErrorStudent("");
     try {
       const response = await Instance(`/api/league/students?club_id=${clubId}`);
       console.log(response);
       setData(response.data || []);
     } catch (error) {
       console.error(error);
+      setErrorStudent(
+        "une erreur est survenue lors de la récupération des élèves",
+      );
     } finally {
       setLoading(false);
     }
@@ -85,8 +92,8 @@ function LicenceForm() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
-      console.log("FORM DATA", formData);
       const response = await Instance.post(
         "/api/licences/licences?club_id=" + clubId,
         formData,
@@ -115,8 +122,20 @@ function LicenceForm() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (loading) return <ConfigSkeleton />;
+
+  if (errorStudent)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les membres"
+        onRetry={getStudents}
+      />
+    );
 
   return (
     <Container maxWidth="md" sx={{ mt: 10 }}>
@@ -287,7 +306,7 @@ function LicenceForm() {
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={loading}
+                    disabled={submitting}
                     sx={{
                       bgcolor: "#e8c84a",
                       color: "#1a1d23",
@@ -296,7 +315,7 @@ function LicenceForm() {
                       "&:hover": { bgcolor: "#d4b63b" },
                     }}
                   >
-                    {loading ? "Génération..." : "Valider la licence"}
+                    {submitting ? "Génération..." : "Valider la licence"}
                   </Button>
                 </Stack>
               </Grid>

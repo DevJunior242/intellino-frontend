@@ -5,7 +5,7 @@ import { Save, Receipt, Person, LocalOffer, Event } from "@mui/icons-material";
 import ErrorBlock from "./ErrorBlock";
 
 const StudentAutocomplete = ({
-  activeClubId,
+  activeId,
   value,
   onChange,
   hasError,
@@ -16,18 +16,18 @@ const StudentAutocomplete = ({
   const [loading, setLoading] = useState(false);
 
   const getStudents = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
 
     setLoading(true);
     try {
-      const response = await Instance(`/api/students?club_id=${activeClubId}`);
+      const response = await Instance(`/api/students?club_id=${activeId}`);
       setStudents(response.data.students || []);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     getStudents();

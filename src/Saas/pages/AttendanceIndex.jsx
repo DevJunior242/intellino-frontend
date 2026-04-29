@@ -25,12 +25,12 @@ function AttendanceIndex() {
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
-  const { activeRole, activeClubId } = UseAuth();
+  const { activeRole, activeId } = UseAuth();
   const getAtt = async (page = 1) => {
     setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/attendances?page=${page}&club_id=${activeClubId}`,
+        `/api/attendances?page=${page}&club_id=${activeId}`,
       );
       console.log(response);
       const attendance = response.data.attendances || [];

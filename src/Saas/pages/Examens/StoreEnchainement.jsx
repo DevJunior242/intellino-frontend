@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { act, useCallback, useEffect, useState } from "react";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
@@ -27,6 +27,7 @@ function StoreEnchainement() {
   const getError = (field) => error?.[field]?.join(", ");
   //modal
   const [openModal, setOpenModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -35,16 +36,16 @@ function StoreEnchainement() {
     setOpenModal(false);
   };
   //ench
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [enchainements, setEnchainement] = useState([]);
   //obtenir les tournois
   const { examenId } = useParams();
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
   const getEnch = useCallback(async () => {
     setLoading(true);
     try {
       const response = await Instance(
-        `/api/enchainements/${examenId}?club_id=${activeClubId}`,
+        `/api/enchainements/${examenId}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log(response);
       setEnchainement(response.data.enchainements || []);
@@ -53,7 +54,7 @@ function StoreEnchainement() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId, examenId]);
+  }, [activeId, examenId]);
 
   useEffect(() => {
     getEnch();
@@ -63,7 +64,6 @@ function StoreEnchainement() {
     name: "",
     description: "",
     diviseur: "",
-    club_id: activeClubId,
   });
 
   const handleChange = (e) => {
@@ -74,10 +74,12 @@ function StoreEnchainement() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       const dataToSend = {
         ...formData,
-        club_id: activeClubId,
+        organisateur_id: activeId,
+        organisateur_type: activeType,
       };
       const response = await Instance.post(
         `/api/enchainements/${examenId}`,
@@ -103,6 +105,8 @@ function StoreEnchainement() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -219,7 +223,7 @@ function StoreEnchainement() {
                   variant="contained"
                   disabled={loading}
                 >
-                  {loading ? "Enregistrement..." : "Enregistrer"}
+                  {submitting ? "Enregistrement..." : "Enregistrer"}
                 </Button>
               </DialogActions>
             </form>

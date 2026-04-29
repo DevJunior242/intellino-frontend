@@ -27,7 +27,7 @@ export default function EditStudent({
   const [error, setError] = useState({});
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [formData, setFormData] = useState({
     fullname: student?.fullname || "",
     birthdate: student?.birthdate
@@ -36,7 +36,7 @@ export default function EditStudent({
     sex: student?.sex || "",
     status: student?.status || "",
     photo: null,
-    club_id: activeClubId,
+    club_id: activeId,
   });
   const [preview, setPreview] = useState(student?.photo || null);
   const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ export default function EditStudent({
       payload.append("birthdate", formData.birthdate);
       payload.append("sex", formData.sex);
       // payload.append("status", formData.status);
-      payload.append("club_id", activeClubId);
+      payload.append("club_id", activeId);
       if (formData.photo) {
         payload.append("photo", formData.photo);
       }

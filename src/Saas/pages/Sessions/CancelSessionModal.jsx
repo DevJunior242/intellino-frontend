@@ -30,8 +30,8 @@ const CancelSessionModal = ({
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  //activeClubId
-  const { activeClubId } = UseAuth();
+  //activeId
+  const { activeId } = UseAuth();
   const [formData, setFormData] = useState({
     cancel_reason: "",
   });
@@ -54,7 +54,7 @@ const CancelSessionModal = ({
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const response = await Instance.post(
         `/api/session/${sessionId}/cancel`,

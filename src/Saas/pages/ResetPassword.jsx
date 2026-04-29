@@ -14,6 +14,7 @@ import Message from "./Message";
 import { Instance } from "../../Api/Axios";
 function ResetPassword() {
   const [error, setError] = useState({});
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +30,7 @@ function ResetPassword() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setLoading(true);
 
     try {
       const res = await Instance.post("api/reset-password", {
@@ -44,6 +46,8 @@ function ResetPassword() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,7 +126,14 @@ function ResetPassword() {
               {error.password_confirmation[0]}
             </FormHelperText>
           )}
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "reinitialiser le mot de passe"}
             changer le mot de passe
           </Button>
         </form>

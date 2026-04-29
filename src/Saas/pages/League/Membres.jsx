@@ -8,9 +8,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
+
 import { Instance } from "../../../Api/Axios";
 import { InfoOutlined } from "@mui/icons-material";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 // Couleurs exactes de ton interface
 const theme = {
@@ -96,58 +97,11 @@ const MemberCard = ({
   </Grid>
 );
 
-export default function Membres() {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const getMembers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await Instance.get("/api/membres/leagues");
-      console.log(response);
-      setMembers(response.data.members || []);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    getMembers();
-  }, [getMembers]);
+export default function Membres({ members, loading }) {
   return (
     <Box>
       {loading ? (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-          {[1, 2, 3].map((i) => (
-            <Paper
-              key={i}
-              sx={{
-                p: 3,
-                borderRadius: 4,
-                width: 400,
-                border: "1px solid #eee",
-              }}
-            >
-              <Skeleton
-                variant="rectangular"
-                height={40}
-                sx={{ mb: 2, borderRadius: 1 }}
-              />
-              <Skeleton variant="text" width="70%" height={30} />
-              <Stack spacing={2} sx={{ my: 3 }}>
-                <Skeleton variant="rounded" height={40} />
-                <Skeleton variant="rounded" height={40} />
-              </Stack>
-              <Skeleton
-                variant="rectangular"
-                height={50}
-                sx={{ borderRadius: 3 }}
-              />
-            </Paper>
-          ))}
-        </Box>
+        <ConfigSkeleton />
       ) : members.length > 0 ? (
         <Grid container spacing={3} sx={{ maxWidth: "900px" }}>
           {members.map((member) => (

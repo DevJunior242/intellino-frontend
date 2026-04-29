@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
 import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -51,8 +51,11 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { allowAccess } = useAllowAccess();
-  const { logout, activeRole, auth } = UseAuth();
+  const { logout, activeRole, auth, activeType } = UseAuth();
 
+  if (activeType !== "Club") {
+    return <Navigate to="/dashboard/league/stats" replace />;
+  }
   const drawerWidth = collapsed ? DRAWER_COLLAPSED : DRAWER_EXPANDED;
 
   const hasAccess = (allowedRoles = []) => {
@@ -61,8 +64,14 @@ export default function DashboardLayout() {
     return allowedRoles.includes(activeRole);
   };
 
-  const isSuperAdmin = auth.roleSuperAdmin?.includes("super_admin");
-
+  const clubAllow = [
+    "admin_club",
+    "instructeur",
+    "secretaire",
+    "parent",
+    "karateka",
+    "super_admin",
+  ];
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -88,7 +97,7 @@ export default function DashboardLayout() {
         {
           title: "Dashboard",
           icon: <DashboardIcon fontSize="small" />,
-          to: "/dashboard",
+          to: `${clubAllow.includes(activeRole) ? "/dashboard" : "/dashboard/league/stats"}`,
           role: [
             "super_admin",
             "admin_club",

@@ -46,14 +46,14 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     min_stock_alert: 2,
   });
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const fetchData = async () => {
     setLoading(true);
     setErrorCategory("");
     try {
       const res = await Instance.get(
-        `/api/inventory/categories?club_id=${activeClubId}`,
+        `/api/inventory/categories?club_id=${activeId}`,
       );
       console.log(res);
       setCategories(res.data.categories || []);
@@ -66,9 +66,9 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
   };
 
   useEffect(() => {
-    if (activeClubId == null) return;
+    if (activeId == null) return;
     fetchData();
-  }, [activeClubId]);
+  }, [activeId]);
 
   // Création rapide de catégorie
   const handleAddCategory = async (e) => {
@@ -79,7 +79,7 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     try {
       const res = await Instance.post("/api/inventory/categories", {
         name: newCatName,
-        club_id: activeClubId,
+        club_id: activeId,
       });
       if (res.data.success) {
         setSuccess("Catégorie créée avec succès !");
@@ -109,7 +109,7 @@ const EquipmentManager = ({ onRefresh, isSubmitting, setIsSubmitting }) => {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const res = await Instance.post("/api/inventory/equipments", dataSend);
 

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Message from "../Message";
 
-function EditSession({ session, open, handleClose, getSession, activeClubId }) {
+function EditSession({ session, open, handleClose, getSession, activeId }) {
   const [submitting, setSubmitting] = useState(false);
   const [sessionData, setSessionData] = useState({
     title: session?.title || "",
@@ -39,7 +39,7 @@ function EditSession({ session, open, handleClose, getSession, activeClubId }) {
     try {
       const datasend = {
         ...sessionData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const response = await Instance.put(
         `/api/sessions/edit/${session.id}`,

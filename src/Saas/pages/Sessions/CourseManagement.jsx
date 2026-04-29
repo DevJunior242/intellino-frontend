@@ -47,7 +47,7 @@ function CourseManagement({ sessionId }) {
   const [loading, setLoading] = useState(true);
   const [reportLoading, setReportLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -67,14 +67,14 @@ function CourseManagement({ sessionId }) {
 
   const fetchSessionData = useCallback(
     async (isRefresh = false) => {
-      if (!sessionId || !activeClubId) return;
+      if (!sessionId || !activeId) return;
       setLoading(true);
       setErrorSession("");
       try {
         if (!isRefresh) setLoading(true);
         // On récupère les détails complets de la session
         const response = await Instance.get(
-          `/api/sessions/${sessionId}/show?club_id=${activeClubId}`,
+          `/api/sessions/${sessionId}/show?club_id=${activeId}`,
         );
         setSession(response.data.session);
       } catch (error) {
@@ -87,7 +87,7 @@ function CourseManagement({ sessionId }) {
         setLoading(false);
       }
     },
-    [sessionId, activeClubId],
+    [sessionId, activeId],
   );
   useEffect(() => {
     fetchSessionData();
@@ -131,7 +131,7 @@ function CourseManagement({ sessionId }) {
     setError({});
     try {
       const response = await Instance.post(
-        `/api/session/${sessionId}/start?club_id=${activeClubId}`,
+        `/api/session/${sessionId}/start?club_id=${activeId}`,
       );
       console.log("Réponse API après démarrage :", response.data);
       if (response.data.success) {
@@ -156,7 +156,7 @@ function CourseManagement({ sessionId }) {
     setError({});
     try {
       const response = await Instance.post(
-        `/api/session/${sessionId}/stop?club_id=${activeClubId}`,
+        `/api/session/${sessionId}/stop?club_id=${activeId}`,
       );
 
       if (response.data.success) {

@@ -27,10 +27,12 @@ import {
 import { motion } from "framer-motion";
 import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import ErrorBlock from "../ErrorBlock";
 
 function LicenceTable() {
   const [licences, setLicences] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
   const { auth, activeRole } = UseAuth();
   console.log("auth", auth);
@@ -52,8 +54,10 @@ function LicenceTable() {
     setAnchorEl(null);
   };
   const getLicences = useCallback(async () => {
+    if (!leagueId) return;
+    setError("");
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await Instance.get(
         `api/licences/licences?league_id=${leagueId}`,
       );
@@ -67,6 +71,7 @@ function LicenceTable() {
       setLicences(response.data.data || []);
     } catch (error) {
       console.log(error);
+      setError("Une erreur est survenue lors de la récupération des licences");
     } finally {
       setLoading(false);
     }
@@ -75,6 +80,8 @@ function LicenceTable() {
   useEffect(() => {
     getLicences();
   }, [getLicences]);
+
+  if (error) return <ErrorBlock message={error} onRetry={getLicences} />;
 
   const icons = {
     search: <Search />,
@@ -204,88 +211,107 @@ function LicenceTable() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {licences.map((licence) => (
-                <TableRow
-                  key={licence.id}
-                  hover
-                  sx={{
-                    "& td": {
-                      borderBottom: "1px solid rgba(255,255,255,0.03)",
-                      color: "#e8eaf0",
-                    },
-                  }}
-                >
-                  <TableCell
-                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                  >
-                    <Stack alignItems="center" spacing={2}>
-                      {/* Avatar avec gestion Logo ou Initiales */}
-                      <Avatar
-                        src={licence.logo}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: "rgba(232, 200, 74, 0.12)",
-                          color: "#e8c84a",
-                          fontWeight: 700,
-                          fontSize: "0.9rem",
-                          borderRadius: 2,
-                          border: "1px solid rgba(232, 200, 74, 0.2)",
-                        }}
-                      >
-                        {licence.student?.fullname
-                          ? licence.student.fullname
-                              .substring(0, 2)
-                              .toUpperCase()
-                          : "??"}
-                      </Avatar>
-                    </Stack>
-                    <Box>
-                      <Typography
-                        sx={{
-                          fontWeight: 600,
-                          color: "#e8eaf0",
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {licence.student?.fullname}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{licence.numero}</TableCell>
-
-                  <TableCell>{licence.club.name}</TableCell>
-                  <TableCell>{licence.type}</TableCell>
-                  <TableCell>{licence.grade_au_moment}</TableCell>
-                  <TableCell>{licence.date_expiration}</TableCell>
-
-                  <TableCell>
-                    <Chip
-                      label={licence.statut}
-                      size="small"
-                      sx={{
-                        bgcolor:
-                          licence.statut === "active"
-                            ? "rgba(76,175,80,0.1)"
-                            : "rgba(255,152,0,0.1)",
-                        color:
-                          licence.statut === "active" ? "#4caf50" : "#ff9800",
-                        fontSize: "0.7rem",
-                        fontWeight: 700,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      sx={{ color: "#8b90a0" }}
-                      onClick={(e) => handleOpenMenu(e, licence)}
-                    >
-                      {icons.more}
-                    </IconButton>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    <Typography sx={{ color: "#8b90a0" }}>
+                      Chargement des licences...
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : licences.length > 0 ? (
+                licences.map((licence) => (
+                  <TableRow
+                    key={licence.id}
+                    hover
+                    sx={{
+                      "& td": {
+                        borderBottom: "1px solid rgba(255,255,255,0.03)",
+                        color: "#e8eaf0",
+                      },
+                    }}
+                  >
+                    <TableCell
+                      sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                    >
+                      <Stack alignItems="center" spacing={2}>
+                        <Avatar
+                          src={licence.logo}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            bgcolor: "rgba(232, 200, 74, 0.12)",
+                            color: "#e8c84a",
+                            fontWeight: 700,
+                            fontSize: "0.9rem",
+                            borderRadius: 2,
+                            border: "1px solid rgba(232, 200, 74, 0.2)",
+                          }}
+                        >
+                          {licence.student?.fullname
+                            ? licence.student.fullname
+                                .substring(0, 2)
+                                .toUpperCase()
+                            : "??"}
+                        </Avatar>
+                      </Stack>
+
+                      <Box>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            color: "#e8eaf0",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {licence.student?.fullname}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>{licence.numero}</TableCell>
+                    <TableCell>{licence.club.name}</TableCell>
+                    <TableCell>{licence.type}</TableCell>
+                    <TableCell>{licence.grade_au_moment}</TableCell>
+                    <TableCell>{licence.date_expiration}</TableCell>
+
+                    <TableCell>
+                      <Chip
+                        label={licence.statut}
+                        size="small"
+                        sx={{
+                          bgcolor:
+                            licence.statut === "active"
+                              ? "rgba(76,175,80,0.1)"
+                              : "rgba(255,152,0,0.1)",
+                          color:
+                            licence.statut === "active" ? "#4caf50" : "#ff9800",
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
+                        }}
+                      />
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        sx={{ color: "#8b90a0" }}
+                        onClick={(e) => handleOpenMenu(e, licence)}
+                      >
+                        {icons.more}
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    <Typography sx={{ color: "#8b90a0" }}>
+                      Aucune licence trouvée
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
 

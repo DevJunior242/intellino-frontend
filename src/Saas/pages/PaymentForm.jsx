@@ -27,7 +27,7 @@ import StudentAutocomplete from "./StudentAutocomplete";
 import { useLocation } from "react-router-dom";
 
 const PaymentForm = () => {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -57,7 +57,7 @@ const PaymentForm = () => {
       if (formData.student_id && formData.pricing_plan_id) {
         try {
           const res = await Instance.get(
-            `/api/payments/students/${formData.student_id}/debt/${formData.pricing_plan_id}?club_id=${activeClubId}`,
+            `/api/payments/students/${formData.student_id}/debt/${formData.pricing_plan_id}?club_id=${activeId}`,
           );
           setDebtInfo({
             debt: res.data.debt,
@@ -89,7 +89,7 @@ const PaymentForm = () => {
     const fetchData = async () => {
       try {
         const resPlans = await Instance.get(
-          `/api/pricing-plans?club_id=${activeClubId}`,
+          `/api/pricing-plans?club_id=${activeId}`,
         );
         setPlans(resPlans.data || []);
       } catch (err) {
@@ -97,7 +97,7 @@ const PaymentForm = () => {
       }
     };
     fetchData();
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     if (prefillData) {
@@ -122,7 +122,7 @@ const PaymentForm = () => {
     try {
       const res = await Instance.post("/api/payments", {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       });
       if (res.data.success) {
         setSuccess(res.data.message || "Paiement enregistré avec succès !");
@@ -193,7 +193,7 @@ const PaymentForm = () => {
 
       <form onSubmit={handleSubmit}>
         <StudentAutocomplete
-          activeClubId={activeClubId}
+          activeId={activeId}
           value={selectedStudent}
           onChange={(val) => setSelectedStudent(val)}
           hasError={hasError}

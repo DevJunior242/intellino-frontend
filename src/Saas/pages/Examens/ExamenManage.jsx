@@ -35,17 +35,16 @@ import CancelExamenModal from "./CancelExamenModal";
 import ReportExamenModal from "./ReportExamenModal";
 import ConfigSkeleton from "../ConfigSkeleton";
 
-function ExamenManage({ examenId }) {
+function ExamenManage({ examen, fetchExamenData }) {
+  console.log(examen);
   const [openModal, setOpenModal] = useState(false);
   const [openReportModal, setOpenReportModal] = useState(false);
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
 
-  const [examen, setExamen] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [reportLoading, setReportLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -62,34 +61,6 @@ function ExamenManage({ examenId }) {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-
-  const fetchExamenData = useCallback(
-    async (isRefresh = false) => {
-      try {
-        if (!isRefresh) setLoading(true);
-        // On récupère les détails complets de la examen
-        const response = await Instance.get(
-          `/api/examens/${examenId}/show?club_id=${activeClubId}`,
-        );
-        console.log(response);
-        setExamen(response.data.examen);
-      } catch (error) {
-        console.error("Erreur chargement examen", error);
-        setError({
-          general: "Impossible de charger les données de la examen.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [examenId, activeClubId],
-  );
-  useEffect(() => {
-    fetchExamenData();
-  }, [fetchExamenData]);
-
-  if (loading) return <ConfigSkeleton />;
-  if (!examen) return <Typography>examen introuvable</Typography>;
 
   // Couleurs dynamiques selon le statut
   const statusConfig = {
@@ -120,7 +91,7 @@ function ExamenManage({ examenId }) {
     setError({});
     try {
       const response = await Instance.post(
-        `/api/examens/${examenId}/start?club_id=${activeClubId}`,
+        `/api/examens/${examen?.id}/start?organisateur_id=${activeId}`,
       );
       console.log("Réponse API après démarrage :", response.data);
       if (response.data.success) {
@@ -144,7 +115,7 @@ function ExamenManage({ examenId }) {
     setError({});
     try {
       const response = await Instance.post(
-        `/api/examens/${examenId}/stop?club_id=${activeClubId}`,
+        `/api/examens/${examen?.id}/stop?organisateur_id=${activeId}`,
       );
       // console.log(response);
 
@@ -332,7 +303,7 @@ function ExamenManage({ examenId }) {
                       : "Non défini"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {examen.current_grade?.name}
+                    {examen.next_grade?.name}
                   </Typography>
                 </Box>
               </Box>
@@ -381,7 +352,7 @@ function ExamenManage({ examenId }) {
       <CancelExamenModal
         open={openModal}
         onClose={handleCloseModal}
-        examenId={examenId}
+        examenId={examen.id}
         fetchExamenData={fetchExamenData}
         cancelLoading={cancelLoading}
         setCancelLoading={setCancelLoading}
@@ -389,7 +360,7 @@ function ExamenManage({ examenId }) {
       <ReportExamenModal
         open={openReportModal}
         onClose={handleCloseReportModal}
-        examenId={examenId}
+        examenId={examen.id}
         examen={examen}
         fetchExamenData={fetchExamenData}
         reportLoading={reportLoading}

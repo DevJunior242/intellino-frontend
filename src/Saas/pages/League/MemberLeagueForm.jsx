@@ -10,6 +10,10 @@ import {
   DialogTitle,
   DialogContent,
   CircularProgress,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
@@ -19,13 +23,13 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import PulseLoader from "react-spinners/PulseLoader";
 import RoleAutoComplete from "../RoleAutoComplete";
+import ConfigSkeleton from "../ConfigSkeleton";
 
-function MemberLeagueForm({ open, handleClose }) {
+function MemberLeagueForm({ open, handleClose, getMembers }) {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [roles, setRole] = useState("");
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [roles, setRole] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
@@ -38,27 +42,20 @@ function MemberLeagueForm({ open, handleClose }) {
     role_id: "",
   });
   const getRoles = async () => {
-    setIsLoading(true);
+    setLoading(true);
     try {
       const response = await Instance.get("api/membres/leagues/getRoles");
-      setRole(response.data.roles);
+      console.log("roles", response);
+      setRole(response.data.roles || []);
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
   useEffect(() => {
     getRoles();
   }, []);
-
-  const handleRoleChange = (role) => {
-    setSelectedRole(role);
-    setFormData((prev) => ({
-      ...prev,
-      role_id: role ? role.id : "",
-    }));
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -71,7 +68,6 @@ function MemberLeagueForm({ open, handleClose }) {
       const res = await StoreLeagueUser(formData);
       console.log(res);
       if (res.success) {
-        alert("Compte créé avec succès !");
         setFormData({
           fullname: "",
           email: "",
@@ -85,6 +81,7 @@ function MemberLeagueForm({ open, handleClose }) {
           setSuccess("");
         }, 3000);
         setError({});
+        getMembers();
       } else {
         alert("Erreur lors de la création de compte");
       }
@@ -94,19 +91,8 @@ function MemberLeagueForm({ open, handleClose }) {
       setSubmitting(false);
     }
   };
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <PulseLoader />
-      </Box>
-    );
+  if (loading) {
+    return <ConfigSkeleton />;
   }
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -170,15 +156,46 @@ function MemberLeagueForm({ open, handleClose }) {
           {error.phone && (
             <FormHelperText error>{error.phone.join(", ")}</FormHelperText>
           )}
+          <FormControl fullWidth error={hasError("role_id")} required>
+            <InputLabel id="role-select-label">Role</InputLabel>
+            <Select
+              labelId="role-select-label"
+              id="role-select"
+              name="role_id"
+              value={formData.role_id}
+              label="Role"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  role_id: e.target.value,
+                })
+              } // MenuProps={{
+              //   PaperProps: {
+              //     sx: { backgroundColor: "background.default" },
+              //   },
+              // }}
+            >
+              {loading ? (
+                <MenuItem disabled>
+                  <CircularProgress size={20} sx={{ mr: 1 }} /> Chargement...
+                </MenuItem>
+              ) : roles.length > 0 ? (
+                roles.map((role) => (
+                  <MenuItem key={role.id} value={role.id}>
+                    {role.name}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  Aucun role trouvé
+                </MenuItem>
+              )}
+            </Select>
+            {hasError("role_id") && (
+              <FormHelperText>{getError("role_id")}</FormHelperText>
+            )}
+          </FormControl>
 
-          <RoleAutoComplete
-            label="Rôle"
-            value={selectedRole}
-            onChange={handleRoleChange}
-            required
-            hasError={hasError}
-            getError={getError}
-          />
           <Button
             disabled={submitting}
             type="submit"
@@ -186,8 +203,7 @@ function MemberLeagueForm({ open, handleClose }) {
             fullWidth
             sx={{ mt: 2 }}
           >
-            {submitting && <CircularProgress size={20} />}
-            {!submitting && "Enregistrer"}
+            {submitting ? <CircularProgress size={20} /> : "Enregistrer"}
           </Button>
         </form>
       </DialogContent>

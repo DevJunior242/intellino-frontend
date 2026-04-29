@@ -7,7 +7,7 @@ import {
   Paper,
   IconButton,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Link, useParams } from "react-router-dom";
 import CandidatsGrid from "./CandidatsGrid";
@@ -16,21 +16,74 @@ import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import Note from "./Note";
 import ExamenManage from "./ExamenManage";
 import { useAllowAccess } from "../../../Hook/useAllowAccess";
+import ExamenInfos from "./ExamenInfos";
+import { Instance } from "../../../Api/Axios";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 function ExamenDetails() {
   const { examenId } = useParams();
+  const { activeId, activeType } = UseAuth();
   const { allowAccess } = useAllowAccess();
+  const [examen, setExamen] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState(0);
+  const [error, setError] = useState("");
+
+  // Récupération de l'examen au chargement
+
+  const fetchExamenData = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (!isRefresh) setLoading(true);
+        // On récupère les détails complets de la examen
+        const response = await Instance.get(
+          `/api/examens/${examenId}/show?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        );
+        console.log(response);
+        setExamen(response.data.examen);
+      } catch (error) {
+        console.error("Erreur chargement examen", error);
+        setError({
+          general: "Impossible de charger les données de la examen.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [examenId, activeId, activeType],
+  );
+  useEffect(() => {
+    fetchExamenData();
+  }, [fetchExamenData]);
+
+  if (loading) return <ConfigSkeleton />;
+
+  if (error)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les détails de la examen"
+        onRetry={fetchExamenData}
+      />
+    );
+  // Logique de permission dynamique
+  const isOwner =
+    examen.organisateur_id === activeId &&
+    examen.organisateur_type === activeType;
+  const isVisitorClub =
+    activeType === "Club" && examen.organisateur_type === "Ligue";
+
+  // Configuration des onglets selon les droits
   const tabs = [
-    ...(allowAccess
+    ...(isOwner
       ? [
-          { label: " Gestion de l'Examens", key: "examens" },
-          { label: "Enchainements", key: "enchainements" },
+          { label: "Gestion", key: "examens" },
+          { label: "Enchaînements", key: "enchainements" },
         ]
       : []),
+    { label: "Infos", key: "infos" },
     { label: "Candidats", key: "candidats" },
     { label: "Notes", key: "notes" },
   ];
-  const [tab, setTab] = useState(0);
 
   return (
     <Box>
@@ -80,7 +133,7 @@ function ExamenDetails() {
         </Box>
 
         {/* ACTIONS */}
-        {allowAccess && (
+        {isOwner && (
           <Box
             sx={{
               mb: 2,
@@ -125,13 +178,14 @@ function ExamenDetails() {
         )}
 
         {/* CONTENU */}
-        {tabs[tab]?.key === "examens" && <ExamenManage examenId={examenId} />}
+        {tabs[tab]?.key === "examens" && (
+          <ExamenManage examen={examen} fetchExamenData={fetchExamenData} />
+        )}
+        {tabs[tab]?.key === "infos" && <ExamenInfos examen={examen} />}
         {tabs[tab]?.key === "enchainements" && (
-          <StoreEnchainement examenId={examenId} />
+          <StoreEnchainement examenId={examenId} organisateurId={activeId} />
         )}
-        {tabs[tab]?.key === "candidats" && (
-          <CandidatsGrid examenId={examenId} />
-        )}
+        {tabs[tab]?.key === "candidats" && <CandidatsGrid examen={examen} />}
         {tabs[tab]?.key === "notes" && <Note />}
       </Box>
     </Box>

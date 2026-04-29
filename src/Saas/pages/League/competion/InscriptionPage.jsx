@@ -36,6 +36,7 @@ import InscriptionForm from "./InscriptionForm";
 import InscribedAthletesTable from "./InscribedAthletesTable";
 import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
+import ConfigSkeleton from "../../ConfigSkeleton";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const formatDate = (d) =>
@@ -371,9 +372,7 @@ const InscriptionPage = () => {
         </Typography>
 
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-            <CircularProgress />
-          </Box>
+          <ConfigSkeleton />
         ) : evenements.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 6 }}>
             <EmojiEventsIcon

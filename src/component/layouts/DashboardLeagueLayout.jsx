@@ -13,8 +13,10 @@ import {
   Badge,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { Settings } from "@mui/icons-material";
+import { UseAuth } from "../../Api/AuthContext";
+import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const theme = createTheme({
@@ -38,11 +40,18 @@ const navSections = [
     label: "PILOTAGE",
     items: [
       {
+        icon: "🏠",
+        label: "Acueil",
+        active: true,
+        to: "/",
+      },
+      {
         icon: "⊞",
         label: "Tableau de bord",
         active: true,
         to: "/dashboard/league/stats",
       },
+
       {
         icon: "≡",
         label: "Programme d'activités",
@@ -103,6 +112,11 @@ const fadeIn = {
 export default function DashboardLeagueLayout() {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
   const navigate = useNavigate();
+  const { activeType } = UseAuth();
+
+  if (activeType !== "Ligue") {
+    return <Navigate to="/dashboard" replace />;
+  }
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -174,6 +188,7 @@ export default function DashboardLeagueLayout() {
                 </Typography>
               </Box>
             </Box>
+            <ContextSwitcher />
 
             {/* Nav */}
             <Box sx={{ flex: 1, py: 1 }}>

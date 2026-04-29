@@ -14,17 +14,17 @@ const InventoryPage = () => {
   const [pagination, setPagination] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  //activeClubId
-  const { activeClubId } = UseAuth();
+  //activeId
+  const { activeId } = UseAuth();
   // La fonction qui rafraîchit les données
   const fetchInventory = useCallback(
     async (page = 1) => {
-      if (!activeClubId) return;
+      if (!activeId) return;
       setLoading(true);
       setError("");
       try {
         const res = await Instance.get(
-          `/api/inventory/equipments?page=${page}&club_id=${activeClubId}`,
+          `/api/inventory/equipments?page=${page}&club_id=${activeId}`,
         );
         console.log("equipements", res.data);
         const equipment = res.data.equipments || [];
@@ -42,7 +42,7 @@ const InventoryPage = () => {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {

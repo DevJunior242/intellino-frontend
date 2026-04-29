@@ -22,9 +22,11 @@ import { Instance } from "../../../Api/Axios";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
-const SessionStatusAlert = ({ session }) => {
+const SessionStatusAlert = ({ session, statusConfig }) => {
+  //status
+
   // 1. CAS : SESSION ANNULÉE
-  if (session.status === "cancelled") {
+  if (session.status === statusConfig[3].value) {
     return (
       <Alert
         severity="error"
@@ -145,17 +147,17 @@ const SessionStatusAlert = ({ session }) => {
 const SessionInfos = ({ sessionId }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [error, setError] = useState("");
 
   const fetchSessionData = useCallback(async () => {
-    if (!sessionId || !activeClubId) return;
+    if (!sessionId || !activeId) return;
     try {
       setLoading(true);
       setError("");
       // On récupère les détails complets de la session
       const response = await Instance.get(
-        `/api/sessions/${sessionId}/show?club_id=${activeClubId}`,
+        `/api/sessions/${sessionId}/show?club_id=${activeId}`,
       );
       setSession(response.data.session);
       console.log(response);
@@ -164,7 +166,7 @@ const SessionInfos = ({ sessionId }) => {
     } finally {
       setLoading(false);
     }
-  }, [sessionId, activeClubId]);
+  }, [sessionId, activeId]);
   useEffect(() => {
     fetchSessionData();
   }, [fetchSessionData]);
@@ -178,9 +180,17 @@ const SessionInfos = ({ sessionId }) => {
         onRetry={fetchSessionData}
       />
     );
+  //status
+  const statusConfig = {
+    0: { color: "primary", label: "Planifié" }, // STATUS_SCHEDULED
+    1: { color: "warning", label: "En Cours" }, // STATUS_ONGOING
+    2: { color: "success", label: "Terminé" }, // STATUS_COMPLETED
+    3: { color: "error", label: "Annulé" }, // STATUS_CANCELLED
+    4: { color: "secondary", label: "Reporté" }, // STATUS_POSTPONED
+  };
   return (
     <Box sx={{ backgroundColor: "Background.default" }}>
-      <SessionStatusAlert session={session} />
+      <SessionStatusAlert session={session} statusConfig={statusConfig} />
       <Grid container spacing={3}>
         {/* Colonne Gauche : Académique */}
         <Grid item xs={12} md={6}>
@@ -205,7 +215,7 @@ const SessionInfos = ({ sessionId }) => {
               <Chip
                 label={session.course?.grade?.name}
                 size="small"
-                color="error"
+                color="primary"
                 sx={{ mt: 1, fontWeight: "bold" }}
               />
               <Typography

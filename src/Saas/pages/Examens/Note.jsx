@@ -16,6 +16,7 @@ import EditNote from "./EditNote";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ConfigSkeleton from "../ConfigSkeleton";
 function Note() {
   const [loading, setLoading] = useState(true);
   const [openEditModel, setOpenEditModel] = useState(false);
@@ -23,11 +24,13 @@ function Note() {
   const [examen, setExamen] = useState({});
   const [selectCandidat, setSelectCandidat] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [totalPointsPossibles, setTotalPointsPossibles] = useState(0);
 
   const { examenId } = useParams();
-  const { activeClubId } = UseAuth();
-  console.log(examenId);
-  console.log("students", students);
+  const { activeId, activeType } = UseAuth();
+  const isOwner =
+    examen.organisateur_id === activeId &&
+    examen.organisateur_type === activeType;
 
   const getNotes = useCallback(async () => {
     if (!examenId) {
@@ -37,11 +40,12 @@ function Note() {
     setLoading(true);
     try {
       const response = await Instance(
-        `/api/evaluation/${examenId}?club_id=${activeClubId}`,
+        `/api/evaluation/${examenId}?organisateur_id=${activeId}`,
       );
       console.log(response);
       const examenData = response?.data || {};
       setExamen(examenData.exam || {});
+      setTotalPointsPossibles(examenData.total_points_possibles);
 
       setStudents(examenData?.students || []);
       const formattedStudents = (examenData?.students || []).map((student) => ({
@@ -55,7 +59,7 @@ function Note() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId, examenId]);
+  }, [activeId, examenId]);
 
   useEffect(() => {
     getNotes();
@@ -65,7 +69,7 @@ function Note() {
     setDownloadingId(studentId);
     try {
       const res = await Instance.get(
-        `/api/examens/${examenId}/notes/pdf?student_id=${studentId}&club_id=${activeClubId}`,
+        `/api/examens/${examenId}/notes/pdf?student_id=${studentId}&organisateur_id=${activeId}`,
         {
           responseType: "blob",
         },
@@ -153,7 +157,11 @@ function Note() {
     doc.setFontSize(11);
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(`MOYENNE GÉNÉRALE : ${originalStudent.moyenne} / 20`, 20, finalY);
+    doc.text(
+      `MOYENNE GÉNÉRALE : ${originalStudent.moyenne} / ${totalPointsPossibles}`,
+      20,
+      finalY,
+    );
 
     // Correction ici pour la couleur de décision
     const isPass =
@@ -221,8 +229,6 @@ function Note() {
         minWidth: 130,
         sortable: false,
         renderCell: (params) => {
-          console.log("row.id =", params.row.id);
-          console.log("downloadingId =", downloadingId);
           return (
             <>
               <IconButton
@@ -232,19 +238,21 @@ function Note() {
               >
                 <PictureAsPdfIcon sx={{ color: "red" }} />
               </IconButton>
-              <IconButton
-                size="small"
-                color="success"
-                onClick={() => {
-                  const fullStudent = students.find(
-                    (s) => s.id === params.row.id,
-                  );
-                  setSelectCandidat(fullStudent);
-                  setOpenEditModel(true);
-                }}
-              >
-                <EditIcon />
-              </IconButton>
+              {isOwner && (
+                <IconButton
+                  size="small"
+                  color="success"
+                  onClick={() => {
+                    const fullStudent = students.find(
+                      (s) => s.id === params.row.id,
+                    );
+                    setSelectCandidat(fullStudent);
+                    setOpenEditModel(true);
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              )}
             </>
           );
         },
@@ -269,7 +277,6 @@ function Note() {
     return row;
   });
 
-  if (loading) return <CircularProgress />;
   if (!students) return null;
 
   return (

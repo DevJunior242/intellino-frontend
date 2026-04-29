@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import {
   Badge,
   IconButton,
@@ -22,14 +22,46 @@ const NotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const navigate = useNavigate();
-
-  const fetchNotifications = async () => {
-    const res = await Instance.get("/api/notifications");
-    setNotifications(res.data);
-  };
-
   useEffect(() => {
-    fetchNotifications();
+    let interval;
+
+    const fetchNotifications = async () => {
+      try {
+        const res = await Instance.get("/api/notifications");
+        setNotifications(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const startPolling = () => {
+      interval = setInterval(fetchNotifications, 5000);
+    };
+
+    const stopPolling = () => {
+      if (interval) clearInterval(interval);
+    };
+
+    if (document.visibilityState === "visible") {
+      fetchNotifications();
+      startPolling();
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchNotifications();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleOpen = (event) => setAnchorEl(event.currentTarget);

@@ -26,8 +26,8 @@ const AddMemberForm = ({ onRefresh }) => {
   const [selectedRole, setSelectedRole] = useState(null);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const { activeClubId, StoreClubMember } = UseAuth();
-  console.log("activeClubId", activeClubId);
+  const { activeId, StoreClubMember } = UseAuth();
+  console.log("activeId", activeId);
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -36,7 +36,7 @@ const AddMemberForm = ({ onRefresh }) => {
     profession: "",
     domicile: "",
     relation: "",
-    club_id: activeClubId,
+    club_id: activeId,
   });
 
   const handleRoleChange = (role) => {
@@ -58,7 +58,7 @@ const AddMemberForm = ({ onRefresh }) => {
     //ajouter le club_id
     const AllData = {
       ...formData,
-      club_id: activeClubId,
+      club_id: activeId,
     };
     try {
       const res = await StoreClubMember(AllData);

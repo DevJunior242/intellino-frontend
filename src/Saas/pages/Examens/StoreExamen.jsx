@@ -30,7 +30,8 @@ function StoreExamen() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const navigate = useNavigate();
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
+  const isLigueUser = activeType === "Ligue";
 
   //obtenir les medals
   const getGrade = useCallback(async () => {
@@ -82,12 +83,18 @@ function StoreExamen() {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        organisateur_id: activeId,
+        organisateur_type: activeType,
       };
+      console.log("dataSend", dataSend);
       const response = await Instance.post("/api/examens", dataSend);
       console.log(response);
       if (response.data.success) {
-        navigate(`/dashboard/student/${response.data.data.id}/candidates`);
+        const routePrefix = isLigueUser
+          ? "/dashboard/league"
+          : "/dashboard/student";
+        navigate(`${routePrefix}/${response.data.data.id}/candidates`);
+        // navigate(`/dashboard/student/${response.data.data.id}/candidates`);
         setSuccess(response.data.message);
 
         setError({});

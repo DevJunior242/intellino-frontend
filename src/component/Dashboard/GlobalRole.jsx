@@ -10,7 +10,6 @@ function GlobalRole() {
   const { auth, activeRole } = UseAuth();
 
   const isSuperAdmin = auth.roleSuperAdmin?.includes("super_admin");
-  console.log("isSuperAdmin:", isSuperAdmin);
   return (
     <div>
       {isSuperAdmin && <SuperAdminDashboard />}

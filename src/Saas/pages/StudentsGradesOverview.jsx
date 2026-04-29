@@ -28,7 +28,7 @@ function StudentsGradesOverview() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -44,12 +44,12 @@ function StudentsGradesOverview() {
 
   //get Students Grades
   const getParcours = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     setLoading(true);
     setError("");
     try {
       const response = await Instance(
-        `/api/student-grades?club_id=${activeClubId}`,
+        `/api/student-grades?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log(response);
       setStudentGrades(response.data.studentGrades || []);
@@ -59,7 +59,7 @@ function StudentsGradesOverview() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     getParcours();
@@ -94,7 +94,7 @@ function StudentsGradesOverview() {
         <ConfigSkeleton />
       ) : studentGrades.length === 0 ? (
         <Typography color="error" align="center" py={2}>
-          Erreur lors du chargement des données.
+          Aucun historique disponible
         </Typography>
       ) : (
         <TableContainer
@@ -189,7 +189,7 @@ function StudentsGradesOverview() {
 
           {selectedStudent && (
             <StudentGradeTimeline
-              activeClubId={activeClubId}
+              activeId={activeId}
               studentId={selectedStudent.id}
               student={selectedStudent}
               onClose={handleCloseDrawer}

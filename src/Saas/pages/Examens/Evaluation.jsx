@@ -20,12 +20,14 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 function Evaluation({ student, open, handleClose, examenId }) {
   const [error, setError] = useState({});
 
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [enchainements, setEnchainement] = useState([]);
   const [commentaire, setCommentaire] = useState("");
   const hasError = (field) => !!error?.[field];
@@ -33,14 +35,14 @@ function Evaluation({ student, open, handleClose, examenId }) {
 
   const [scores, setScores] = useState({});
   //lactiveclubId
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   //obtenir les tournois
   const getEnch = useCallback(async () => {
     setLoading(true);
     try {
       const response = await Instance(
-        `/api/enchainements/${examenId}?club_id=${activeClubId}`,
+        `/api/enchainements/${examenId}?organisateur_id=${activeId}`,
       );
       console.log(response);
       setEnchainement(response.data.enchainements || []);
@@ -49,7 +51,7 @@ function Evaluation({ student, open, handleClose, examenId }) {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId, examenId]);
+  }, [activeId, examenId]);
 
   useEffect(() => {
     getEnch();
@@ -66,6 +68,7 @@ function Evaluation({ student, open, handleClose, examenId }) {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       const playload = {
         examen_id: examenId,
@@ -77,12 +80,11 @@ function Evaluation({ student, open, handleClose, examenId }) {
         commentaire: commentaire ?? "",
       };
       const response = await Instance.post(
-        `/api/evaluation/examen/${examenId}/candidat/${student.id}?club_id=${activeClubId}`,
+        `/api/evaluation/examen/${examenId}/candidat/${student.id}?organisateur_id=${activeId}`,
         playload,
       );
       console.log(response);
       if (response.data.success) {
-        alert("Note enregistrée avec succès !");
         setSuccess(response.data.message);
         //reset form
         setCommentaire("");
@@ -99,9 +101,11 @@ function Evaluation({ student, open, handleClose, examenId }) {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
-  if (loading) return <CircularProgress />;
+  if (loading) return <ConfigSkeleton />;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -169,9 +173,9 @@ function Evaluation({ student, open, handleClose, examenId }) {
             <Button
               onClick={handleSubmit}
               variant="contained"
-              disabled={loading}
+              disabled={submitting}
             >
-              {loading ? "Enregistrement..." : "Enregistrer"}
+              {submitting ? "Enregistrement..." : "Noter"}
             </Button>
           </DialogActions>
         </form>

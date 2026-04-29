@@ -8,13 +8,11 @@ import { parse } from "date-fns";
 const RevenueChart = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await Instance.get(
-        `/api/payments/stats?club_id=${activeClubId}`,
-      );
+      const res = await Instance.get(`/api/payments/stats?club_id=${activeId}`);
       console.log(res);
       //fomatted amount
       const formattedData = res.data.map((item) => ({
@@ -28,7 +26,7 @@ const RevenueChart = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
   useEffect(() => {
     fetchData();
   }, [fetchData]);

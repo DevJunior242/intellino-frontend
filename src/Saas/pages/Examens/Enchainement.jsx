@@ -6,12 +6,13 @@ import { UseAuth } from "../../../Api/AuthContext";
 import { useState } from "react";
 import Message from "../Message";
 import PulseLoader from "react-spinners/PulseLoader";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 function EnchainementList({ enchainements, examenId, getEnch, loading }) {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const handleDelete = async (id) => {
     setError("");
@@ -19,7 +20,7 @@ function EnchainementList({ enchainements, examenId, getEnch, loading }) {
     setError({});
     try {
       const res = await Instance.delete(
-        `/api/enchainements/${examenId}/${id}?club_id=${activeClubId}`,
+        `/api/enchainements/${examenId}/${id}?club_id=${activeId}`,
       );
       console.log(res);
       if (res.data.success) {
@@ -43,22 +44,7 @@ function EnchainementList({ enchainements, examenId, getEnch, loading }) {
         {success && <Message text={success} type="success" />}
         {error?.general && <Message text={error?.general} type="error" />}
       </Box>
-      {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Typography
-            variant="h4"
-            component="h2"
-            gutterBottom
-            sx={{
-              textAlign: "center",
-              fontWeight: "bold",
-              fontSize: { xs: 14, md: 32 },
-            }}
-          >
-            <PulseLoader size={8} />
-          </Typography>
-        </Box>
-      )}
+      {loading && <ConfigSkeleton />}
 
       {enchainements.length > 0 ? (
         <List>
@@ -106,6 +92,7 @@ function EnchainementList({ enchainements, examenId, getEnch, loading }) {
             textAlign: "center",
             fontWeight: "bold",
             fontSize: { xs: 14, md: 32 },
+            mt: 2,
           }}
         >
           Aucun enchaînement trouvé. Veuillez créer un nouvel enchaînement

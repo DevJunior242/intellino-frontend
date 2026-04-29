@@ -24,7 +24,8 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   console.log(competitionId);
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [students, setStudents] = useState([]);
   const [katas, setKatas] = useState([]);
   const [selectStudent, setSelectStudent] = useState(null);
@@ -78,6 +79,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
     setError({});
     setSuccess("");
     if (!competitionId) return;
+    setSubmitting(true);
     try {
       const dataSend = {
         ...formData,
@@ -109,6 +111,8 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -221,7 +225,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
             fullWidth
             sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
           >
-            ajouter
+            {submitting ? "Enregistrement en cours..." : "S'inscrire"}
           </Button>
         </form>
       </Box>

@@ -24,7 +24,7 @@ function StudentGradCreate() {
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectStudent, setSelectStudent] = useState(null);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [grade, setGrade] = useState([]);
   const [selectCurrentGrade, setSelectCurrentGrade] = useState(null);
   const hasError = (field) => !!error?.[field];
@@ -33,13 +33,13 @@ function StudentGradCreate() {
     student_id: null,
     current_grade_id: null,
     awarded_at: "",
-    club_id: activeClubId,
+    club_id: activeId,
   });
   //obtenir les medals
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance(`/api/grade?club_id=${activeClubId}`);
+      const response = await Instance(`/api/grade?club_id=${activeId}`);
       console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
@@ -47,7 +47,7 @@ function StudentGradCreate() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
   useEffect(() => {
     getGrade();
   }, [getGrade]);
@@ -92,7 +92,7 @@ function StudentGradCreate() {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const response = await Instance.post(
         "/api/student-grades/store",
@@ -152,7 +152,7 @@ function StudentGradCreate() {
         {error.general && <Message text={error.general} type="error" />}
         <form onSubmit={handleSubmit}>
           <StudentAutocomplete
-            activeClubId={activeClubId}
+            activeId={activeId}
             value={selectStudent}
             onChange={(newValue) => setSelectStudent(newValue)}
             hasError={hasError}

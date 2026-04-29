@@ -20,7 +20,7 @@ import { Home, SwapHoriz } from "@mui/icons-material";
 
 const EquipmentLoanManager = ({
   onRefresh,
-  activeClubId,
+  activeId,
   open,
   handleClose,
   equipment,
@@ -63,7 +63,7 @@ const EquipmentLoanManager = ({
     try {
       const dataToSend = {
         ...loanData,
-        club_id: activeClubId,
+        club_id: activeId,
         type: isInternal ? "internal" : "external",
       };
       if (!dataToSend.to_club_id) {

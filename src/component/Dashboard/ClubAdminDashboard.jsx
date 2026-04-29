@@ -42,17 +42,17 @@ function ClubAdminDashboard() {
     total_secretaries: 0,
   });
 
-  const { activeClubId } = UseAuth();
-  console.log("activeClubId", activeClubId);
+  const { activeId } = UseAuth();
+  console.log("activeId", activeId);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const fetchStats = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     setLoading(true);
     setError("");
     try {
       const response = await Instance.get(
-        `/api/dashboard/stats?club_id=${activeClubId}`,
+        `/api/dashboard/stats?organisateur_id=${activeId}`,
       );
       console.log(response);
       setStats(response.data);
@@ -62,13 +62,13 @@ function ClubAdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
-    if (activeClubId) {
+    if (activeId) {
       fetchStats();
     }
-  }, [activeClubId, fetchStats]);
+  }, [activeId, fetchStats]);
 
   if (loading) {
     return <ConfigSkeleton />;
@@ -164,7 +164,7 @@ function ClubAdminDashboard() {
       ></Box>
 
       <Box sx={{ mt: 3, mb: 2 }}>
-        <Program activeClubId={activeClubId} role="admin" />
+        <Program activeId={activeId} role="admin" />
         <Activity />
       </Box>
     </Box>

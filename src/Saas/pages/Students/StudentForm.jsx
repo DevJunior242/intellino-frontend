@@ -42,9 +42,9 @@ import { UseAuth } from "../../../Api/AuthContext";
 //     return Array.isArray(errorArray) ? errorArray.join(", ") : errorArray;
 //   };
 //   const hasError = (field) => !!error?.[field];
-//   const { activeRole, activeClubId } = UseAuth();
+//   const { activeRole, activeId } = UseAuth();
 //   console.log("activeRole", activeRole);
-//   console.log("activeClubId", activeClubId);
+//   console.log("activeId", activeId);
 //   const [formData, setFormData] = useState({
 //     fullname: "",
 //     birthdate: "",
@@ -53,7 +53,7 @@ import { UseAuth } from "../../../Api/AuthContext";
 //     email: "",
 //     phone: "",
 //     photo: "",
-//     club_id: activeClubId,
+//     club_id: activeId,
 //   });
 
 //   const [preview, setPreview] = useState(null);
@@ -90,7 +90,7 @@ import { UseAuth } from "../../../Api/AuthContext";
 //     setLoading(true);
 //     try {
 //       const response = await Instance(
-//         `/api/parents-users?club_id=${activeClubId}`,
+//         `/api/parents-users?club_id=${activeId}`,
 //       );
 //       console.log(response);
 //       setStudentParent(response.data.parentUsers || []);
@@ -99,7 +99,7 @@ import { UseAuth } from "../../../Api/AuthContext";
 //     } finally {
 //       setLoading(false);
 //     }
-//   }, [activeClubId]);
+//   }, [activeId]);
 
 //   useEffect(() => {
 //     getParents();
@@ -129,7 +129,7 @@ import { UseAuth } from "../../../Api/AuthContext";
 //       payload.append("fullname", formData.fullname);
 //       payload.append("birthdate", formData.birthdate);
 //       payload.append("sex", formData.sex);
-//       payload.append("club_id", activeClubId);
+//       payload.append("club_id", activeId);
 
 //       if (createAccount) {
 //         payload.append("email", formData.email);
@@ -355,7 +355,7 @@ import { UseAuth } from "../../../Api/AuthContext";
 // export default StudentForm;
 
 const StudentForm = () => {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [submitting, setSubmitting] = useState(false);
   const [isOwnResponsible, setIsOwnResponsible] = useState(false);
   const [error, setError] = useState({});
@@ -402,7 +402,7 @@ const StudentForm = () => {
     const formData = new FormData();
 
     // 1. Infos globales
-    formData.append("club_id", activeClubId);
+    formData.append("club_id", activeId);
     formData.append("is_own_responsible", isOwnResponsible ? 1 : 0);
 
     // 2. Infos du Parent (uniquement si non responsable lui-même)

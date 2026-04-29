@@ -25,7 +25,7 @@ function StudentList() {
   const [loading, setLoading] = useState(false);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const { auth, activeClubId } = UseAuth();
+  const { auth, activeId } = UseAuth();
   const [errorStudent, setErrorStudent] = useState("");
   const { error, setError } = useState({});
 
@@ -35,7 +35,7 @@ function StudentList() {
     setLoading(true);
     setErrorStudent("");
     try {
-      const response = await Instance(`/api/students?club_id=${activeClubId}`);
+      const response = await Instance(`/api/students?club_id=${activeId}`);
       console.log("students", response);
       setStudents(
         (response.data.students || []).map((student) => ({
@@ -55,7 +55,7 @@ function StudentList() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     getStudents();
@@ -82,12 +82,11 @@ function StudentList() {
 
   //delete
   const handleSoftDelete = async (student) => {
-    if (!window.confirm(`Supprimer ${student.fullname} ?`) || !activeClubId)
-      return;
+    if (!window.confirm(`Supprimer ${student.fullname} ?`) || !activeId) return;
 
     try {
       const response = await Instance.delete(
-        `/api/student/${student.id}?club_id=${activeClubId}`,
+        `/api/student/${student.id}?club_id=${activeId}`,
       );
 
       // Retirer la ligne du tableau

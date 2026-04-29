@@ -12,6 +12,7 @@ import {
   Divider,
   Button,
   CardActions,
+  Chip,
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -32,7 +33,8 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
     setLoading(true);
     try {
       const response = await Instance.get("/api/competitions/competitions");
-      setCompetitions(response.data.competitions || []);
+      console.log("epreuves", response);
+      setCompetitions(response.data.data || []);
     } catch (error) {
       console.error("Erreur Swiper:", error);
     } finally {
@@ -59,7 +61,7 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
         color="text.secondary"
         sx={{ fontWeight: "bold", mb: 2 }}
       >
-        Sélectionnez la compétition votre competition :
+        Sélectionnez la compétition votre competition
       </Typography>
 
       <Swiper
@@ -105,12 +107,13 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
                     <EmojiEventsIcon />
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {comp.nom}
+                    <Typography variant="caption" color="white">
+                      competition {comp?.niveau?.nom}-({comp?.discipline?.nom})
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {comp.id.substr(0, 8)}
-                    </Typography>
+                    <Chip
+                      label={`${comp?.category?.nom ?? ""} - ${comp?.category?.sexe ?? ""}`}
+                      size="small"
+                    />
                   </Box>
                 </Stack>
 
@@ -119,11 +122,31 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
                 <Stack spacing={0.5}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <LocationOnIcon fontSize="small" color="disabled" />
-                    <Typography variant="body2">{comp.lieu}</Typography>
+                    <Typography variant="body2">
+                      {comp?.evenement?.lieu}
+                    </Typography>
                   </Stack>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <CalendarMonthIcon fontSize="small" color="disabled" />
-                    <Typography variant="body2">{comp.date_debut}</Typography>
+                    <Typography variant="body2">
+                      {new Date(comp.heure_debut_prevu).toLocaleDateString(
+                        "fr-FR",
+                        { day: "2-digit", month: "short", year: "numeric" },
+                      )}{" "}
+                      {new Date(comp.heure_debut_prevu).toLocaleTimeString(
+                        "fr-FR",
+                        { hour: "2-digit", minute: "2-digit" },
+                      )}
+                      {" → "}
+                      {new Date(comp.heure_fin_prevue).toLocaleDateString(
+                        "fr-FR",
+                        { day: "2-digit", month: "short", year: "numeric" },
+                      )}{" "}
+                      {new Date(comp.heure_fin_prevue).toLocaleTimeString(
+                        "fr-FR",
+                        { hour: "2-digit", minute: "2-digit" },
+                      )}
+                    </Typography>
                   </Stack>
                 </Stack>
               </CardContent>

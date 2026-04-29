@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -13,6 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MemberLeagueForm from "./MemberLeagueForm";
 import Membres from "./Membres";
+import { Instance } from "../../../Api/Axios";
 
 // Couleurs exactes de ton interface
 const theme = {
@@ -25,9 +26,28 @@ const theme = {
 };
 
 export default function BureauRoles() {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const getMembers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await Instance.get("/api/membres/league");
+      console.log(response);
+      setMembers(response.data.members || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    getMembers();
+  }, [getMembers]);
+
   return (
     <Box sx={{ p: 4, bgcolor: theme.bg, minHeight: "100vh" }}>
       {/* Titre de la page */}
@@ -57,7 +77,7 @@ export default function BureauRoles() {
           }}
           onClick={handleOpen}
         >
-          + Ajouter membre
+          Ajouter membre
         </Button>
         <Button
           variant="outlined"
@@ -76,8 +96,12 @@ export default function BureauRoles() {
           Gérer les rôles
         </Button>
       </Stack>
-      <Membres />
-      <MemberLeagueForm open={open} handleClose={handleClose} />
+      <Membres members={members} loading={loading} />
+      <MemberLeagueForm
+        open={open}
+        handleClose={handleClose}
+        getMembers={getMembers}
+      />
     </Box>
   );
 }

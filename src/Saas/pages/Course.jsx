@@ -35,7 +35,7 @@ const initialSessionState = {
 };
 
 function Course() {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +68,7 @@ function Course() {
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance(`/api/grade?club_id=${activeClubId}`);
+      const response = await Instance(`/api/grade?club_id=${activeId}`);
       console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
@@ -76,7 +76,7 @@ function Course() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
   useEffect(() => {
     getGrade();
   }, [getGrade]);
@@ -193,7 +193,7 @@ function Course() {
         name: courseData.name,
         current_grade_id: courseData.current_grade_id || selectCurrentGrade?.id,
       },
-      club_id: activeClubId,
+      club_id: activeId,
       sessions: sessionsList,
     };
     console.log(finalPayload);

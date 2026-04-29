@@ -35,7 +35,7 @@ import ParentDet from "../../Saas/pages/ParentDet";
 import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
 
 function ParentDashboard() {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [stats, setStats] = useState({
     total_students: 0,
     actif_students: 0,
@@ -47,7 +47,7 @@ function ParentDashboard() {
     setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/dashboard/stats?club_id=${activeClubId}`,
+        `/api/dashboard/stats?club_id=${activeId}`,
       );
       console.log(response);
       setStats(response.data);

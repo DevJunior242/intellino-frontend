@@ -38,7 +38,7 @@ const icons = {
 function MesClubs() {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState("");
   const { auth, activeRole } = UseAuth();
   console.log("auth", auth);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,15 +59,19 @@ function MesClubs() {
     setAnchorEl(null);
   };
   const getMyClubs = useCallback(async () => {
+    if (!leagueId) return;
+
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
       const response = await Instance.get(
         `api/leagues/myClubs?league_id=${leagueId}`,
       );
-      console.log(response);
+      console.log("clubs", response);
       setClubs(response.data.data || []);
     } catch (error) {
-      console.log(error);
+      setError("Une erreur est survenue lors de la récupération des clubs");
     } finally {
       setLoading(false);
     }
@@ -76,6 +80,23 @@ function MesClubs() {
   useEffect(() => {
     getMyClubs();
   }, [getMyClubs]);
+
+  if (error) return <ErrorBlock message={error} onRetry={getMyClubs} />;
+  const statusConfig = {
+    0: {
+      label: "En attente",
+      color: "rgba(255, 193, 7, 0.15)",
+      text: "#FFC107",
+    }, // jaune
+    1: { label: "Actif", color: "rgba(76, 175, 80, 0.15)", text: "#4CAF50" }, // vert
+    2: { label: "Expiré", color: "rgba(244, 67, 54, 0.15)", text: "#F44336" }, // rouge
+    3: {
+      label: "En suspension",
+      color: "rgba(158, 158, 158, 0.15)",
+      text: "#9E9E9E",
+    }, // gris
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Stack spacing={3}>
@@ -193,102 +214,135 @@ function MesClubs() {
                 <TableCell>Phone</TableCell>
                 <TableCell>Licenciés</TableCell>
 
-                <TableCell>Cotisations</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Status(Cotisations)</TableCell>
+
                 <TableCell align="right">ACTIONS</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {clubs.map((club) => (
-                <TableRow
-                  key={club.id}
-                  hover
-                  sx={{
-                    "& td": {
-                      borderBottom: "1px solid rgba(255,255,255,0.03)",
-                      color: "#e8eaf0",
-                    },
-                  }}
-                >
-                  <TableCell>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      {/* Avatar avec gestion Logo ou Initiales */}
-                      <Avatar
-                        src={club.logo}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: "rgba(232, 200, 74, 0.12)",
-                          color: "#e8c84a",
-                          fontWeight: 700,
-                          fontSize: "0.9rem",
-                          borderRadius: 2,
-                          border: "1px solid rgba(232, 200, 74, 0.2)",
-                        }}
-                      >
-                        {club.name
-                          ? club.name.substring(0, 2).toUpperCase()
-                          : "??"}
-                      </Avatar>
-
-                      {/* Stack Vertical pour le Nom et la Ville */}
-                      <Box>
-                        <Typography
-                          sx={{
-                            fontWeight: 600,
-                            color: "#e8eaf0",
-                            fontSize: "0.85rem",
-                            lineHeight: 1.2, // Pour serrer un peu les deux lignes
-                          }}
-                        >
-                          {club.name}
-                        </Typography>
-
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#8b90a0", // Couleur secondaire plus discrète
-                            fontSize: "0.72rem",
-                            display: "block", // Force le passage à la ligne
-                            mt: 0.3,
-                          }}
-                        >
-                          {club.city}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{club.city}</TableCell>
-                  <TableCell>{club.phone}</TableCell>
-                  <TableCell>{club.licences_count || 15}</TableCell>
-
-                  <TableCell>{club.cotisation || "en attente"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={club.status === "actif" ? "Actif" : "Expiré"}
-                      size="small"
-                      sx={{
-                        bgcolor:
-                          club.status === "actif"
-                            ? "rgba(76,175,80,0.1)"
-                            : "rgba(255,152,0,0.1)",
-                        color: club.status === "actif" ? "#4caf50" : "#ff9800",
-                        fontSize: "0.7rem",
-                        fontWeight: 700,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      sx={{ color: "#8b90a0" }}
-                      onClick={(e) => handleOpenMenu(e, club)}
-                    >
-                      {icons.more}
-                    </IconButton>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    <Typography sx={{ color: "#8b90a0" }}>
+                      Chargement des clubs...
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : clubs.length > 0 ? (
+                clubs.map((club) => (
+                  <TableRow
+                    key={club.id}
+                    hover
+                    sx={{
+                      "& td": {
+                        borderBottom: "1px solid rgba(255,255,255,0.03)",
+                        color: "#e8eaf0",
+                      },
+                    }}
+                  >
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <Avatar
+                          src={club.logo}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            bgcolor: "rgba(232, 200, 74, 0.12)",
+                            color: "#e8c84a",
+                            fontWeight: 700,
+                            fontSize: "0.9rem",
+                            borderRadius: 2,
+                            border: "1px solid rgba(232, 200, 74, 0.2)",
+                          }}
+                        >
+                          {club.name
+                            ? club.name.substring(0, 2).toUpperCase()
+                            : "??"}
+                        </Avatar>
+
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontWeight: 600,
+                              color: "#e8eaf0",
+                              fontSize: "0.85rem",
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {club.name}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "#8b90a0",
+                              fontSize: "0.72rem",
+                              display: "block",
+                              mt: 0.3,
+                            }}
+                          >
+                            {club.city}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </TableCell>
+
+                    <TableCell>{club.city}</TableCell>
+                    <TableCell>{club.phone}</TableCell>
+                    <TableCell>{club.licences_count || 0}</TableCell>
+
+                    <TableCell>
+                      {club?.affiliations?.length > 0 ? (
+                        club.affiliations.map((affiliation) => {
+                          const config = statusConfig[affiliation.status];
+
+                          return (
+                            <Chip
+                              key={affiliation.id}
+                              label={config?.label}
+                              size="small"
+                              sx={{
+                                bgcolor: config?.color,
+                                color: config?.text,
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                mr: 0.5,
+                              }}
+                            />
+                          );
+                        })
+                      ) : (
+                        <Chip
+                          label="Aucune"
+                          size="small"
+                          sx={{
+                            bgcolor: "#444",
+                            fontSize: "0.7rem",
+                          }}
+                        />
+                      )}
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        sx={{ color: "#8b90a0" }}
+                        onClick={(e) => handleOpenMenu(e, club)}
+                      >
+                        {icons.more}
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    <Typography sx={{ color: "#8b90a0" }}>
+                      Aucun club disponible
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
 

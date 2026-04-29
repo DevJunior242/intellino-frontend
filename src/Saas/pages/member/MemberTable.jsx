@@ -31,7 +31,7 @@ function MemberTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const { auth, activeRole, activeClubId } = UseAuth();
+  const { auth, activeRole, activeId } = UseAuth();
   const allowAccess = ["admin_club"].includes(activeRole);
 
   const [openModal, setOpenModal] = useState(false);
@@ -44,7 +44,7 @@ function MemberTable() {
 
   const [params] = useSearchParams();
   const clubIdFromUrl = params.get("club_id");
-  const clubId = activeRole === "super_admin" ? clubIdFromUrl : activeClubId;
+  const clubId = activeRole === "super_admin" ? clubIdFromUrl : activeId;
   const getMembers = useCallback(
     async (page = 1) => {
       setIsLoading(true);
@@ -64,7 +64,7 @@ function MemberTable() {
         setIsLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {
@@ -90,7 +90,7 @@ function MemberTable() {
 
     try {
       const response = await Instance.delete(
-        `/api/members/${member.id}?club_id=${activeClubId}`,
+        `/api/members/${member.id}?club_id=${activeId}`,
       );
 
       // Retirer la ligne du tableau
@@ -239,7 +239,6 @@ function MemberTable() {
         {error?.general && <Message text={error.general} type="error" />}
       </Box>
       {/* loading et members.length ==0*/}
-      {isLoading && members.length === 0 && <ConfigSkeleton />}
 
       {allowAccess && (
         <Button
@@ -315,7 +314,7 @@ function MemberTable() {
             handleClose={handleCloseEditModal}
             member={selectedMember}
             setMembers={setMembers}
-            activeClubId={activeClubId}
+            activeId={activeId}
             onRefresh={getMembers}
           />
         )}

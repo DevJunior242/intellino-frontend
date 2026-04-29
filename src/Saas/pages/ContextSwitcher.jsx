@@ -12,27 +12,31 @@ import {
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import BusinessIcon from "@mui/icons-material/Business";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { UseAuth } from "../../Api/AuthContext";
-
 const ContextSwitcher = () => {
-  const { auth, activeClubId, switchRole: switchContext } = UseAuth();
+  // On récupère activeId et activeType
+  const { auth, activeId, switchPortal } = UseAuth();
   const [isOpen, setIsOpen] = useState(false);
-  console.log("auth switch:", auth);
-  // Séparer le club actif des autres
-  const memberships = auth.memberships || [];
-  console.log("memberships:", memberships);
-  if (memberships.length === 0) return null;
-  const currentMembership =
-    memberships.find((m) => m.id === activeClubId) || memberships[0];
-  console.log("currentMembership:", currentMembership);
-  const otherClubs = memberships.filter((m) => m.id !== activeClubId);
 
-  console.log("otherClubs :", otherClubs);
+  // 1. Fusionner les deux listes avec une étiquette 'type'
+  const clubs = (auth.clubs || []).map((c) => ({ ...c, type: "Club" }));
+  const leagues = (auth.leagues || []).map((l) => ({ ...l, type: "Ligue" }));
+
+  const allSpaces = [...clubs, ...leagues];
+
+  if (allSpaces.length === 0) return null;
+
+  // 2. Trouver l'espace actuellement sélectionné
+  const currentSpace = allSpaces.find((s) => s.id === activeId) || allSpaces[0];
+
+  const otherSpaces = allSpaces.filter((s) => s.id !== activeId);
+
   return (
     <Box sx={{ p: 2, position: "relative" }}>
-      {/* Bouton Principal : Affiche le club actuel */}
+      {/* Bouton Principal */}
       <Paper
         elevation={0}
         onClick={() => setIsOpen(!isOpen)}
@@ -42,7 +46,8 @@ const ContextSwitcher = () => {
           cursor: "pointer",
           borderRadius: 2,
           border: "1px solid",
-          borderColor: "divider",
+          borderColor:
+            currentSpace?.type === "Ligue" ? "primary.main" : "divider", // Bordure différente pour la ligue
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -50,24 +55,42 @@ const ContextSwitcher = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
-            <BusinessIcon fontSize="small" />
+          <Avatar
+            sx={{
+              bgcolor:
+                currentSpace?.type === "Ligue"
+                  ? "secondary.main"
+                  : "primary.main",
+              width: 32,
+              height: 32,
+            }}
+          >
+            {currentSpace?.type === "Ligue" ? (
+              <AccountBalanceIcon fontSize="small" />
+            ) : (
+              <BusinessIcon fontSize="small" />
+            )}
           </Avatar>
           <Box>
             <Typography variant="subtitle2" fontWeight="bold" noWrap>
-              {currentMembership?.name ?? "Club Inconnu"}
+              {currentSpace?.name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {currentMembership?.role.replace("_", " ")}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            >
+              {currentSpace?.type === "Ligue" ? "Ligue" : "Club"} —{" "}
+              {currentSpace?.role.replace("_", " ")}
             </Typography>
           </Box>
         </Box>
         <SwapHorizIcon fontSize="small" color="action" />
       </Paper>
 
-      {/* Menu déroulant animé avec Framer Motion */}
+      {/* Menu déroulant */}
       <AnimatePresence>
-        {isOpen && memberships.length > 1 && (
+        {isOpen && allSpaces.length > 1 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 5 }}
@@ -85,33 +108,47 @@ const ContextSwitcher = () => {
               sx={{
                 borderRadius: 2,
                 overflow: "hidden",
-                backgroundColor: "background.default",
+                backgroundColor: "background.paper",
               }}
             >
               <Typography
                 variant="overline"
-                sx={{ px: 2, pt: 1, color: "text.secondary" }}
+                sx={{
+                  px: 2,
+                  pt: 1,
+                  display: "block",
+                  color: "text.secondary",
+                  lineHeight: 2,
+                }}
               >
                 Changer d'espace
               </Typography>
-              <List sx={{ p: 0 }}>
-                {otherClubs.map((club) => (
-                  <ListItem key={club.id} disablePadding>
+              <List sx={{ p: 0, maxHeight: 300, overflowY: "auto" }}>
+                {otherSpaces.map((space) => (
+                  <ListItem key={space.id} disablePadding>
                     <ListItemButton
                       onClick={() => {
-                        switchContext(club.id, club.role);
+                        switchPortal(space.id, space.type, space.role); // On passe le type !
                         setIsOpen(false);
                       }}
                     >
                       <ListItemIcon sx={{ minWidth: 40 }}>
-                        <BusinessIcon fontSize="small" />
+                        {space.type === "Ligue" ? (
+                          <AccountBalanceIcon
+                            color="secondary"
+                            fontSize="small"
+                          />
+                        ) : (
+                          <BusinessIcon color="primary" fontSize="small" />
+                        )}
                       </ListItemIcon>
                       <Box>
                         <Typography variant="body2" fontWeight="medium">
-                          {club.name}
+                          {space.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {club.role}
+                          {space.type === "Ligue" ? "Ligue" : "Club"} —{" "}
+                          {space.role}
                         </Typography>
                       </Box>
                     </ListItemButton>
@@ -125,5 +162,4 @@ const ContextSwitcher = () => {
     </Box>
   );
 };
-
 export default ContextSwitcher;

@@ -7,7 +7,7 @@ import LatestStudents from "../../Saas/pages/LatestStudents";
 import QuickActions from "../../Saas/pages/QuickActions";
 import PaymentStat from "../../Saas/pages/PaymentStat";
 function SecretaireDashboard() {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   return (
     <Box
@@ -21,7 +21,7 @@ function SecretaireDashboard() {
         mt: 0,
       }}
     >
-      <PaymentStat activeClubId={activeClubId} />
+      <PaymentStat activeId={activeId} />
       <Box
         sx={{
           gap: 3,
@@ -31,7 +31,7 @@ function SecretaireDashboard() {
           alignItems: "center",
         }}
       >
-        <Program activeClubId={activeClubId} role="instructeur" />
+        <Program activeId={activeId} role="instructeur" />
         <LatestStudents />
       </Box>
 

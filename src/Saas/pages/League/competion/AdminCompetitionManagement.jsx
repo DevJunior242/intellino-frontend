@@ -7,7 +7,7 @@ import AdminPeseeTable from "./AdminPeseeTable";
 export default function AdminCompetitionManagement() {
   const [selectedCompId, setSelectedCompId] = useState(null);
   const [inscriptions, setInscriptions] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // 1. On surveille le changement de compétition sélectionnée
   useEffect(() => {
@@ -22,8 +22,8 @@ export default function AdminCompetitionManagement() {
       const res = await Instance.get(
         `/api/admin/inscriptions?competition_id=${compId}`,
       );
-      console.log(res);
-      setInscriptions(res.data.data);
+      console.log("athletes", res);
+      setInscriptions(res.data || []);
     } catch (err) {
       console.error("Erreur de chargement", err);
     } finally {
@@ -33,7 +33,7 @@ export default function AdminCompetitionManagement() {
 
   return (
     <Box>
-      {/* SECTION 1 : Ton Swiper pour choisir LA compétition */}
+      {/* SECTION 1 : Swiper pour choisir LA compétition */}
       <MySwiperComp
         onSelect={(id) => setSelectedCompId(id)}
         selectedId={selectedCompId}

@@ -38,8 +38,8 @@ const EquipmentTable = ({
     setSelectedEquipment(null);
   };
 
-  const { activeClubId } = UseAuth();
-  if (!activeClubId) return;
+  const { activeId } = UseAuth();
+  if (!activeId) return;
   return (
     <Box sx={{ mt: 8, backgroundColor: "background.default" }}>
       <TableContainer
@@ -187,7 +187,7 @@ const EquipmentTable = ({
             handleClose={handleCloseModal}
             equipment={selectedEquipment}
             onRefresh={onRefresh}
-            activeClubId={activeClubId}
+            activeId={activeId}
           />
         )}
       </Box>

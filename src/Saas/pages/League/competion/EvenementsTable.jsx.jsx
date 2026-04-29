@@ -29,6 +29,7 @@ import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import GroupIcon from "@mui/icons-material/Group";
 import { UseAuth } from "../../../../Api/AuthContext";
 import Message from "../../Message";
+import ConfigSkeleton from "../../ConfigSkeleton";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const formatDate = (d) =>
@@ -63,14 +64,14 @@ const DISC_COLOR = {
   kata: "success",
 };
 
-const getStatut = (statut) =>
-  STATUT_CONFIG[statut] ?? { label: String(statut), color: "default" };
+const getStatut = (status) =>
+  STATUT_CONFIG[status] ?? { label: String(status), color: "default" };
 
 // ─── Ligne épreuve ────────────────────────────────────────────────────────────
 const EpreuveRow = ({ epreuve }) => {
   const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
-  const statut = getStatut(epreuve.statut);
+  const status = getStatut(epreuve.status);
 
   return (
     <TableRow hover sx={{ "& td": { py: 1.2 } }}>
@@ -145,9 +146,9 @@ const EpreuveRow = ({ epreuve }) => {
 
       <TableCell>
         <Chip
-          label={statut.label}
+          label={status.label}
           size="small"
-          color={statut.color}
+          color={status.color}
           variant="filled"
         />
       </TableCell>
@@ -165,7 +166,7 @@ const EvenementRow = ({
 }) => {
   const [open, setOpen] = useState(false);
   const epreuves = evenement.competitions ?? [];
-  const statut = getStatut(evenement.statut);
+  const status = getStatut(evenement.status);
   if (!auth) return null;
   return (
     <>
@@ -259,13 +260,13 @@ const EvenementRow = ({
 
         {/* Statut */}
         <TableCell>
-          <Chip label={statut.label} size="small" color={statut.color} />
+          <Chip label={status.label} size="small" color={status.color} />
         </TableCell>
 
         {/* action  ouvrir / cloturer */}
         <TableCell>
           <Stack direction="row" gap={1}>
-            {evenement.statut === 0 && (
+            {evenement.status === 0 && (
               <Button
                 variant="contained"
                 color="success"
@@ -277,7 +278,7 @@ const EvenementRow = ({
                 ouvrir
               </Button>
             )}
-            {evenement.statut === 1 && (
+            {evenement.status === 1 && (
               <Button
                 variant="contained"
                 color="error"
@@ -289,7 +290,7 @@ const EvenementRow = ({
                 Cloturer
               </Button>
             )}
-            {evenement.statut === 2 && (
+            {evenement.status === 2 && (
               <Button
                 disabled={submitting}
                 variant="contained"
@@ -410,14 +411,8 @@ export default function EvenementsTable({
   success,
   errors,
 }) {
-  if (loading || !auth) {
-    return (
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        <CardContent sx={{ textAlign: "center", py: 6 }}>
-          <Typography color="text.secondary">Chargement...</Typography>
-        </CardContent>
-      </Card>
-    );
+  if (loading) {
+    return <ConfigSkeleton />;
   }
 
   if (evenements.length === 0) {

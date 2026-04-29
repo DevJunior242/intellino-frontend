@@ -20,7 +20,6 @@ import { UseAuth } from "../../../Api/AuthContext";
 import StudentAutocomplete from "../StudentAutocomplete";
 
 function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
-  console.log("examenId : ", examenId);
   const [error, setError] = useState({});
 
   const [success, setSuccess] = useState("");
@@ -29,7 +28,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
   const getError = (field) => error?.[field]?.join(", ");
 
   //lactiveclubId
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -58,14 +57,20 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
         {
           ...formData,
           student_id: selectedStudent.id,
-          club_id: activeClubId,
+          organisateur_id: activeId,
+          organisateur_type: activeType,
         },
       );
       console.log(res);
       if (res.data.success) {
+        setSuccess(res?.data?.message || "candidat ajouté");
         setSelectedStudent(null);
-        fetchExamen();
+        setTimeout(() => {
+          fetchExamen();
+          handleClose();
+        }, 1000);
       }
+      fetchExamen();
     } catch (err) {
       console.error(err);
       ErrorGlobal({ error: err, setError });
@@ -74,12 +79,10 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
     }
   };
 
-  if (loading) return <CircularProgress />;
-
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      // onClose={handleClose}
       maxWidth="sm"
       fullWidth
       sx={{
@@ -110,7 +113,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
 
             <Divider sx={{ mb: 2 }} />
             <StudentAutocomplete
-              activeClubId={activeClubId}
+              activeId={activeId}
               value={selectedStudent}
               onChange={(val) => setSelectedStudent(val)}
               hasError={hasError}
@@ -120,11 +123,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Annuler</Button>
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              disabled={loading}
-            >
+            <Button type="submit" variant="contained" disabled={loading}>
               {loading ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogActions>

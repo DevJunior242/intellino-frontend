@@ -88,7 +88,7 @@ function ClubStore() {
         },
       );
       if (response?.data?.success) {
-        const { user, memberships, new_club } = response.data;
+        const { user, clubs, new_club } = response.data;
 
         // 1. Extraire les noms des rôles pour le State (Format: ["admin_club"])
         // On cherche les rôles dans le premier club car c'est celui qu'on vient de créer
@@ -98,7 +98,7 @@ function ClubStore() {
         // On passe les rôles extraits pour écraser l'ancien tableau vide
         updateAuth({
           user: user,
-          memberships: memberships,
+          clubs: clubs,
           role: extractedRoles,
         });
 

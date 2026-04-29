@@ -14,7 +14,7 @@ import { CheckCircle, Lock } from "@mui/icons-material";
 import { Instance } from "../../Api/Axios";
 import ConfigSkeleton from "./ConfigSkeleton";
 
-function StudentGradeTimeline({ student, activeClubId }) {
+function StudentGradeTimeline({ student, activeId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState({
@@ -22,13 +22,13 @@ function StudentGradeTimeline({ student, activeClubId }) {
     student_history: [],
   });
   useEffect(() => {
-    if (!student || !activeClubId) return;
+    if (!student || !activeId) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         const response = await Instance.get(
-          `/api/student-grades/${student.id}/history?club_id=${activeClubId}`,
+          `/api/student-grades/${student.id}/history?club_id=${activeId}`,
         );
         setData(response.data);
       } catch (error) {
@@ -39,7 +39,7 @@ function StudentGradeTimeline({ student, activeClubId }) {
     };
 
     fetchData();
-  }, [student, activeClubId]);
+  }, [student, activeId]);
 
   //definir le style de grade color config
   const gradeColorConfig = {
@@ -54,12 +54,7 @@ function StudentGradeTimeline({ student, activeClubId }) {
     "centure marron": { color: "#f44336" },
   };
 
-  if (loading)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <ConfigSkeleton />
-      </Box>
-    );
+  if (loading) return <ConfigSkeleton />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (

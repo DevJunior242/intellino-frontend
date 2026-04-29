@@ -40,16 +40,16 @@ import ErrorBlock from "./ErrorBlock";
 export default function PaymentStat() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [error, setError] = useState("");
 
   const fetchStats = useCallback(async () => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     setLoading(true);
     setError("");
     try {
       const res = await Instance.get(
-        `/api/payments/statistiques?club_id=${activeClubId}`,
+        `/api/payments/statistiques?club_id=${activeId}`,
       );
       console.log(res);
       setStats(res.data.data);
@@ -59,7 +59,7 @@ export default function PaymentStat() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchStats();

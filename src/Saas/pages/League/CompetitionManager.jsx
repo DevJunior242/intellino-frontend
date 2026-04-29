@@ -106,7 +106,8 @@ const StatusBadge = ({ label, type }) => {
 // --- COMPOSANT PRINCIPAL : Page de Gestion des Compétitions ---
 export default function CompetitionManager() {
   const [activeComp, setActiveComp] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loadingActive, setLoadingActive] = useState(true);
+  const [loadingEvenements, setLoadingEvenements] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [evenements, setEvenements] = useState([]);
   const [success, setSuccess] = useState("");
@@ -116,21 +117,19 @@ export default function CompetitionManager() {
     auth?.role?.includes("arbitre_league") ||
     auth?.role?.includes("admin_league");
 
-  console.log(auth);
-  console.log(arbitre);
   //auh
   // Récupération l'evenement actif (celui avec statut "ouverte" ou "en_cours")
   const getEventActive = useCallback(async () => {
-    setLoading(true);
+    setLoadingActive(true);
     try {
       const response = await Instance.get("/api/evenements/getEventActive");
-      console.log(response);
+      console.log("activeComp", response);
       setActiveComp(response.data || []);
     } catch (error) {
       console.log(error);
       setActiveComp({});
     } finally {
-      setLoading(false);
+      setLoadingActive(false);
     }
   }, []);
 
@@ -140,7 +139,7 @@ export default function CompetitionManager() {
 
   // Récupération des compétitions
   const getEvenements = useCallback(async () => {
-    setLoading(true);
+    setLoadingEvenements(true);
     try {
       const response = await Instance.get(`/api/evenements/evenements`);
       console.log(response);
@@ -148,7 +147,7 @@ export default function CompetitionManager() {
     } catch (error) {
       console.log(error);
     } finally {
-      setLoading(false);
+      setLoadingEvenements(false);
     }
   }, []);
 
@@ -173,7 +172,7 @@ export default function CompetitionManager() {
       getEventActive();
     } catch (error) {
       console.error(error);
-      ErrorGlobal({ error, setError, callback: () => setLoading(false) });
+      ErrorGlobal({ error, setError });
     } finally {
       setSubmitting(false);
     }
@@ -182,6 +181,12 @@ export default function CompetitionManager() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const totalInscriptions =
+    activeComp?.competitions?.reduce(
+      (sum, comp) => sum + (comp.inscriptions_count || 0),
+      0,
+    ) ?? 0;
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.bg, minHeight: "100vh" }}>
       {/* --- BOUTONS D'ACTION SUPÉRIEURS --- */}
@@ -203,7 +208,7 @@ export default function CompetitionManager() {
 
       {/* --- BLOC ÉVÉNEMENT PRINCIPAL (Featured Competition) --- */}
 
-      {loading ? (
+      {loadingActive ? (
         // spinner
         <Box sx={{ display: "flex", justifyContent: "center", p: 6 }}>
           <CircularProgress />
@@ -235,10 +240,13 @@ export default function CompetitionManager() {
               <InfoCard title="Lieu" value={activeComp.lieu} />
               <InfoCard
                 title="Taux d'inscription"
-                value={`${activeComp.inscriptions_count} / 40`}
+                value={`${totalInscriptions} / 40`}
                 color={theme.success}
               />
-              <StatusBadge statut={activeComp.statut} />
+              <StatusBadge
+                label={activeComp.statut}
+                type={activeComp.statut}
+              />{" "}
             </Stack>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">
@@ -259,7 +267,7 @@ export default function CompetitionManager() {
       <EvenementsTable
         handleStatusChange={handleStatusChange}
         evenements={evenements}
-        loading={loading}
+        loading={loadingEvenements}
         submitting={submitting}
         success={success}
         errors={error}

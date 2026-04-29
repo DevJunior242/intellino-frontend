@@ -17,7 +17,7 @@ export default function EditStudent({ open, handleClose, data, setData }) {
   const [error, setError] = useState({});
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export default function EditStudent({ open, handleClose, data, setData }) {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       console.log("SEND", dataSend);
 

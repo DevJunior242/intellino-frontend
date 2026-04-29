@@ -17,12 +17,12 @@ import { UseAuth } from "../../Api/AuthContext";
 function StoreGrade() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  //activeClubId
-  const { activeClubId } = UseAuth();
+  //activeId
+  const { activeId } = UseAuth();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-   });
+  });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,7 +34,7 @@ function StoreGrade() {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const response = await Instance.post("/api/grade/store", dataSend);
       console.log(response);

@@ -4,12 +4,12 @@ import Program from "../../Saas/pages/Program";
 import StudentsGradesOverview from "../../Saas/pages/StudentsGradesOverview";
 
 function StudentDashboard() {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Box>
-        <Program activeClubId={activeClubId} role="karateka" />
+        <Program activeId={activeId} role="karateka" />
 
         <StudentsGradesOverview />
       </Box>

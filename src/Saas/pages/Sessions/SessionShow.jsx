@@ -27,7 +27,7 @@ function SessionShow() {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pagination, setPagination] = useState({});
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const location = useLocation();
 
   const queryParams = new URLSearchParams(location.search);
@@ -37,18 +37,16 @@ function SessionShow() {
 
   const fetchData = useCallback(
     async (page = 1) => {
-      if (!activeClubId) return;
+      if (!activeId) return;
       setLoading(true);
       setError({});
 
       try {
         const [studentsRes, sessionsRes] = await Promise.all([
           Instance.get(
-            `/api/session/${sessionId}/students?club_id=${clubId}&page=${page}`,
+            `/api/session/${sessionId}/students?club_id=${activeId}&page=${page}`,
           ),
-          Instance.get(
-            `/api/sessions/${sessionId}/show?club_id=${activeClubId}`,
-          ),
+          Instance.get(`/api/sessions/${sessionId}/show?club_id=${activeId}`),
         ]);
 
         const rawData = studentsRes?.data?.students;
@@ -87,7 +85,7 @@ function SessionShow() {
         setLoading(false);
       }
     },
-    [sessionId, clubId, activeClubId],
+    [sessionId, clubId, activeId],
   );
 
   useEffect(() => {
@@ -105,7 +103,7 @@ function SessionShow() {
     }));
   };
   const handleSave = async (e) => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     e.preventDefault();
     setIsSubmitting(true);
     setError({});
@@ -120,7 +118,7 @@ function SessionShow() {
         attendances: data,
       };
       const response = await Instance.post(
-        `/api/attendances/bulk?club_id=${activeClubId}`,
+        `/api/attendances/bulk?club_id=${activeId}`,
         payload,
       );
       if (response.data.success) {

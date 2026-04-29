@@ -16,15 +16,15 @@ import {
   EventBusy,
   Update,
 } from "@mui/icons-material";
-import { useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
-const SessionStatusAlert = ({ examen }) => {
-  // 1. CAS : SESSION ANNULÉE
-  if (examen.status === "cancelled") {
+const ExamenStatusAlert = ({ examen }) => {
+  if (!examen) return null;
+   // 1. CAS : EXAMEN ANNULÉE
+  if (examen.status === 3) {
     return (
       <Alert
         severity="error"
@@ -53,9 +53,9 @@ const SessionStatusAlert = ({ examen }) => {
     );
   }
 
-  // 2. CAS : SESSION REPORTÉE
+  // 2. CAS : EXAMEN REPORTÉE
   // (On détecte le report si la date/heure actuelle est différente de la date de création ou via un flag 'is_rescheduled')
-  if (examen.parent_examen_id || examen.old_examen_date) {
+  if (examen.parent_examen_id || examen.old_start_date) {
     return (
       <Alert
         severity="info"
@@ -63,11 +63,11 @@ const SessionStatusAlert = ({ examen }) => {
         sx={{ mb: 3, borderRadius: 2, border: "1px solid #91d5ff" }}
       >
         <AlertTitle sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-          Session Reportée
+          Examen Reporté
         </AlertTitle>
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
-            Cette séance a été déplacée vers une nouvelle plage horaire.
+            Cet examen a été déplacé vers une nouvelle plage horaire.
           </Typography>
           <Divider sx={{ my: 1, opacity: 0.2 }} />
           <Box sx={{ display: "flex", gap: 4 }}>
@@ -114,7 +114,7 @@ const SessionStatusAlert = ({ examen }) => {
                 NOUVELLE DATE
               </Typography>
               <Typography variant="body1" fontWeight="bold">
-                {examen.examen_date}
+                {examen?.start_date}
               </Typography>
             </Box>
             <Box>
@@ -141,45 +141,11 @@ const SessionStatusAlert = ({ examen }) => {
   return null;
 };
 
-const ExamenInfos = ({ examenId }) => {
-  const [examen, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { activeClubId } = UseAuth();
-  const [error, setError] = useState("");
-
-  const fetchExamenData = useCallback(async () => {
-    if (!examenId || !activeClubId) return;
-    try {
-      setLoading(true);
-      setError("");
-      // On récupère les détails complets de la examen
-      const response = await Instance.get(
-        `/api/examens/${examenId}/show?club_id=${activeClubId}`,
-      );
-      setSession(response.data.examen);
-      console.log(response);
-    } catch (error) {
-      setError("Erreur lors de la récupération des détails de la examen");
-    } finally {
-      setLoading(false);
-    }
-  }, [examenId, activeClubId]);
-  useEffect(() => {
-    fetchExamenData();
-  }, [fetchExamenData]);
-
-  if (loading) return <ConfigSkeleton />;
-
-  if (error)
-    return (
-      <ErrorBlock
-        message="Impossible de charger les détails de la examen"
-        onRetry={fetchExamenData}
-      />
-    );
+const ExamenInfos = ({ examen }) => {
+ 
   return (
     <Box sx={{ backgroundColor: "Background.default" }}>
-      <SessionStatusAlert examen={examen} />
+      <ExamenStatusAlert examen={examen} />
       <Grid container spacing={3}>
         {/* Colonne Gauche : Académique */}
         <Grid item xs={12} md={6}>
@@ -199,10 +165,10 @@ const ExamenInfos = ({ examenId }) => {
             </Typography>
             <Box sx={{ ml: 4 }}>
               <Typography variant="subtitle1" fontWeight="bold">
-                {examen.course?.name}
+                Examen pour la {examen?.next_grade?.name}
               </Typography>
               <Chip
-                label={examen.course?.grade?.name}
+                label={examen?.next_grade?.name}
                 size="small"
                 color="error"
                 sx={{ mt: 1, fontWeight: "bold" }}
@@ -236,17 +202,17 @@ const ExamenInfos = ({ examenId }) => {
             </Typography>
             <Box sx={{ ml: 4 }}>
               <Typography variant="body1">
-                <b>Club :</b> {examen.course?.club?.name}
+                <b>{examen?.organisateur?.name}</b>{" "}
               </Typography>
               <Typography variant="body1">
-                <b>Lieu :</b> {examen.course?.club?.country}
+                {/* <b>Lieu :</b> {examen?.club?.country} */}
               </Typography>
               <Divider sx={{ my: 1.5 }} />
               <Typography
                 variant="body1"
                 sx={{ display: "flex", alignItems: "center", gap: 1 }}
               >
-                <CalendarToday fontSize="small" /> {examen.examen_date}
+                <CalendarToday fontSize="small" /> {examen.start_date}
               </Typography>
               <Typography variant="body1">
                 <b>Horaire :</b> {examen.start_time.slice(0, 5)} -{" "}
@@ -270,7 +236,7 @@ const ExamenInfos = ({ examenId }) => {
             }}
           >
             <Typography variant="caption" color="text.secondary">
-              ID Session : {examen.id.substr(0, 5)}
+              ID Examen : {examen?.id.substr(0, 5)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Créé le : {new Date(examen.created_at).toLocaleDateString()}

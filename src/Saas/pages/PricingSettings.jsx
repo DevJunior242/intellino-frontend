@@ -45,10 +45,10 @@ const PricingSettings = () => {
     duration_unit: "month",
   });
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const fetchPricingData = useCallback(async () => {
-    if (activeClubId == null) return;
+    if (activeId == null) return;
 
     try {
       setError({});
@@ -56,7 +56,7 @@ const PricingSettings = () => {
 
       const [resCat, resPlans] = await Promise.all([
         Instance.get("/api/payment-categories"),
-        Instance.get(`/api/pricing-plans?club_id=${activeClubId}`),
+        Instance.get(`/api/pricing-plans?club_id=${activeId}`),
       ]);
 
       setCategories(resCat.data);
@@ -66,7 +66,7 @@ const PricingSettings = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchPricingData();
@@ -80,7 +80,7 @@ const PricingSettings = () => {
     try {
       await Instance.post("/api/pricing-plans", {
         ...newPlan,
-        club_id: activeClubId,
+        club_id: activeId,
       });
       fetchPricingData();
       setNewPlan({
@@ -104,7 +104,7 @@ const PricingSettings = () => {
     try {
       setDeleteId(id);
       const res = await Instance.delete(
-        `/api/pricing-plans/${id}?club_id=${activeClubId}`,
+        `/api/pricing-plans/${id}?club_id=${activeId}`,
       );
       console.log(res);
       if (res.data.success) {

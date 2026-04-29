@@ -288,10 +288,10 @@ function ProgramSkeleton() {
 
 /**
  * Props:
- *  - activeClubId : string | number
+ *  - activeId : string | number
  *  - role         : "admin" | "instructeur" | "secretaire"
  */
-function Program({ activeClubId, role = "admin" }) {
+function Program({ activeId, role = "admin" }) {
   const [programmes, setProgrammes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [range, setRange] = useState("today");
@@ -303,7 +303,7 @@ function Program({ activeClubId, role = "admin" }) {
       try {
         setLoading(true);
         const res = await Instance.get(
-          `/api/programmes?club_id=${activeClubId}&range=${r}`,
+          `/api/programmes?organisateur_id=${activeId}&range=${r}`,
         );
         console.log("Programme response:", res);
         if (res.status === 200) {
@@ -315,14 +315,14 @@ function Program({ activeClubId, role = "admin" }) {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {
-    if (activeClubId) {
+    if (activeId) {
       getProgrammes(range);
     }
-  }, [activeClubId, getProgrammes, range]);
+  }, [activeId, getProgrammes, range]);
 
   const handleRangeChange = (_, newRange) => {
     if (!newRange) return;

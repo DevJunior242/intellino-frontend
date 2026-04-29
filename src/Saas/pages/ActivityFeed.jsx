@@ -35,13 +35,13 @@ const activityConfig = {
 function ActivityFeed() {
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([]);
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   const getActivities = useCallback(async () => {
     setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/dashboard/activity?club_id=${activeClubId}`,
+        `/api/dashboard/activity?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log("actitivites", response);
       setActivities(response.data);
@@ -50,12 +50,12 @@ function ActivityFeed() {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     getActivities();
-  }, [activeClubId, getActivities]);
+  }, [activeId, getActivities]);
 
   return (
     <Box sx={{ flexGrow: 1, mt: 2, backgroundColor: "background.default" }}>

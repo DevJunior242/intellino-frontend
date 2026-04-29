@@ -34,7 +34,7 @@ const ReportSessionModal = ({
     start_time: session?.start_time?.substring(0, 5) || "",
     end_time: session?.end_time?.substring(0, 5) || "",
   });
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,7 +44,7 @@ const ReportSessionModal = ({
     try {
       const dataSend = {
         ...newData,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       console.log(dataSend);
       const response = await Instance.post(

@@ -14,13 +14,14 @@ import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import PulseLoader from "react-spinners/PulseLoader";
 
 function Storeleague() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { switchRole, updateAuth } = UseAuth();
-
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -42,12 +43,12 @@ function Storeleague() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
+    setSubmitting(true);
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
     formDataInitial.append("phone", formData.phone);
     formDataInitial.append("logo", formData.logo);
 
-    console.log(formDataInitial);
     try {
       const response = await Instance.post(
         "/api/leagues/leagues",
@@ -93,6 +94,8 @@ function Storeleague() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -181,8 +184,13 @@ function Storeleague() {
             variant="contained"
             fullWidth
             sx={{ mt: 2, textTransform: "none" }}
+            disabled={submitting}
           >
-            créer une league
+            {submitting ? (
+              <PulseLoader size={20} color="#fff" />
+            ) : (
+              "créer une league"
+            )}
           </Button>
         </form>
       </Box>

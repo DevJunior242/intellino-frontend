@@ -35,7 +35,7 @@ const ReportExamenModal = ({
     start_time: examen?.start_time?.substring(0, 5) || "",
     end_time: examen?.end_time?.substring(0, 5) || "",
   });
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ const ReportExamenModal = ({
     try {
       const dataSend = {
         ...newData,
-        club_id: activeClubId,
+        organisateur_id: activeId,
       };
       const response = await Instance.post(
         `/api/examens/${examenId}/reschedule`,

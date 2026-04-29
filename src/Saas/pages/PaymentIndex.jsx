@@ -28,7 +28,7 @@ function PaymentIndex() {
   const [paiements, setPaiements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [downloadingId, setDownloadingId] = useState(null);
   const [error, setError] = useState("");
   const getPayment = useCallback(
@@ -37,7 +37,7 @@ function PaymentIndex() {
       setError("");
       try {
         const response = await Instance.get(
-          `/api/payments?page=${page}&club_id=${activeClubId}`,
+          `/api/payments?page=${page}&club_id=${activeId}`,
         );
         console.log(response);
         const payment = response.data.paiements || [];
@@ -55,7 +55,7 @@ function PaymentIndex() {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
 
   useEffect(() => {
@@ -66,7 +66,7 @@ function PaymentIndex() {
     setDownloadingId(paymentId);
     try {
       const res = await Instance.get(
-        `/api/payments/${paymentId}/downloadInvoice?club_id=${activeClubId}`,
+        `/api/payments/${paymentId}/downloadInvoice?club_id=${activeId}`,
         {
           responseType: "blob",
         },
@@ -115,9 +115,7 @@ function PaymentIndex() {
           </Typography>
 
           {loading ? (
-            <Box display="flex" justifyContent="center" py={5}>
-              <ConfigSkeleton />
-            </Box>
+            <ConfigSkeleton />
           ) : (
             <TableContainer sx={{ overflowX: "auto", maxWidth: "100%" }}>
               <Table stickyHeader aria-label="payments table">

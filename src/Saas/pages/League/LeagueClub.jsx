@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import ConfigSkeleton from "../ConfigSkeleton";
 
 const MotionCard = motion(Card);
 
@@ -12,23 +13,28 @@ export default function LeagueClub() {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
+  const [errorClub, setErrorClub] = useState("");
 
-  const getClubsAvailable = useCallback(async () => {
+  const getClubsAvailable = async () => {
+    setLoading(true);
+    setErrorClub("");
     try {
-      setLoading(true);
       const response = await Instance.get("/api/clubs/getClubsAvailable");
       console.log(response);
       setClubs(response.data.clubs.data || []);
     } catch (error) {
       console.log(error);
+      setErrorClub(
+        "Une erreur est survenue lors de la récupération des clubs disponibles",
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     getClubsAvailable();
-  }, [getClubsAvailable]);
+  }, []);
   //add club
   const handleAddClub = async (clubId) => {
     setError({});
@@ -48,6 +54,13 @@ export default function LeagueClub() {
       ErrorGlobal({ error, setError });
     }
   };
+  if (errorClub)
+    return (
+      <ErrorBlock
+        message="Impossible de charger les clubs disponibles"
+        onRetry={getClubsAvailable}
+      />
+    );
   return (
     <Box p={3}>
       <Typography variant="h5" mb={3}>
@@ -57,19 +70,7 @@ export default function LeagueClub() {
       {error.general && <Message text={error.general} type="error" />}
 
       {loading ? (
-        <Box display="flex" justifyContent="center" py={10}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            style={{
-              width: 40,
-              height: 40,
-              border: "4px solid #1976d2",
-              borderTop: "4px solid transparent",
-              borderRadius: "50%",
-            }}
-          />
-        </Box>
+        <ConfigSkeleton />
       ) : clubs.length > 0 ? (
         clubs.map((club) => (
           <MotionCard

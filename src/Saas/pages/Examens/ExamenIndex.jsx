@@ -9,8 +9,11 @@ import {
   Button,
   useTheme,
   useMediaQuery,
+  Divider,
+  Avatar,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import { Business, Shield } from "@mui/icons-material";
 
 import Chip from "@mui/material/Chip";
 import PulseLoader from "react-spinners/PulseLoader";
@@ -29,7 +32,9 @@ function ExamenIndex() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
-  const { activeClubId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
+  const isLigueUser = activeType === "Ligue";
+
   const theme = useTheme();
   const colors = tokenTheme(theme.palette.mode);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -38,12 +43,12 @@ function ExamenIndex() {
   const navigate = useNavigate();
   const GetExamens = useCallback(
     async (page = 1) => {
-      if (!activeClubId) return;
+      if (!activeId) return;
       setLoading(true);
       setError("");
       try {
         const response = await Instance(
-          `/api/examens?page=${page}&club_id=${activeClubId}`,
+          `/api/examens?page=${page}&organisateur_id=${activeId}&organisateur_type=${activeType}`,
         );
         console.log(response);
         const examen = response.data.examens || [];
@@ -63,7 +68,7 @@ function ExamenIndex() {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId, activeType],
   );
 
   useEffect(() => {
@@ -140,7 +145,7 @@ function ExamenIndex() {
             >
               <Button
                 component={Link}
-                to="/dashboard/student/examen/store"
+                to="/examen/store"
                 variant="contained"
                 sx={{
                   mt: 4,
@@ -149,6 +154,7 @@ function ExamenIndex() {
                   fontWeight: "bold",
                   backgroundColor: "success.main",
                   fontSize: { xs: 8, md: 24 },
+                  textTransform: "none",
                 }}
               >
                 creer un examen
@@ -166,7 +172,7 @@ function ExamenIndex() {
               width: "100%",
               height: "350px",
               borderRadius: "16px",
-              backgroundImage: `url('https://maliactu.net/wp-content/uploads/2025/09/542640937_806957088505277_6446405435339140521_n-600x365.jpg')`,
+              backgroundImage: `url('/slogan2.jpeg')`,
 
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -187,6 +193,10 @@ function ExamenIndex() {
           {examens.map((examen, index) => {
             const currentStatus =
               statusConfig[examen.status] || statusConfig.draft;
+
+            // On vérifie si c'est la Ligue ou un Club
+            const isLeague = examen.organisateur_type === "Ligue";
+
             return (
               <Grid
                 sx={{
@@ -194,65 +204,109 @@ function ExamenIndex() {
                   justifyContent: "center",
                   mt: 2,
                   mx: "auto",
-                  borderRadius: 2,
                 }}
-                minHeight={200}
+                minHeight={220}
                 size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                 key={examen.id}
               >
                 <Paper
-                  elevation={3}
+                  elevation={4}
                   sx={{
-                    p: 4,
-                    textAlign: "center",
+                    p: 3,
+                    width: "100%",
+                    textAlign: "left", // Passage en alignement gauche pour plus de lisibilité
                     bgcolor: "background.default",
                     cursor: "pointer",
+                    position: "relative",
+                    overflow: "hidden",
+                    borderTop: `4px solid ${isLeague ? "#1976d2" : "#4caf50"}`, // Barre de couleur en haut
+                    transition: "transform 0.2s",
+                    "&:hover": { transform: "translateY(-5px)" },
                   }}
                   data-aos="fade-up"
-                  data-aos-delay={index * 200}
-                  onClick={() =>
-                    navigate(`/dashboard/student/${examen.id}/candidates`)
-                  }
+                  data-aos-delay={index * 100}
+                  onClick={() => {
+                    const routePrefix = isLigueUser
+                      ? "/dashboard/league"
+                      : "/dashboard/student";
+                    navigate(`${routePrefix}/${examen.id}/candidates`);
+                  }}
                 >
+                  {/* Badge de Type (Ligue vs Club) */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 2,
+                    }}
+                  >
+                    <Chip
+                      icon={isLeague ? <Shield /> : <Business />}
+                      label={isLeague ? "LIGUE" : "CLUB"}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "0.7rem",
+                        color: isLeague ? "primary.main" : "success.main",
+                        borderColor: isLeague ? "primary.main" : "success.main",
+                      }}
+                    />
+                    <Chip
+                      label={currentStatus?.label}
+                      color={currentStatus?.color}
+                      size="small"
+                      sx={{ fontWeight: "bold" }}
+                    />
+                  </Box>
+
                   <Typography
                     variant="h6"
                     sx={{
-                      mb: 2,
-                      fontSize: { xs: 10, md: 14 },
+                      mb: 1,
+                      fontSize: { xs: 14, md: 16 },
                       fontWeight: "bold",
+                      color: "text.primary",
                     }}
                   >
-                    Examen – {examen?.current_grade?.name}{" "}
-                  </Typography>
-                  <Typography
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    {dayjs(examen?.start_date).format("DD MMMM YYYY")}
-                  </Typography>
-                  <Typography
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    {examen?.club?.logo && (
-                      <img
-                        src={examen?.club?.logo}
-                        alt={examen?.club?.name}
-                        style={{ width: "50px", height: "50px" }}
-                      />
-                    )}
+                    {examen?.next_grade?.name}
                   </Typography>
 
                   <Typography
-                    component={"span"}
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    variant="body2"
+                    sx={{ color: "text.secondary", mb: 2, fontSize: "0.85rem" }}
                   >
-                    Status :
-                    <Chip
-                      label={statusConfig[examen.status]?.label}
-                      color={currentStatus?.color}
-                      size="small"
-                      sx={{ mt: 1 }}
-                    />
+                    {dayjs(examen?.start_date).format("DD MMMM YYYY")}
                   </Typography>
+
+                  <Divider sx={{ my: 1.5 }} />
+
+                  {/* Info sur l'Organisateur */}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    {examen?.organisateur?.logo ? (
+                      <Avatar
+                        src={examen.organisateur.logo}
+                        variant="rounded"
+                        sx={{ width: 32, height: 32 }}
+                      />
+                    ) : (
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: isLeague ? "primary.light" : "success.light",
+                        }}
+                      >
+                        {examen?.organisateur?.name?.charAt(0).toUpperCase()}
+                      </Avatar>
+                    )}
+                    <Typography
+                      variant="caption"
+                      sx={{ fontWeight: 600, color: "text.secondary" }}
+                    >
+                      {examen?.organisateur?.name}
+                    </Typography>
+                  </Box>
                 </Paper>
               </Grid>
             );

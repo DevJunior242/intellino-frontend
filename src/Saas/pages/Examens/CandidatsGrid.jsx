@@ -10,17 +10,18 @@ import AddCandidat from "./AddCandidat";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
-function CandidatsGrid({ examenId }) {
+import ConfigSkeleton from "../ConfigSkeleton";
+function CandidatsGrid({ examen }) {
+  console.log("examen", examen);
   const [error, setError] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [candidats, setCandidats] = useState([]);
   const [selectCandidat, setSelectCandidat] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openModalCandidat, setOpenModalCandidat] = useState(false);
 
-  const { activeRole, activeClubId, auth } = UseAuth();
+  const { activeRole, activeId, activeType, auth } = UseAuth();
   const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
   const hasAccessRoles = ["super_admin", "admin_club"];
   const allowAccess = isSuperAdmin || hasAccessRoles.includes(activeRole);
@@ -43,7 +44,7 @@ function CandidatsGrid({ examenId }) {
     setLoading(true);
     try {
       const res = await Instance.get(
-        `/api/examens/${examenId}?club_id=${activeClubId}`,
+        `/api/examens/${examen?.id}?organisateur_id=${activeId}`,
       );
       console.log(res);
       const ArrayCAndidat = res?.data?.candidats || [];
@@ -61,12 +62,11 @@ function CandidatsGrid({ examenId }) {
     } finally {
       setLoading(false);
     }
-  }, [examenId, activeClubId]);
+  }, [examen?.id, activeId]);
   useEffect(() => {
     fetchExamen();
   }, [fetchExamen]);
 
-  if (loading) return <CircularProgress />;
   if (!candidats) return null;
 
   //remove
@@ -75,7 +75,7 @@ function CandidatsGrid({ examenId }) {
     if (!window.confirm("Supprimer le candidat ?")) return;
     try {
       const res = await Instance.delete(
-        `/api/candidats/remove/${examenId}/${candidats}?club_id=${activeClubId}`,
+        `/api/candidats/remove/${examen?.id}/${candidats}?organisateur_id=${activeId}`,
       );
       console.log(res);
       if (res.data.success) {
@@ -87,7 +87,9 @@ function CandidatsGrid({ examenId }) {
       ErrorGlobal({ error: e, setError });
     }
   };
-
+  const isOwner =
+    examen?.organisateur_id === activeId &&
+    examen?.organisateur_type === activeType;
   //update
   const columns = [
     {
@@ -106,33 +108,41 @@ function CandidatsGrid({ examenId }) {
       minWidth: 130,
     },
 
-    ...(["admin_club", "instructeur", "secretaire"].includes(activeRole)
-      ? [
-          {
-            field: "actions",
-            headerName: "Action",
-            flex: 1,
-            minWidth: 130,
-            sortable: false,
-            renderCell: (params) => (
-              <>
-                <IconButton
-                  size="small"
-                  onClick={() => handleOpenModal(params.row)}
-                >
-                  <EventNoteIcon color="success" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => handleRemove(params.row.id)}
-                >
-                  <DeleteIcon color="error" />
-                </IconButton>
-              </>
-            ),
-          },
-        ]
-      : []),
+    {
+      field: "actions",
+      headerName: "Action",
+      flex: 1,
+      minWidth: 130,
+      sortable: false,
+      renderCell: (params) => {
+        // Un club peut supprimer un candidat UNIQUEMENT si l'examen est encore "ouvert"
+        const canRemove = examen?.status === 0;
+
+        return (
+          <>
+            {isOwner && (
+              <IconButton
+                size="small"
+                onClick={() => handleOpenModal(params.row)}
+                title="Saisir les notes"
+              >
+                <EventNoteIcon color="success" />
+              </IconButton>
+            )}
+
+            {(isOwner || canRemove) && (
+              <IconButton
+                size="small"
+                onClick={() => handleRemove(params.row.id)}
+                title="Retirer le candidat"
+              >
+                <DeleteIcon color="error" />
+              </IconButton>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   return (
@@ -165,7 +175,7 @@ function CandidatsGrid({ examenId }) {
           rows={candidats}
           columns={columns}
           pageSizeOptions={[5, 10, 20]}
-          loading={isLoading}
+          loading={loading}
           checkboxSelection
           disableRowSelectionOnClick
           showToolbar
@@ -213,13 +223,13 @@ function CandidatsGrid({ examenId }) {
             open={openModal}
             student={selectCandidat}
             handleClose={handleCloseModal}
-            examenId={examenId}
+            examenId={examen?.id}
           />
         )}
         <AddCandidat
           open={openModalCandidat}
           handleClose={handleCloseModalCandidat}
-          examenId={examenId}
+          examenId={examen?.id}
           fetchExamen={fetchExamen}
         />
       </Box>

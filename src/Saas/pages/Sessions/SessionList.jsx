@@ -35,7 +35,7 @@ function SessionList() {
   const [sessions, setsessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
-  const { activeRole, activeClubId } = UseAuth();
+  const { activeRole, activeId } = UseAuth();
 
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
@@ -60,12 +60,12 @@ function SessionList() {
   //obtenir les tournois
   const getSession = useCallback(
     async (page = 1) => {
-      if (!activeClubId) return;
+      if (!activeId) return;
       setLoading(true);
       setErrorSessions("");
       try {
         const response = await Instance(
-          `/api/sessions?page=${page}&club_id=${activeClubId}`,
+          `/api/sessions?page=${page}&club_id=${activeId}`,
         );
         const session = response.data.sessions || [];
         const sessionArray = session.data ? session.data : session;
@@ -83,7 +83,7 @@ function SessionList() {
         setLoading(false);
       }
     },
-    [activeClubId],
+    [activeId],
   );
   useEffect(() => {
     getSession();
@@ -91,13 +91,13 @@ function SessionList() {
 
   //supprimer une session
   const handleDelete = async (sessionId) => {
-    if (!window.confirm(`Supprimer la session ${sessionId} ?`) || !activeClubId)
+    if (!window.confirm(`Supprimer la session ${sessionId} ?`) || !activeId)
       return;
     setError({});
     setSuccess("");
     try {
       const response = await Instance.delete(
-        `/api/sessions/remove/${sessionId}?club_id=${activeClubId}`,
+        `/api/sessions/remove/${sessionId}?club_id=${activeId}`,
       );
       console.log("Réponse API après suppression :", response.data);
       if (response.data.success) {
@@ -406,7 +406,7 @@ function SessionList() {
           handleClose={handleCloseModal}
           session={selectedSession}
           getSession={getSession}
-          activeClubId={activeClubId}
+          activeId={activeId}
         />
       )}
     </Box>

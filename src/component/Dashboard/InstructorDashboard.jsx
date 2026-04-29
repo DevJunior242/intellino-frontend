@@ -7,7 +7,7 @@ import AbsentList from "../../Saas/pages/AbsentList";
 import LatestStudents from "../../Saas/pages/LatestStudents";
 import QuickActions from "../../Saas/pages/QuickActions";
 function InstructorDashboard() {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   return (
     <Box>
@@ -27,8 +27,8 @@ function InstructorDashboard() {
           gap: "16px",
         }}
       >
-        <Program activeClubId={activeClubId} role="instructeur" />
-        <Barcharts activeClubId={activeClubId} />
+        <Program activeId={activeId} role="instructeur" />
+        <Barcharts activeId={activeId} />
       </Box>
       <Box
         component={"div"}

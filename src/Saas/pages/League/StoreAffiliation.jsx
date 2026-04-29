@@ -24,12 +24,14 @@ function StoreAffiliation() {
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     club_id: "",
     saison: "",
     cotisation: "",
-    date_affiliation: null,
+    date_debut: "",
+    date_fin: "",
   });
 
   const handleChange = (e) => {
@@ -37,7 +39,6 @@ function StoreAffiliation() {
   };
   const searchParams = new URLSearchParams(window.location.search);
   const clubId = searchParams.get("club");
-  console.log("CLUB ID", clubId);
 
   useEffect(() => {
     if (clubId) {
@@ -49,6 +50,7 @@ function StoreAffiliation() {
     e.preventDefault();
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       console.log("FORM DATA", formData);
       const response = await Instance.post(
@@ -66,7 +68,7 @@ function StoreAffiliation() {
         setFormData({
           saison: "",
           cotisation: "",
-          date_affiliation: null,
+          date_debut: null,
         });
       } else {
         setError(response.data.message);
@@ -74,6 +76,8 @@ function StoreAffiliation() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -111,7 +115,7 @@ function StoreAffiliation() {
             onChange={handleChange}
             required
           />
-          <TextField
+          {/* <TextField
             error={hasError("cotisation")}
             helperText={getError("cotisation")}
             type="number"
@@ -122,7 +126,7 @@ function StoreAffiliation() {
             value={formData.cotisation}
             onChange={handleChange}
             required
-          />
+          /> */}
           <Box
             sx={{
               display: "flex",
@@ -131,21 +135,40 @@ function StoreAffiliation() {
             }}
           >
             <TextField
-              error={hasError("date_affiliation")}
-              helperText={getError("date_affiliation")}
+              error={hasError("date_debut")}
+              helperText={getError("date_debut")}
               type="date"
-              name="date_affiliation"
+              name="date_debut"
               variant="outlined"
               fullWidth
               margin="normal"
-              value={formData.date_affiliation}
+              value={formData.date_debut}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              label="Date de fin"
+              error={hasError("date_fin")}
+              helperText={getError("date_fin")}
+              type="date"
+              name="date_fin"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={formData.date_fin}
               onChange={handleChange}
               required
             />
           </Box>
 
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-            ajouter
+          <Button
+            disabled={submitting}
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            {submitting ? <PulseLoader size={20} color="#fff" /> : "Ajouter"}
           </Button>
         </form>
       </Box>

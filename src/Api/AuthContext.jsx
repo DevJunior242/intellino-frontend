@@ -34,7 +34,8 @@ const initializeAuth = () => ({
   user: safeParseJSON("user"),
   role: safeParseJSON("role", []),
   roleSuperAdmin: safeParseJSON("roleSuperAdmin", []),
-  memberships: safeParseJSON("memberships", []),
+  clubs: safeParseJSON("clubs", []),
+  leagues: safeParseJSON("leagues", []),
   isLogin: !!localStorage.getItem("token"),
 });
 
@@ -42,95 +43,81 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [auth, setAuth] = useState(initializeAuth);
   const [activeRole, setActiveRole] = useState(null);
-  const [activeClubId, setActiveClubId] = useState(null);
+  const [activeId, setActiveId] = useState(
+    localStorage.getItem("activeId") || null,
+  );
+  const [activeType, setActiveType] = useState(
+    localStorage.getItem("activeType") || "Club",
+  );
   const [loading, setLoading] = useState(true);
 
   //  ////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO INITIALIZE ACTIVE ROLE AND CLUB ID
   //////////////////////////////////////////////////////////////////////////////////
-  // useEffect(() => {
-  //   if (!auth.isLogin) {
-  //     setLoading(false);
-  //     return;
-  //   }
 
-  //   if (auth?.isLogin && auth?.role?.length > 0) {
-  //     const savedRole = localStorage.getItem("activeRole");
-  //     const savedClubId = localStorage.getItem("activeClubId");
-
-  //     if (savedRole && savedClubId) {
-  //       setActiveRole(savedRole);
-  //       setActiveClubId(savedClubId);
-  //       setLoading(false);
-  //       return;
-  //     }
-
-  //     if (auth.user?.current_club_id) {
-  //       const clubId = auth.user.current_club_id;
-
-  //       setActiveClubId(clubId);
-
-  //       const role = auth.role?.[0] || auth.roleSuperAdmin?.[0] || null;
-  //       setActiveRole(role);
-
-  //       localStorage.setItem("activeClubId", clubId);
-  //       if (role) {
-  //         localStorage.setItem("activeRole", role);
-  //       }
-  //     }
-
-  //     setLoading(false);
-  //   }
-
-  //   setLoading(false);
-  // }, [auth, setActiveClubId, setActiveRole]);
   useEffect(() => {
     if (auth?.isLogin) {
       const savedRole = localStorage.getItem("activeRole");
-      const savedClubId = localStorage.getItem("activeClubId");
+      const savedId = localStorage.getItem("activeId");
+      const savedType = localStorage.getItem("activeType");
 
-      if (savedRole && (savedClubId || savedRole === "super_admin")) {
+      // 1. Si on a déjà des données en cache, on les restaure
+      if (savedRole && (savedId || savedRole === "super_admin")) {
         setActiveRole(savedRole);
-        if (savedClubId) setActiveClubId(savedClubId);
+        setActiveId(savedId);
+        setActiveType(savedType || "Club");
         setLoading(false);
         return;
       }
 
-      const role = auth.roleSuperAdmin?.[0] || auth.role?.[0] || null;
+      // 2. Sinon, on initialise selon la priorité : SuperAdmin > Ligue > Club
+      let role = auth.roleSuperAdmin?.[0] || auth.role?.[0] || null;
+      let targetId = null;
+      let targetType = "Club";
 
       if (role === "super_admin") {
         setActiveRole("super_admin");
         localStorage.setItem("activeRole", "super_admin");
+      }
+      // Priorité à la Ligue si elle est active dans le profil user
+      else if (auth.user?.current_league_id) {
+        targetId = auth.user.current_league_id;
+        targetType = "Ligue";
       } else if (auth.user?.current_club_id) {
-        const clubId = auth.user.current_club_id;
-        setActiveClubId(clubId);
-        setActiveRole(role);
+        targetId = auth.user.current_club_id;
+        targetType = "Club";
+      }
 
-        localStorage.setItem("activeClubId", clubId);
-        if (role) localStorage.setItem("activeRole", role);
+      if (targetId) {
+        setActiveId(targetId);
+        setActiveType(targetType);
+        setActiveRole(role);
+        localStorage.setItem("activeId", targetId);
+        localStorage.setItem("activeType", targetType);
+        localStorage.setItem("activeRole", role);
       }
 
       setLoading(false);
     } else {
       setLoading(false);
     }
-  }, [auth, setActiveClubId, setActiveRole]);
-  //////////////////////////////////////////////////////////////////////////////////
-  //   EFFECTS TO SWITCH ROLE
-  //////////////////////////////////////////////////////////////////////////////////
-
-  const switchRole = useCallback((newClubId, roleName) => {
-    setActiveClubId(newClubId);
-    setActiveRole(roleName);
-    localStorage.setItem("activeClubId", newClubId);
-    localStorage.setItem("activeRole", roleName);
-    // navigate("/dashboard");
-  }, []);
-
-  useEffect(() => {
-    console.log("auth updated:", auth);
   }, [auth]);
 
+  const switchPortal = useCallback((id, type, roleName) => {
+    setActiveId(id);
+    setActiveType(type);
+    setActiveRole(roleName);
+
+    localStorage.setItem("activeId", id);
+    localStorage.setItem("activeType", type);
+    localStorage.setItem("activeRole", roleName);
+
+    if (type === "Ligue") {
+      navigate("/dashboard/league/stats");
+    } else {
+      navigate("/dashboard");
+    }
+  }, []);
   //////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO SYNC AUTH STATE WITH LOCALSTORAGE
   //////////////////////////////////////////////////////////////////////////////////
@@ -164,10 +151,15 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("roleSuperAdmin");
     }
 
-    if (Array.isArray(auth.memberships) && auth.memberships.length > 0) {
-      localStorage.setItem("memberships", JSON.stringify(auth.memberships));
+    if (Array.isArray(auth.clubs) && auth.clubs.length > 0) {
+      localStorage.setItem("clubs", JSON.stringify(auth.clubs));
     } else {
-      localStorage.removeItem("memberships");
+      localStorage.removeItem("clubs");
+    }
+    if (Array.isArray(auth.leagues) && auth.leagues.length > 0) {
+      localStorage.setItem("leagues", JSON.stringify(auth.leagues));
+    } else {
+      localStorage.removeItem("leagues");
     }
   }, [auth]);
 
@@ -176,13 +168,14 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
 
   const setAuthData = useCallback(
-    (token, user, role = [], memberships = [], roleSuperAdmin = []) => {
+    (token, user, role = [], clubs = [], leagues = [], roleSuperAdmin = []) => {
       setAuth({
         token,
         user,
         role,
         roleSuperAdmin,
-        memberships,
+        clubs,
+        leagues,
         isLogin: true,
       });
     },
@@ -198,18 +191,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("role");
     localStorage.removeItem("roleSuperAdmin");
     localStorage.removeItem("activeRole");
-    localStorage.removeItem("activeClubId");
-    localStorage.removeItem("memberships");
+    localStorage.removeItem("activeId");
+    localStorage.removeItem("clubs");
+    localStorage.removeItem("leagues");
     setAuth({
       token: null,
       user: null,
       role: [],
       isLogin: false,
-      memberships: [],
+      clubs: [],
+      leagues: [],
       roleSuperAdmin: [],
     });
     setActiveRole(null);
-    setActiveClubId(null);
+    setActiveId(null);
+    setActiveType(null);
   }, []);
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -252,7 +248,7 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
   const StoreLeagueUser = useCallback(async (userData) => {
     try {
-      const res = await Instance.post("api/membres/leagues", userData);
+      const res = await Instance.post("api/membres/league", userData);
       console.log("membre enregistré avec succès", res);
       return {
         success: res.data.success,
@@ -273,7 +269,7 @@ export const AuthProvider = ({ children }) => {
       const res = await Instance.post("api/login", credentials);
       console.log(res);
 
-      const { token, user, role, memberships, roleSuperAdmin } = res.data;
+      const { token, user, role, clubs, leagues, roleSuperAdmin } = res.data;
 
       if (!token) {
         throw {
@@ -288,9 +284,17 @@ export const AuthProvider = ({ children }) => {
         ? roleSuperAdmin
         : [];
       const saveRole = Array.isArray(role) ? role : [];
-      const saveMemberships = Array.isArray(memberships) ? memberships : [];
+      const saveClubs = Array.isArray(clubs) ? clubs : [];
+      const saveLeagues = Array.isArray(leagues) ? leagues : [];
 
-      setAuthData(token, user, saveRole, saveMemberships, saveRoleSuperAdmin);
+      setAuthData(
+        token,
+        user,
+        saveRole,
+        saveClubs,
+        saveLeagues,
+        saveRoleSuperAdmin,
+      );
 
       const hasRole =
         (Array.isArray(saveRole) && saveRole.length > 0) ||
@@ -348,11 +352,8 @@ export const AuthProvider = ({ children }) => {
       if (newData.user)
         localStorage.setItem("user", JSON.stringify(newData.user));
       if (newData.token) localStorage.setItem("token", newData.token);
-      if (newData.memberships)
-        localStorage.setItem(
-          "memberships",
-          JSON.stringify(newData.memberships),
-        );
+      if (newData.clubs)
+        localStorage.setItem("clubs", JSON.stringify(newData.clubs));
       if (newData.role)
         localStorage.setItem("role", JSON.stringify(newData.role));
 
@@ -362,8 +363,8 @@ export const AuthProvider = ({ children }) => {
     // on Gére le club actif immédiatement
     if (newData.user?.current_club_id) {
       const clubId = newData.user.current_club_id;
-      setActiveClubId(clubId);
-      localStorage.setItem("activeClubId", clubId);
+      setActiveId(clubId);
+      localStorage.setItem("activeId", clubId);
     }
 
     if (newData.activeRole) {
@@ -385,9 +386,10 @@ export const AuthProvider = ({ children }) => {
       logout,
       loading,
       refreshUser,
-      switchRole,
+      switchPortal,
       activeRole,
-      activeClubId,
+      activeId,
+      activeType,
       updateAuth,
     }),
     [
@@ -399,9 +401,10 @@ export const AuthProvider = ({ children }) => {
       logout,
       loading,
       refreshUser,
-      switchRole,
+      switchPortal,
       activeRole,
-      activeClubId,
+      activeId,
+      activeType,
       updateAuth,
     ],
   );

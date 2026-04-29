@@ -39,7 +39,7 @@ function EditNote({
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
 
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -84,14 +84,9 @@ function EditNote({
     console.log("  payload noeud notes", payload.notes);
 
     try {
-      console.log(
-        "URL de test :",
-        `/api/evaluation/examen/${examenId}/candidat/${studentData.id}`,
-      );
-      console.log("Payload :", payload);
       const dataSend = {
         ...payload,
-        club_id: activeClubId,
+        club_id: activeId,
       };
       const response = await Instance.put(
         `/api/evaluation/examen/${examenId}/candidat/${studentData.id}`,
@@ -130,14 +125,12 @@ function EditNote({
         handleClose();
       }
     } catch (error) {
-      console.error("Erreur lors de l'update:", error);
       alert("Erreur lors de l'enregistrement");
       ErrorGlobal({ error, setError });
     } finally {
       setLoading(false);
     }
   };
-  if (loading) return <CircularProgress />;
   const studentData = Array.isArray(student) ? student[0] : student;
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
