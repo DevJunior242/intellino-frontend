@@ -104,13 +104,13 @@ export const AuthProvider = ({ children }) => {
   }, [auth]);
 
   const switchPortal = useCallback((id, type, roleName) => {
+const normalizedRole = Array.isArray(roleName) ? roleName[0] ?? null : roleName;
     setActiveId(id);
     setActiveType(type);
-    setActiveRole(roleName);
-
+    setActiveRole(normalizedRole);
     localStorage.setItem("activeId", id);
     localStorage.setItem("activeType", type);
-    localStorage.setItem("activeRole", roleName);
+    localStorage.setItem("activeRole", normalizedRole);
 
     if (type === "Ligue") {
       navigate("/dashboard/league/stats");

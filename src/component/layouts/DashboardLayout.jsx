@@ -52,6 +52,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const { allowAccess } = useAllowAccess();
   const { logout, activeRole, auth, activeType } = UseAuth();
+  console.log("activeRole", activeRole);
 
   if (activeType !== "Club") {
     return <Navigate to="/dashboard/league/stats" replace />;

@@ -109,10 +109,7 @@ import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading, activeId, activeType } = UseAuth();
-
-  console.log("activeId", activeId);
-  console.log("activeType", activeType);
-
+  console.log("activeRole", activeRole);
   if (loading) return <CircularProgress />;
 
   if (!auth?.isLogin) return <Navigate to="/login" />;

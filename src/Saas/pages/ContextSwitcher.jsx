@@ -31,7 +31,6 @@ const ContextSwitcher = () => {
 
   // 2. Trouver l'espace actuellement sélectionné
   const currentSpace = allSpaces.find((s) => s.id === activeId) || allSpaces[0];
-
   const otherSpaces = allSpaces.filter((s) => s.id !== activeId);
 
   return (
@@ -81,7 +80,7 @@ const ContextSwitcher = () => {
               sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
             >
               {currentSpace?.type === "Ligue" ? "Ligue" : "Club"} —{" "}
-              {currentSpace?.role.replace("_", " ")}
+              {currentSpace?.role[0]?.replace("_", " ")}{" "}
             </Typography>
           </Box>
         </Box>

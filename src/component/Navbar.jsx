@@ -43,6 +43,8 @@ const items = [
 
 function Navbar() {
   const { auth, logout, user } = UseAuth();
+
+  console.log("auth", auth);
   const navigate = useNavigate();
   const theme = useTheme();
   const colors = tokenTheme(theme.palette.mode);
