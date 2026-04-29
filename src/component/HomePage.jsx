@@ -285,7 +285,7 @@ function HomePage() {
               <EastIcon sx={{ ml: 2, fontSize: "1.2rem" }} />
             </Button>
 
-            {/* <Button
+            <Button
               component={Link}
               to="/league/store"
               variant="outlined"
@@ -308,7 +308,7 @@ function HomePage() {
               }}
             >
               ligue
-            </Button> */}
+            </Button>
           </Box>
         </motion.div>
 
