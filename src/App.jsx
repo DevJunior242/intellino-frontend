@@ -108,8 +108,8 @@ import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
-  const { auth, activeRole, loading, activeId, activeType } = UseAuth();
-  console.log("activeRole", activeRole);
+  const { auth, activeRole, loading } = UseAuth();
+  console.log("activeRole dans appsx .:", activeRole);
   if (loading) return <CircularProgress />;
 
   if (!auth?.isLogin) return <Navigate to="/login" />;

@@ -12,8 +12,11 @@ import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined
 import AccessibilityIcon from "@mui/icons-material/Accessibility";
 import { motion } from "framer-motion";
 import Mission from "./Mission";
+import { UseAuth } from "../Api/AuthContext";
 
 function About() {
+  const { auth, activeRole, loading } = UseAuth();
+  console.log("activeRole dans about .:", activeRole);
   const valeurs = [
     {
       id: 1,
