@@ -141,6 +141,8 @@ const STAFF_CLUB_ROLES = [
   "admin_league",
 ];
 
+const CAN_CREATE = ["super_admin", "admin_league", "admin_club", "instructeur"];
+
 const SUPER_ADMIN = ["super_admin"];
 const ALL_CLUB_ROLES = [...STAFF_CLUB_ROLES, "parent", "karateka"];
 
@@ -304,6 +306,9 @@ const AppRoutes = () => {
           <Route path="/examen" element={<ExamenIndex />} />
           <Route path="/competition" element={<InscriptionPage />} />
           <Route path="/settings" element={<AccountSettings />} />
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={CAN_CREATE} />}>
+          <Route path="/examen/store" element={<StoreExamen />} />
         </Route>
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
