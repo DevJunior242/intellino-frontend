@@ -22,7 +22,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
-import { useCallback, useEffect, useState } from "react";
+import { act, useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
 
@@ -40,7 +40,7 @@ const DISC_COLOR = { kata: "success", kumite: "error" };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function CreateEvenement({ open, handleClose, getEvenements }) {
-  const { auth } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   // ── données API ─────────────────────────────────────────────────────────────
   const [niveaux, setNiveaux] = useState([]);
@@ -148,8 +148,8 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
       const payload = {
         ...formData,
         epreuves,
-        organisateur_id: auth?.user?.current_league_id,
-        organisateur_type: "Ligue",
+        organisateur_id: activeId,
+        organisateur_type: activeType,
       };
       console.log("payload", payload);
       const res = await Instance.post("/api/evenements/evenements", payload);

@@ -34,6 +34,32 @@ const ContextSwitcher = () => {
   console.log("currentSpace", currentSpace);
   const otherSpaces = allSpaces.filter((s) => s.id !== activeId);
 
+  const formatRole = (roleData) => {
+    // 1. Sécurité : si la donnée est vide ou nulle
+    if (!roleData) return "";
+
+    let roleText = "";
+
+    // 2. Détection du type
+    if (Array.isArray(roleData)) {
+      // Si c'est un tableau, on prend le premier élément
+      roleText = roleData[0] || "";
+    } else if (typeof roleData === "string") {
+      // Si c'est déjà une string, on l'utilise directement
+      roleText = roleData;
+    }
+
+    // 3. Transformation (replace et mise en majuscule)
+    if (!roleText) return "";
+
+    const cleanText = roleText.replace("_", " ");
+    return cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
+  };
+
+  // Dans ton JSX :
+  {
+    formatRole(currentSpace?.role);
+  }
   return (
     <Box sx={{ p: 2, position: "relative" }}>
       {/* Bouton Principal */}
@@ -80,8 +106,7 @@ const ContextSwitcher = () => {
               color="text.secondary"
               sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
             >
-              {currentSpace?.type === "Ligue" ? "Ligue" : "Club"} —{" "}
-              {currentSpace?.role?.replace("_", " ")}{" "}
+              {currentSpace?.type} : {formatRole(currentSpace?.role)}
             </Typography>
           </Box>
         </Box>
