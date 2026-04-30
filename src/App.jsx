@@ -170,7 +170,7 @@ const AppRoutes = () => {
           <Route path="/payments" element={<PaymentStat />} />
           <Route path="/sessions-stats" element={<SessionStats />} />
           <Route path="/dashboard/add/member" element={<AddMemberForm />} />
-          <Route path="/dashboard/course" element={<Course />} />
+          <Route path="/dashboard/course/store" element={<Course />} />
           <Route path="/dashboard/grade/store" element={<StoreGrade />} />
           <Route
             path="/dashboard/student/grade/store"
