@@ -13,8 +13,6 @@ import {
 } from "@mui/material";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
-import { UseAuth } from "../Api/AuthContext";
-// import ClubCount from "../Saas/pages/ClubCount";
 import EastIcon from "@mui/icons-material/East";
 import { grey, indigo } from "@mui/material/colors";
 /* ─── DATA ─────────────────────────────────────────────────── */

@@ -31,7 +31,7 @@ import NotificationCenter from "./NotificationCenter";
 const items = [
   { title: "Accueil", href: "/" },
   { title: "A Propos", href: "/about" },
-  { title: "Compétitions", href: "/competitions" },
+  { title: "Competitions", href: "/competition" },
 
   { title: "Examens", href: "/examen" },
 
@@ -77,7 +77,9 @@ function Navbar() {
     }
     if (
       !hasRole &&
-      ["examens", "tableau de bord"].includes(item.title.toLowerCase())
+      ["examens", "competitions", "tableau de bord"].includes(
+        item.title.toLowerCase(),
+      )
     ) {
       return false;
     }
@@ -175,7 +177,6 @@ function Navbar() {
           </ListItem>
         ))}
 
-        {/* User Account */}
         {isLogged && (
           <>
             <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>

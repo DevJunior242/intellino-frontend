@@ -30,7 +30,6 @@ import Message from "./Message";
 
 const Profile = () => {
   const { auth, updateAuth, activeRole } = UseAuth();
-  console.log("auth in profile:", auth);
   const isSuperAdmin = auth.roleSuperAdmin?.includes("super_admin");
 
   const fileInputRef = useRef(null);

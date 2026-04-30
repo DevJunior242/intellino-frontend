@@ -12,42 +12,36 @@ import {
   Typography,
 } from "@mui/material";
 import { Payment } from "@mui/icons-material";
+import ConfigSkeleton from "./ConfigSkeleton";
 
 const ParentDet = () => {
   const [debts, setDebts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [totalFamilyDebt, setTotalFamilyDebt] = useState(0);
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
   const fetchDebts = useCallback(async () => {
+    if (!activeId) return;
+    setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/payments/students/debts?club_id=${activeClubId}`,
+        `/api/payments/students/debts?club_id=${activeId}`,
       );
       console.log("debts", response);
       setDebts(response.data.data || []);
       setTotalFamilyDebt(response.data.total_family_debt);
     } catch (error) {
       console.error("Erreur lors de la récupération des débits :", error);
+    } finally {
+      setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchDebts();
   }, [fetchDebts]);
 
-  if (!debts.length) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <PulseLoader />
-      </Box>
-    );
-  }
+  if (loading) return <ConfigSkeleton />;
+
   return (
     <Box sx={{ p: 2 }}>
       {/* Résumé global pour le Parent */}

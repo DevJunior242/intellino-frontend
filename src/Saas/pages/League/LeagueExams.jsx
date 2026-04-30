@@ -11,7 +11,6 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import axios from "axios";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 

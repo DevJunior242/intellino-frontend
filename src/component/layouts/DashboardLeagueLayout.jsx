@@ -112,9 +112,10 @@ const fadeIn = {
 export default function DashboardLeagueLayout() {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
   const navigate = useNavigate();
-  const { activeType } = UseAuth();
+  const { activeType, auth } = UseAuth();
 
   if (activeType !== "Ligue") {
+    if (!auth?.isLogin) return <Navigate to="/login" replace />;
     return <Navigate to="/dashboard" replace />;
   }
   return (

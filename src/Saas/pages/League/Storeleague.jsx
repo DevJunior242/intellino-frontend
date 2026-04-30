@@ -20,7 +20,7 @@ function Storeleague() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const { switchRole, updateAuth } = UseAuth();
+  const { switchPortal, updateAuth } = UseAuth();
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -59,7 +59,7 @@ function Storeleague() {
       );
       console.log(response);
       if (response?.data?.success) {
-        const { user, memberships, new_league } = response.data;
+        const { user, leagues, new_league } = response.data;
 
         // 1. Extraire les noms des rôles pour le State (Format: ["admin_club"])
         // On cherche les rôles dans le premier club car c'est celui qu'on vient de créer
@@ -69,13 +69,12 @@ function Storeleague() {
         // On passe les rôles extraits pour écraser l'ancien tableau vide
         updateAuth({
           user: user,
-          memberships: memberships,
+          leagues: leagues,
           role: extractedRoles,
         });
 
         // 3. Forcer le rôle actif sur le nouveau club
-        switchRole(new_league.id, new_league.role);
-        //reset form
+        switchPortal(new_league.id, new_league.type, new_league.role); //reset form
         setFormData({
           name: "",
           phone: "",
@@ -85,9 +84,6 @@ function Storeleague() {
         setSuccess(response.data.message);
 
         setError({});
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 2000);
       } else {
         setError({ general: response.data.message });
         setSuccess(false);

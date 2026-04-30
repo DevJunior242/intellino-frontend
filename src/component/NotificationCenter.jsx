@@ -16,13 +16,16 @@ import {
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
 import { Instance } from "../Api/Axios";
+import { UseAuth } from "../Api/AuthContext";
 
 const NotificationCenter = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const navigate = useNavigate();
+  const { auth } = UseAuth();
   useEffect(() => {
+    if (!auth?.isLogin) return;
     let interval;
 
     const fetchNotifications = async () => {
@@ -62,7 +65,7 @@ const NotificationCenter = () => {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [auth?.isLogin]);
 
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => {

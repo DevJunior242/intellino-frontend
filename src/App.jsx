@@ -10,7 +10,7 @@ import LayoutAuth from "./component/layouts/LayoutAuth";
 import ScrollToTop from "./component/ScrollToTop";
 
 import AuthContext, { AuthProvider, UseAuth } from "./Api/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Aos from "aos";
 import "aos/dist/aos.css";
 import LayoutMain from "./component/layouts/LayoutMain";
@@ -106,40 +106,22 @@ import ClubAdmin from "./Saas/pages/ClubAdmin.jsx";
 import MentionsLegales from "./Saas/pages/legal/MentionsLegales.jsx";
 import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
+import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
-  console.log("activeRole dans appsx .:", activeRole);
-  if (loading) return <CircularProgress />;
 
+  if (loading) return <ConfigSkeleton />;
   if (!auth?.isLogin) return <Navigate to="/login" />;
 
-  // Loader si roles pas encore chargés
-  if (allowedRoles.length > 0 && !activeRole && !auth?.roleSuperAdmin) {
-    return (
-      <Box
-        style={{ display: "flex", justifyContent: "center", marginTop: "20%" }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // Super admin global → accès total
   const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
 
-  const isAllowed =
-    isSuperAdmin ||
-    allowedRoles.length === 0 ||
-    allowedRoles.includes(activeRole);
+  const hasAnyRole = auth?.role?.length > 0 || auth?.roleSuperAdmin?.length > 0;
 
-  console.log("TEST ACCÈS :", {
-    monRoleActuel: activeRole,
-    roleSuperAdmin: auth?.roleSuperAdmin,
-    listeAutorisee: allowedRoles,
-    estCeQueCestDedans: allowedRoles.includes(activeRole),
-    estSuperAdmin: isSuperAdmin,
-  });
+  const isAllowed =
+    isSuperAdmin || allowedRoles === "ANY"
+      ? hasAnyRole
+      : allowedRoles.includes(activeRole);
 
   return isAllowed ? <Outlet /> : <Navigate to="/403" />;
 };
@@ -150,232 +132,195 @@ const GuestRoute = () => {
   if (auth?.isLogin) return <Navigate to="/" />;
   return <Outlet />;
 };
+const STAFF_LEAGUE_ROLES = ["super_admin", "admin_league", "arbitre_league"];
+const STAFF_CLUB_ROLES = [
+  "super_admin",
+  "admin_club",
+  "instructeur",
+  "secretaire",
+  "admin_league",
+];
+
+const SUPER_ADMIN = ["super_admin"];
+const ALL_CLUB_ROLES = [...STAFF_CLUB_ROLES, "parent", "karateka"];
 
 const AppRoutes = () => {
-  const STAFF_ROLES = [
-    "super_admin",
-    "admin_club",
-    "instructeur",
-    "secretaire",
-    "admin_league",
-  ];
-  const ALL_ROLES = [...STAFF_ROLES, "parent", "karateka"];
-  const SUPER_ADMIN = ["super_admin"];
   return (
-    <>
-      <Routes>
-        <Route element={<LayoutAuth />}>
-          <Route element={<GuestRoute />}>
-            <Route path="/login" element={<Login />} />
-          </Route>
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+    <Routes>
+      {/* ROUTES INVITES (Login, Register...) */}
+      <Route element={<LayoutAuth />}>
+        <Route element={<GuestRoute />}>
+          <Route path="/login" element={<Login />} />
         </Route>
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+      </Route>
 
-        <Route>
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/members" element={<MemberTable />} />
-            <Route
-              path="/dashboard/student/list"
-              element={<StudentDetails />}
-            />
-            <Route path="/dashboard/session/list" element={<SessionList />} />
-            <Route
-              path="/dashboard/session/:sessionId/show"
-              element={<SessionDetails />}
-            />
-            <Route
-              path="/dashboard/payment/factures"
-              element={<PaymentIndex />}
-            />
-            <Route path="/dashboard/caisse" element={<ParentDet />} />
-            <Route path="/dashboard/dettes" element={<DebtPage />} />
-            <Route
-              path="/dashboard/student/attendance"
-              element={<AttendanceIndex />}
-            />
-
-            <Route
-              path="/dashboard/student/:examenId/candidates"
-              element={<ExamenDetails />}
-            />
-
-            <Route element={<ProtectedRoute allowedRoles={STAFF_ROLES} />}>
-              <Route
-                path="/students-stats"
-                element={<StudentStatsDashboard />}
-              />
-              <Route path="/examens-stats" element={<ExamenStats />} />
-
-              <Route
-                path="/grades-history"
-                element={<StudentsGradesOverview />}
-              />
-              <Route path="/payments" element={<PaymentStat />} />
-              <Route path="/sessions-stats" element={<SessionStats />} />
-
-              <Route
-                path="/dashboard/subscription"
-                element={<SubscriptionsList />}
-              />
-              <Route path="/dashboard/add/member" element={<AddMemberForm />} />
-              <Route
-                path="/dashboard/student/store"
-                element={<StudentForm />}
-              />
-              <Route path="/dashboard/course" element={<Course />} />
-              <Route
-                path="/dashboard/student/store"
-                element={<StoreStudent />}
-              />
-              <Route
-                path="/dashboard/instructor/store"
-                element={<Instructor />}
-              />
-              <Route path="/dashboard/course/store" element={<Course />} />
-
-              <Route path="/dashboard/medal/store" element={<Medal />} />
-
-              <Route path="/dashboard/grade/store" element={<StoreGrade />} />
-              <Route
-                path="/dashboard/student/grade/store"
-                element={<StudentGradCreate />}
-              />
-              <Route
-                path="/dashboard/student/attendance/store"
-                element={<AttendanceCreate />}
-              />
-
-              <Route
-                path="/dashboard/student/examen/enchainement/store"
-                element={<StoreEnchainement />}
-              />
-              <Route
-                path="/dashboard/payment/settings"
-                element={<PricingSettings />}
-              />
-
-              <Route
-                path="/dashboard/payment/store"
-                element={<PaymentForm />}
-              />
-              <Route path="/dashboard/catalogue" element={<InventoryPage />} />
-              <Route
-                path="/dashboard/inventory/prets"
-                element={<EquipmentLoan />}
-              />
-            </Route>
-            <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
-              <Route path="/dashboard/clubs" element={<ClubAdmin />} />
-              <Route path="/dashboard/users" element={<Users />} />
-              <Route
-                path="/dashboard/karateka/list"
-                element={<StudentList />}
-              />
-
-              <Route path="/dashboard/plan/store" element={<Plan />} />
-              <Route
-                path="/dashboard/discipline/store"
-                element={<StoreDisp />}
-              />
-            </Route>
-          </Route>
-        </Route>
-        <Route>
-          <Route element={<DashboardLeagueLayout />}>
-            <Route
-              path="/dashboard/league/:examenId/candidates"
-              element={<ExamenDetails />}
-            />
-            <Route
-              path="/dashboard/league/clubs/list"
-              element={<LeagueClub />}
-            />
-            <Route
-              path="/dashboard/league/licences"
-              element={<LeagueLicence />}
-            />
-            <Route
-              path="/dashboard/league/categories"
-              element={<CategoriesPage />}
-            />
-            <Route path="/dashboard/league/clubs" element={<MesClubs />} />
-            <Route
-              path="/dashboard/league/stats"
-              element={<DashboardLeague />}
-            />
-            <Route path="/affiliations/create" element={<StoreAffiliation />} />
-            <Route path="/licenses/generate" element={<LicenceForm />} />
-            <Route
-              path="/dashboard/league/setup"
-              element={<LeagueSetupPage />}
-            />
-            <Route
-              path="dashboard/programme-activites"
-              element={<ProgrammeActivites />}
-            />
-            <Route
-              path="dashboard/competitions"
-              element={<CompetitionManager />}
-            />
-            <Route path="dashboard/grades" element={<GradesExamens />} />
-            <Route path="dashboard/bureau" element={<BureauRoles />} />
-            <Route path="dashboard/notation" element={<FicheNotationGrade />} />
-            <Route path="dashboard/combat" element={<CombatDemo />} />
-            <Route path="dashboard/kata" element={<KataDemo />} />
-            <Route
-              path="dashboard/athletes"
-              element={<AdminCompetitionManagement />}
-            />
-
-            <Route
-              path="dashboard/confignotation"
-              element={<ConfigNotationPage />}
-            />
-            <Route
-              path="dashboard/ConfigNotationCardDetails"
-              element={<ConfigNotationCardDetails />}
-            />
-            <Route path="dashboard/notes" element={<SaisieNotePage />} />
-            <Route path="dashboard/kumite" element={<KumiteScoreboard />} />
-          </Route>
-        </Route>
-
-        <Route element={<LayoutMain />}>
-          <Route path="/mentions-legales" element={<MentionsLegales />} />
-          <Route path="/cgu" element={<TermsOfService />} />
-          <Route path="/confidentialite" element={<PrivacyPolicy />} />
+      {/* ROUTES DASHBOARD (STAFF & CLUB) */}
+      <Route element={<DashboardLayout />}>
+        <Route element={<ProtectedRoute allowedRoles={STAFF_CLUB_ROLES} />}>
+          <Route path="/dashboard/student/list" element={<StudentDetails />} />
+          <Route path="/dashboard/student/store" element={<StoreStudent />} />
+          <Route path="/dashboard/dettes" element={<DebtPage />} />
+          <Route path="/students-stats" element={<StudentStatsDashboard />} />
+          <Route path="/examens-stats" element={<ExamenStats />} />
+          <Route path="/payments" element={<PaymentStat />} />
+          <Route path="/sessions-stats" element={<SessionStats />} />
+          <Route path="/dashboard/add/member" element={<AddMemberForm />} />
+          <Route path="/dashboard/course" element={<Course />} />
+          <Route path="/dashboard/grade/store" element={<StoreGrade />} />
           <Route
-            path="/public/tatami/:configId"
-            element={<VuePubliqueKata />}
+            path="/dashboard/student/grade/store"
+            element={<StudentGradCreate />}
           />
-          <Route path="/public/program" element={<Program />} />
-          <Route path="/clubs" element={<ClubSlider />} />
-          <Route path="/club/store" element={<ClubStore />} />
-          <Route path="/league/store" element={<Storeleague />} />
-          <Route path="/examen-league/store" element={<StoreExamenLeague />} />
-          <Route path="/examen-league" element={<LeagueExams />} />
-          <Route path="/league/club" element={<LeagueClub />} />
-          <Route path="/competitions" element={<InscriptionPage />} />
-          <Route path="/candidature/postes" element={<CandidaturePage />} />
-          <Route path="/jury/register" element={<JurySelfRegistration />} />
-          <Route element={<ProtectedRoute allowedRoles={ALL_ROLES} />}>
-            <Route path="/examen" element={<ExamenIndex />} />
-            <Route path="/examen/store" element={<StoreExamen />} />
-          </Route>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/faq" element={<FAQSection />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/settings" element={<AccountSettings />} />
-          <Route path="/403" element={<Forbidden />} />
-          <Route path="/404" element={<NotFound />} />
+          <Route
+            path="/dashboard/student/attendance/store"
+            element={<AttendanceCreate />}
+          />
+          <Route
+            path="/dashboard/student/examen/enchainement/store"
+            element={<StoreEnchainement />}
+          />
+          <Route
+            path="/dashboard/payment/settings"
+            element={<PricingSettings />}
+          />
+          <Route path="/dashboard/payment/store" element={<PaymentForm />} />
+          <Route path="/dashboard/catalogue" element={<InventoryPage />} />
+          <Route
+            path="/dashboard/inventory/prets"
+            element={<EquipmentLoan />}
+          />
+          <Route
+            path="dashboard/programme-activites"
+            element={<ProgrammeActivites />}
+          />
         </Route>
+        <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/members" element={<MemberTable />} />
+          <Route
+            path="/dashboard/student/:examenId/candidates"
+            element={<ExamenDetails />}
+          />
+          <Route path="/dashboard/session/list" element={<SessionList />} />
+          <Route
+            path="/dashboard/session/:sessionId/show"
+            element={<SessionDetails />}
+          />
+
+          <Route
+            path="/dashboard/student/attendance"
+            element={<AttendanceIndex />}
+          />
+          <Route
+            path="/dashboard/payment/factures"
+            element={<PaymentIndex />}
+          />
+          <Route path="/grades-history" element={<StudentsGradesOverview />} />
+        </Route>
+        <Route
+          element={<ProtectedRoute allowedRoles={["parent", "karateka"]} />}
+        >
+          <Route path="/dashboard/caisse" element={<ParentDet />} />
+        </Route>
+
+        {/* ROUTES STRICTEMENT SUPER ADMIN */}
+        <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
+          <Route path="/dashboard/clubs" element={<ClubAdmin />} />
+          <Route path="/dashboard/users" element={<Users />} />
+          <Route path="/dashboard/karateka/list" element={<StudentList />} />
+          <Route path="/dashboard/plan/store" element={<Plan />} />
+          <Route path="/dashboard/discipline/store" element={<StoreDisp />} />
+        </Route>
+      </Route>
+
+      {/* ROUTES LIGUE (Accessibles si activeRole est admin_league ou super_admin) */}
+      <Route element={<DashboardLeagueLayout />}>
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={["admin_league", "super_admin"]} />
+          }
+        >
+          <Route path="/dashboard/league/stats" element={<DashboardLeague />} />
+          <Route
+            path="/dashboard/league/:examenId/candidates"
+            element={<ExamenDetails />}
+          />
+          <Route path="/dashboard/league/clubs/list" element={<LeagueClub />} />
+          <Route
+            path="/dashboard/league/licences"
+            element={<LeagueLicence />}
+          />
+          <Route
+            path="/dashboard/league/categories"
+            element={<CategoriesPage />}
+          />
+          <Route path="/dashboard/league/clubs" element={<MesClubs />} />
+          <Route path="/affiliations/create" element={<StoreAffiliation />} />
+          <Route path="/licenses/generate" element={<LicenceForm />} />
+          <Route path="/dashboard/league/setup" element={<LeagueSetupPage />} />
+
+          <Route
+            path="dashboard/competitions"
+            element={<CompetitionManager />}
+          />
+          <Route path="dashboard/grades" element={<GradesExamens />} />
+          <Route path="dashboard/bureau" element={<BureauRoles />} />
+          <Route path="dashboard/notation" element={<FicheNotationGrade />} />
+
+          <Route
+            path="dashboard/confignotation"
+            element={<ConfigNotationPage />}
+          />
+          <Route
+            path="dashboard/ConfigNotationCardDetails"
+            element={<ConfigNotationCardDetails />}
+          />
+          <Route path="dashboard/notes" element={<SaisieNotePage />} />
+          <Route path="dashboard/kumite" element={<KumiteScoreboard />} />
+          <Route
+            path="dashboard/athletes"
+            element={<AdminCompetitionManagement />}
+          />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
+        <Route
+          path="dashboard/programme-activites"
+          element={<ProgrammeActivites />}
+        />
+        <Route path="dashboard/competitions" element={<CompetitionManager />} />
+        <Route path="dashboard/grades" element={<GradesExamens />} />
+        <Route path="dashboard/bureau" element={<BureauRoles />} />
+      </Route>
+
+      {/* ROUTES PUBLIQUES ET GÉNÉRALES */}
+      <Route element={<LayoutMain />}>
+        {/* Accès si connecté (n'importe quel rôle) */}
+        <Route element={<ProtectedRoute allowedRoles="ANY" />}>
+          <Route path="/examen" element={<ExamenIndex />} />
+          <Route path="/competition" element={<InscriptionPage />} />
+          <Route path="/settings" element={<AccountSettings />} />
+        </Route>
+        {/* non connecté  */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQSection />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
+        <Route path="/cgu" element={<TermsOfService />} />
+        <Route path="/confidentialite" element={<PrivacyPolicy />} />
+        <Route path="/club/store" element={<ClubStore />} />
+        <Route path="/league/store" element={<Storeleague />} />
+
+        {/* <Route path="/examen-league" element={<LeagueExams />} /> */}
+        <Route path="/403" element={<Forbidden />} />
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   );
 };
 

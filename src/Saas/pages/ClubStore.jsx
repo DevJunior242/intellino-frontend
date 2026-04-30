@@ -21,7 +21,7 @@ import ConfigSkeleton from "./ConfigSkeleton";
 function ClubStore() {
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const { switchRole, updateAuth } = UseAuth();
+  const { switchPortal, updateAuth } = UseAuth();
   const [disciplines, setDisciplines] = useState([]);
   const [selectDiscipline, setSelectDiscipline] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -103,7 +103,7 @@ function ClubStore() {
         });
 
         // 3. Forcer le rôle actif sur le nouveau club
-        switchRole(new_club.id, new_club.role);
+        switchPortal(new_club.id, new_club.type, new_club.role);
         //reset form
         setSelectDiscipline(null);
         setFormData({

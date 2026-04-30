@@ -104,7 +104,9 @@ export const AuthProvider = ({ children }) => {
   }, [auth]);
 
   const switchPortal = useCallback((id, type, roleName) => {
-const normalizedRole = Array.isArray(roleName) ? roleName[0] ?? null : roleName;
+    const normalizedRole = Array.isArray(roleName)
+      ? (roleName[0] ?? null)
+      : roleName;
     setActiveId(id);
     setActiveType(type);
     setActiveRole(normalizedRole);
@@ -184,7 +186,45 @@ const normalizedRole = Array.isArray(roleName) ? roleName[0] ?? null : roleName;
   //////////////////////////////////////////////////////////////////////////////////
   //   FUNCTION TO CLEAR AUTH DATA
   //////////////////////////////////////////////////////////////////////////////////
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem("token");
 
+      if (!token) {
+        setAuth((prev) => ({ ...prev, isLogin: false }));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // appel sécurisé
+        const res = await Instance.get("/api/user");
+
+        setAuth((prev) => ({
+          ...prev,
+          user: res.data,
+          isLogin: true,
+        }));
+      } catch (error) {
+        // token mort
+        localStorage.clear();
+
+        setAuth({
+          token: null,
+          user: null,
+          role: [],
+          roleSuperAdmin: [],
+          clubs: [],
+          leagues: [],
+          isLogin: false,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyToken();
+  }, []);
   const clearAuthData = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

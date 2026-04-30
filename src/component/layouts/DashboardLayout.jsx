@@ -55,12 +55,13 @@ export default function DashboardLayout() {
   console.log("activeRole", activeRole);
 
   if (activeType !== "Club") {
+    if (!auth?.isLogin) return <Navigate to="/login" replace />;
     return <Navigate to="/dashboard/league/stats" replace />;
   }
   const drawerWidth = collapsed ? DRAWER_COLLAPSED : DRAWER_EXPANDED;
 
   const hasAccess = (allowedRoles = []) => {
-    if (!auth) return false;
+    if (!auth?.isLogin) return false;
     // if (auth?.roleSuperAdmin?.includes("super_admin")) return true;
     return allowedRoles.includes(activeRole);
   };
