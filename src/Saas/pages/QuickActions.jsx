@@ -2,130 +2,80 @@ import { Box, Typography, ButtonBase } from "@mui/material";
 import {
   PersonAddOutlined,
   CalendarMonthOutlined,
-  AssignmentOutlined,
   EmojiEventsOutlined,
   GroupOutlined,
   ReceiptLongOutlined,
-  EditCalendarOutlined,
-  NotificationsActiveOutlined,
 } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { UseAuth } from "../../Api/AuthContext";
 
-// ─── config des actions par rôle ─────────────────────────────────────────────
+// ─── config des actions ───────────────────────────────────────────────────────
+const ACTIONS = [
+  {
+    key: "add_student",
+    label: "Nouvel élève",
+    to: "/dashboard/student/list",
+    icon: PersonAddOutlined,
+    color: "#1565C0",
+    bg: "#E3F2FD",
+    roles: ["admin_club", "instructeur", "secretaire"],
+  },
+  {
+    key: "add_session",
+    label: "Nouvelle session",
+    to: "/dashboard/session/list",
+    icon: CalendarMonthOutlined,
+    color: "#2E7D32",
+    bg: "#E8F5E9",
+    roles: ["admin_club", "instructeur"],
+  },
+  {
+    key: "add_examen",
+    label: "Examen grade",
+    to: "/examen/store",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    roles: ["admin_club", "instructeur", "admin_league"],
+  },
+  {
+    key: "competitions",
+    label: "Compétitions",
+    to: "/dashboard/competitions",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    roles: ["admin_league"],
+  },
 
-const ACTION_PRESETS = {
-  admin: [
-    {
-      key: "add_student",
-      label: "Nouvel élève",
-      icon: PersonAddOutlined,
-      color: "#1565C0",
-      bg: "#E3F2FD",
-    },
-    {
-      key: "add_session",
-      label: "Nouvelle session",
-      icon: CalendarMonthOutlined,
-      color: "#2E7D32",
-      bg: "#E8F5E9",
-    },
-    {
-      key: "add_examen",
-      label: "Examen grade",
-      icon: EmojiEventsOutlined,
-      color: "#BF360C",
-      bg: "#FBE9E7",
-    },
-    {
-      key: "members",
-      label: "Membres",
-      icon: GroupOutlined,
-      color: "#6A1B9A",
-      bg: "#F3E5F5",
-    },
-    {
-      key: "payments",
-      label: "Paiements",
-      icon: ReceiptLongOutlined,
-      color: "#E65100",
-      bg: "#FFF3E0",
-    },
-    {
-      key: "notify",
-      label: "Notifier",
-      icon: NotificationsActiveOutlined,
-      color: "#00695C",
-      bg: "#E0F2F1",
-    },
-  ],
-  instructeur: [
-    {
-      key: "attendance",
-      label: "Appel",
-      icon: AssignmentOutlined,
-      color: "#1565C0",
-      bg: "#E3F2FD",
-    },
-    {
-      key: "add_session",
-      label: "Nouvelle session",
-      icon: CalendarMonthOutlined,
-      color: "#2E7D32",
-      bg: "#E8F5E9",
-    },
-    {
-      key: "members",
-      label: "Mes élèves",
-      icon: GroupOutlined,
-      color: "#6A1B9A",
-      bg: "#F3E5F5",
-    },
-    {
-      key: "add_examen",
-      label: "Examen grade",
-      icon: EmojiEventsOutlined,
-      color: "#BF360C",
-      bg: "#FBE9E7",
-    },
-  ],
-  secretaire: [
-    {
-      key: "add_student",
-      label: "Nouvel élève",
-      icon: PersonAddOutlined,
-      color: "#1565C0",
-      bg: "#E3F2FD",
-    },
-    {
-      key: "payments",
-      label: "Paiements",
-      icon: ReceiptLongOutlined,
-      color: "#E65100",
-      bg: "#FFF3E0",
-    },
-    {
-      key: "attendance",
-      label: "Appel",
-      icon: AssignmentOutlined,
-      color: "#2E7D32",
-      bg: "#E8F5E9",
-    },
-    {
-      key: "edit_session",
-      label: "Modifier session",
-      icon: EditCalendarOutlined,
-      color: "#00695C",
-      bg: "#E0F2F1",
-    },
-  ],
-};
+  {
+    key: "members",
+    label: "Membres",
+    to: "/dashboard/members",
+    icon: GroupOutlined,
+    color: "#6A1B9A",
+    bg: "#F3E5F5",
+    roles: ["admin_club", "instructeur", "secretaire"],
+  },
+  {
+    key: "payments",
+    label: "Paiements",
+    to: "/dashboard/payment/store",
+    icon: ReceiptLongOutlined,
+    color: "#E65100",
+    bg: "#FFF3E0",
+    roles: ["admin_club", "secretaire"],
+  },
+];
 
 // ─── bouton individuel ────────────────────────────────────────────────────────
-
-function ActionButton({ action, onClick }) {
+function ActionButton({ action }) {
+  const navigate = useNavigate();
   const Icon = action.icon;
+
   return (
     <ButtonBase
-      onClick={() => onClick?.(action.key)}
+      onClick={() => navigate(action.to)}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -176,17 +126,15 @@ function ActionButton({ action, onClick }) {
 }
 
 // ─── composant principal ──────────────────────────────────────────────────────
+function QuickActions({ cols = 3 }) {
+  const { activeRole } = UseAuth();
 
-/**
- * Props:
- *  - role    : "admin" | "instructeur" | "secretaire"
- *  - actions : optionnel — tableau custom pour surcharger le preset du rôle
- *              [{ key, label, icon, color, bg }]
- *  - onAction: (key: string) => void   callback au clic
- *  - cols    : nombre de colonnes (défaut 3)
- */
-function QuickActions({ role = "admin", actions, onAction, cols = 3 }) {
-  const items = actions ?? ACTION_PRESETS[role] ?? ACTION_PRESETS.admin;
+  // Filtre les actions accessibles au rôle actif
+  const visibleActions = ACTIONS.filter((action) =>
+    action.roles.includes(activeRole),
+  );
+
+  if (visibleActions.length === 0) return null;
 
   return (
     <Box>
@@ -195,7 +143,6 @@ function QuickActions({ role = "admin", actions, onAction, cols = 3 }) {
       >
         Actions rapides
       </Typography>
-
       <Box
         sx={{
           display: "grid",
@@ -203,8 +150,8 @@ function QuickActions({ role = "admin", actions, onAction, cols = 3 }) {
           gap: 1,
         }}
       >
-        {items.map((action) => (
-          <ActionButton key={action.key} action={action} onClick={onAction} />
+        {visibleActions.map((action) => (
+          <ActionButton key={action.key} action={action} />
         ))}
       </Box>
     </Box>

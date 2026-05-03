@@ -1,10 +1,11 @@
+import { Box } from "@mui/material";
 import GlobalRole from "./GlobalRole";
- 
+
 const DashboardStats = () => {
   return (
-    <div>
+    <Box>
       <GlobalRole />
-    </div>
+    </Box>
   );
 };
 

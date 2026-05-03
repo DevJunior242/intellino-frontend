@@ -13,7 +13,8 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
     setPoidsInput((prev) => ({ ...prev, [id]: val }));
   };
   const isKata =
-    rows.length > 0 && rows[0].disciplineleague?.nom?.toLowerCase() === "kata";
+    rows.length > 0 &&
+    rows[0].competition?.discipline?.nom?.toLowerCase() === "kata";
 
   const allColumns = [
     {
@@ -28,30 +29,30 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
       width: 200,
       valueGetter: (value, row) => row.athlete?.fullname || "Inconnu",
     },
-    {
-      field: "category",
-      headerName: "Catégorie",
-      width: 150,
-      renderCell: (params) => (
-        <Chip
-          label={`${params.row.category?.nom} (${params.row.category?.sexe})`}
-          size="small"
-          variant="outlined"
-        />
-      ),
-    },
-    {
-      field: "disciplineleague",
-      headerName: "Discipline",
-      width: 150,
-      renderCell: (params) => (
-        <Chip
-          label={`${params.row.disciplineleague?.nom}`}
-          size="small"
-          variant="outlined"
-        />
-      ),
-    },
+    // {
+    //   field: "category",
+    //   headerName: "Catégorie",
+    //   width: 150,
+    //   renderCell: (params) => (
+    //     <Chip
+    //       label={`${params.row.category?.nom} (${params.row.category?.sexe})`}
+    //       size="small"
+    //       variant="outlined"
+    //     />
+    //   ),
+    // },
+    // {
+    //   field: "disciplineleague",
+    //   headerName: "Discipline",
+    //   width: 150,
+    //   renderCell: (params) => (
+    //     <Chip
+    //       label={`${params.row.disciplineleague?.nom}`}
+    //       size="small"
+    //       variant="outlined"
+    //     />
+    //   ),
+    // },
     {
       field: "poids_declare",
       headerName: "Prévu (kg)",
@@ -141,9 +142,49 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        disableRowSelectionOnClick
+        disableSelectionOnClick
+        autoPageSize
+        columnVisibilityModel={{
+          poids_declare: !isKata,
+        }}
         density="comfortable"
-        sx={{ border: "none" }}
+        showToolbar
+        localeText={{
+          noRowsLabel: "Aucun enregistrement disponible",
+          noResultsOverlayLabel: "Aucun résultat trouvé",
+        }}
+        sx={{
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "background.default",
+            borderBottom: "1px solid",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "bold",
+            fontSize: { xs: 8, md: 16 },
+          },
+          "&.MuiDataGrid-root .MuiDataGrid-cell": {
+            fontSize: { xs: 8, md: 16 },
+            display: "flex",
+            alignItems: "center",
+          },
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(0, 0, 0, 0.04)",
+            cursor: "pointer",
+          },
+          "& .MuiDataGrid-row.Mui-selected": {
+            backgroundColor: "rgba(255, 255, 255, 0.05) !important",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.1) !important",
+            },
+          },
+          backgroundColor: "background.default",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "blue !important",
+          },
+        }}
       />
     </Box>
   );

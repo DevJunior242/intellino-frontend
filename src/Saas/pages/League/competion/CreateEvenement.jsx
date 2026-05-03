@@ -69,9 +69,12 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
     try {
       const [discRes, catRes, nivRes] = await Promise.all([
         Instance.get("/api/disciplines/disciplines"),
-        Instance.get("/api/categories/categories"),
+        Instance.get("/api/getCategories"),
         Instance.get("/api/niveaux-competitions/niveaux-competitions"),
       ]);
+      console.log(discRes);
+      console.log(catRes);
+      console.log(nivRes);
       setDisciplines(discRes.data || []);
       setCategories(catRes.data || []);
       setNiveaux(nivRes.data || []);
@@ -151,9 +154,7 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
         organisateur_id: activeId,
         organisateur_type: activeType,
       };
-      console.log("payload", payload);
       const res = await Instance.post("/api/evenements/evenements", payload);
-      console.log("res", res);
       setSuccess("Événement créé avec succès !");
       setTimeout(handleCloseClean, 1500);
       getEvenements();

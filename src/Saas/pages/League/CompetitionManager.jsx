@@ -18,6 +18,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import CreateEvenement from "./competion/CreateEvenement";
 import EvenementsTable from "./competion/EvenementsTable.jsx";
 import { UseAuth } from "../../../Api/AuthContext.jsx";
+import ConfigSkeleton from "../ConfigSkeleton.jsx";
 
 // --- COULEURS DU THÈME EXACT (Dark Mode de l'image) ---
 const theme = {
@@ -109,21 +110,26 @@ export default function CompetitionManager() {
   const [loadingActive, setLoadingActive] = useState(true);
   const [loadingEvenements, setLoadingEvenements] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [submittingComp, setSubmittingComp] = useState(false);
+
   const [evenements, setEvenements] = useState([]);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
-  const { auth } = UseAuth();
+  const { auth, activeId, activeType } = UseAuth();
   const arbitre =
     auth?.role?.includes("arbitre_league") ||
     auth?.role?.includes("admin_league");
+  const isAdmin = auth?.role?.includes("admin_league");
 
   //auh
-  // Récupération l'evenement actif (celui avec statut "ouverte" ou "en_cours")
+  // Récupération l'evenement actif (celui avec status "ouverte" ou "en_cours")
   const getEventActive = useCallback(async () => {
     setLoadingActive(true);
     try {
-      const response = await Instance.get("/api/evenements/getEventActive");
-      console.log("activeComp", response);
+      const response = await Instance.get(
+        `/api/evenements/getEventActive?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+      );
+      console.log("activeComp", response.data);
       setActiveComp(response.data || []);
     } catch (error) {
       console.log(error);
@@ -141,7 +147,9 @@ export default function CompetitionManager() {
   const getEvenements = useCallback(async () => {
     setLoadingEvenements(true);
     try {
-      const response = await Instance.get(`/api/evenements/evenements`);
+      const response = await Instance.get(
+        `/api/evenements/evenements?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+      );
       console.log(response);
       setEvenements(response.data || []);
     } catch (error) {
@@ -161,7 +169,34 @@ export default function CompetitionManager() {
     setError({});
     try {
       // Action peut être 'ouvrir' ou 'cloturer'
-      const response = await Instance.post(`api/evenements/${action}/${id}`);
+      const response = await Instance.post(`api/evenements/${action}/${id}`, {
+        organisateur_id: activeId,
+        organisateur_type: activeType,
+      });
+      setActiveComp(response.data);
+      if (response.data.success) setSuccess(response.data.message);
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+      console.log(response);
+      getEvenements();
+    } catch (error) {
+      console.error(error);
+      ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const handleEpreuveStatusChange = async (id, action) => {
+    setSubmittingComp(true);
+    setSuccess("");
+    setError({});
+    try {
+      // Action peut être 'ouvrir' ou 'cloturer'
+      const response = await Instance.post(`api/competitions/${action}/${id}`, {
+        organisateur_id: activeId,
+        organisateur_type: activeType,
+      });
       setActiveComp(response.data);
       if (response.data.success) setSuccess(response.data.message);
       setTimeout(() => {
@@ -174,10 +209,9 @@ export default function CompetitionManager() {
       console.error(error);
       ErrorGlobal({ error, setError });
     } finally {
-      setSubmitting(false);
+      setSubmittingComp(false);
     }
   };
-
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -187,32 +221,49 @@ export default function CompetitionManager() {
       (sum, comp) => sum + (comp.inscriptions_count || 0),
       0,
     ) ?? 0;
+  const STATUT_CONFIG = {
+    0: { label: "Brouillon", color: "default" },
+    1: { label: "En cours", color: "warning" },
+    2: { label: "Terminé", color: "success" },
+    brouillon: { label: "Brouillon", color: "default" },
+    en_attente: { label: "En attente", color: "info" },
+    en_cours: { label: "En cours", color: "warning" },
+    termine: { label: "Terminé", color: "success" },
+  };
+
+  const DISC_COLOR = {
+    kumite: "error",
+    kata: "success",
+  };
+
+  const getStatut = (status) =>
+    STATUT_CONFIG[status] ?? { label: String(status), color: "default" };
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.bg, minHeight: "100vh" }}>
       {/* --- BOUTONS D'ACTION SUPÉRIEURS --- */}
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button
-          variant="outlined"
-          sx={{
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.2)",
-            textTransform: "none",
-            px: 3,
-            borderRadius: 2,
-          }}
-          onClick={handleOpen}
-        >
-          + Créer compétition
-        </Button>
-      </Stack>
+      {isAdmin && (
+        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "#fff",
+              borderColor: "rgba(255,255,255,0.2)",
+              textTransform: "none",
+              px: 3,
+              borderRadius: 2,
+            }}
+            onClick={handleOpen}
+          >
+            + Créer compétition
+          </Button>
+        </Stack>
+      )}
 
       {/* --- BLOC ÉVÉNEMENT PRINCIPAL (Featured Competition) --- */}
 
       {loadingActive ? (
-        // spinner
-        <Box sx={{ display: "flex", justifyContent: "center", p: 6 }}>
-          <CircularProgress />
-        </Box>
+        <ConfigSkeleton />
       ) : (
         activeComp?.id && (
           <Paper
@@ -244,8 +295,8 @@ export default function CompetitionManager() {
                 color={theme.success}
               />
               <StatusBadge
-                label={activeComp.statut}
-                type={activeComp.statut}
+                label={getStatut(activeComp.status).label}
+                type={getStatut(activeComp.status).color}
               />{" "}
             </Stack>
 
@@ -269,6 +320,8 @@ export default function CompetitionManager() {
         evenements={evenements}
         loading={loadingEvenements}
         submitting={submitting}
+        submittingComp={submittingComp}
+        handleEpreuveStatusChange={handleEpreuveStatusChange}
         success={success}
         errors={error}
         auth={auth}

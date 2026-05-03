@@ -18,6 +18,27 @@ export default function DashboardLayoutLeague({
   title = "Tableau de bord",
 }) {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
+  const theme = {
+    bg: "#1a1d23",
+    surface: "#13161e",
+    surfaceHigh: "#1a1e2a",
+    border: "#252a38",
+    borderHover: "#353c52",
+    accent: "#6c63ff",
+    accentLight: "#8b84ff",
+    accentDim: "rgba(108,99,255,0.15)",
+    teal: "#1de4bd",
+    tealDim: "rgba(29,228,189,0.12)",
+    amber: "#f5a623",
+    amberDim: "rgba(245,166,35,0.12)",
+    text: "#e8eaf0",
+    textMuted: "#7a8099",
+    textFaint: "#3e4460",
+    success: "#22c55e",
+    successDim: "rgba(34,197,94,0.12)",
+    danger: "#ef4444",
+    dangerDim: "rgba(239,68,68,0.1)",
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -65,7 +86,7 @@ export default function DashboardLayoutLeague({
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Chip
-                label="Saison 2024–2025"
+                label="Saison 2025-2026"
                 variant="outlined"
                 size="small"
                 sx={{ color: "#e8c84a" }}

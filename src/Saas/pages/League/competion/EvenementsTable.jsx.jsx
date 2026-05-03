@@ -68,7 +68,7 @@ const getStatut = (status) =>
   STATUT_CONFIG[status] ?? { label: String(status), color: "default" };
 
 // ─── Ligne épreuve ────────────────────────────────────────────────────────────
-const EpreuveRow = ({ epreuve }) => {
+const EpreuveRow = ({ epreuve, handleEpreuveStatusChange, submittingComp }) => {
   const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
   const status = getStatut(epreuve.status);
@@ -152,6 +152,49 @@ const EpreuveRow = ({ epreuve }) => {
           variant="filled"
         />
       </TableCell>
+      <TableCell>
+        <Stack direction="row" gap={1}>
+          {epreuve.status === 0 && (
+            <Button
+              disabled={submittingComp}
+              variant="contained"
+              color="success"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEpreuveStatusChange(epreuve.id, "ouvrir");
+              }}
+            >
+              ouvrir
+            </Button>
+          )}
+          {epreuve.status === 1 && (
+            <Button
+              disabled={submittingComp}
+              variant="contained"
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEpreuveStatusChange(epreuve.id, "cloturer");
+              }}
+            >
+              Cloturer
+            </Button>
+          )}
+          {epreuve.status === 2 && (
+            <Button
+              disabled={submittingComp}
+              variant="contained"
+              color="success"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEpreuveStatusChange(epreuve.id, "ouvrir");
+              }}
+            >
+              {submittingComp ? "Ouv..." : "Ouvrir"}
+            </Button>
+          )}
+        </Stack>
+      </TableCell>
     </TableRow>
   );
 };
@@ -163,6 +206,8 @@ const EvenementRow = ({
   arbitre,
   auth,
   submitting,
+  submittingComp,
+  handleEpreuveStatusChange,
 }) => {
   const [open, setOpen] = useState(false);
   const epreuves = evenement.competitions ?? [];
@@ -383,11 +428,17 @@ const EvenementRow = ({
                       <TableCell sx={{ color: "grey.800" }}>Horaire</TableCell>
                       <TableCell sx={{ color: "grey.800" }}>Inscrits</TableCell>
                       <TableCell sx={{ color: "grey.800" }}>Statut</TableCell>
+                      <TableCell sx={{ color: "grey.800" }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {epreuves.map((ep) => (
-                      <EpreuveRow key={ep.id} epreuve={ep} />
+                      <EpreuveRow
+                        key={ep.id}
+                        epreuve={ep}
+                        handleEpreuveStatusChange={handleEpreuveStatusChange}
+                        submittingComp={submittingComp}
+                      />
                     ))}
                   </TableBody>
                 </Table>
@@ -406,6 +457,8 @@ export default function EvenementsTable({
   loading,
   submitting,
   handleStatusChange,
+  handleEpreuveStatusChange,
+  submittingComp,
   auth,
   arbitre,
   success,
@@ -456,6 +509,8 @@ export default function EvenementsTable({
                 key={ev.id}
                 evenement={ev}
                 handleStatusChange={handleStatusChange}
+                submittingComp={submittingComp}
+                handleEpreuveStatusChange={handleEpreuveStatusChange}
                 auth={auth}
                 arbitre={arbitre}
                 submitting={submitting}

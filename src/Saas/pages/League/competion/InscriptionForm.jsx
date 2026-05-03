@@ -19,6 +19,7 @@ import { Instance } from "../../../../Api/Axios";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
 import Message from "../../Message";
 import PulseLoader from "react-spinners/PulseLoader";
+import ConfigSkeleton from "../../ConfigSkeleton";
 
 function InscriptionForm({ competitionId, discipline, onSuccess }) {
   console.log(competitionId);
@@ -29,8 +30,8 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   const [students, setStudents] = useState([]);
   const [katas, setKatas] = useState([]);
   const [selectStudent, setSelectStudent] = useState(null);
-  const { activeClubId } = UseAuth();
-  console.log("activeClubId", activeClubId);
+  const { activeId } = UseAuth();
+  console.log("activeId", activeId);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
     try {
       const [resKata, resStudent] = await Promise.all([
         Instance.get(`/api/katas/katas`),
-        Instance.get(`/api/students?club_id=${activeClubId}`),
+        Instance.get(`/api/students?club_id=${activeId}`),
       ]);
       console.log(resKata, resStudent);
       setKatas(resKata.data);
@@ -67,12 +68,12 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
     } finally {
       setLoading(false);
     }
-  }, [activeClubId]);
+  }, [activeId]);
 
   useEffect(() => {
-    if (!activeClubId) return;
+    if (!activeId) return;
     getInitialData();
-  }, [activeClubId, getInitialData]);
+  }, [activeId, getInitialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,10 +84,9 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeClubId,
+        club_id: activeId,
         competition_id: competitionId,
       };
-      console.log(dataSend);
       const response = await Instance.post(
         "/api/inscriptions/inscriptions",
         dataSend,
@@ -117,18 +117,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   };
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <PulseLoader />
-      </Box>
-    );
+    return <ConfigSkeleton />;
   }
   return (
     <Container maxWidth="md">
@@ -138,39 +127,42 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         transition={{ duration: 0.5 }}
-        sx={{
-          mt: 8,
-
-          p: 4,
-        }}
+        sx={{ mt: 8, p: 4 }}
       >
         <Typography
           variant="h4"
-          component={"h1"}
-          textAlign={"center"}
-          sx={{ fontWeight: "bold", fontSize: { xs: 8, md: 14 } }}
+          component="h1"
+          textAlign="center"
+          sx={{ fontWeight: "bold", fontSize: { xs: "1.4rem", md: "2rem" } }} // ✅ unités rem
         >
           Inscription à l'épreuve de {discipline}
         </Typography>
+
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
+
         <form onSubmit={handleSubmit}>
           <Autocomplete
+            slotProps={{
+              paper: {
+                sx: { backgroundColor: "background.default" },
+              },
+            }}
             disablePortal
             options={Array.isArray(students) ? students : []}
             getOptionLabel={(student) =>
-              `${student.fullname || ""}-${student.birthdate || ""}`
+              `${student.fullname || ""} - ${student.birthdate || ""}`
             }
             value={selectStudent}
             isOptionEqualToValue={(option, value) => option.id === value?.id}
             onChange={(e, newValue) => setSelectStudent(newValue)}
             renderInput={(params) => (
               <TextField
-                error={!!error.student_id}
                 {...params}
+                error={!!error.student_id}
                 fullWidth
                 margin="normal"
-                label="il vous faut choisir un eleve"
+                label="Choisir un athlète à compétir"
                 required
               />
             )}
@@ -178,13 +170,13 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
           {hasError("student_id") && (
             <FormHelperText error>{getError("student_id")}</FormHelperText>
           )}
-          {/* kumite */}
-          {/* affiche le poid pour kumite */}
+
+          {/* Kumite — champ poids */}
           {discipline === "Kumite" && (
             <TextField
               error={!!error.poids_declare}
               helperText={getError("poids_declare")}
-              label="Poids déclaré (en kg)"
+              label="Veuillez saisir le poids de votre athlète (kg)"
               name="poids_declare"
               value={formData.poids_declare}
               variant="outlined"
@@ -193,25 +185,29 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
               onChange={handleChange}
             />
           )}
-          {/* discipline === "Kata"  */}
+
+          {/* Kata — sélection du kata */}
           {discipline === "Kata" && (
-            <FormControl fullWidth>
-              <InputLabel>Kata exécuté</InputLabel>
+            <FormControl fullWidth margin="normal" variant="outlined">
+              <InputLabel>Veuillez choisir le kata exécuté</InputLabel>
               <Select
+                label="Veuillez choisir le kata exécuté"
                 value={formData.kata_id}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    kata_id: e.target.value,
-                  })
+                  setFormData({ ...formData, kata_id: e.target.value })
                 }
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
               >
                 {katas.map((kata) => (
                   <MenuItem key={kata.id} value={kata.id}>
                     <Stack>
                       <Typography variant="body2">{kata.nom}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {kata.nom}-({kata.niveau})
+                        {kata.nom} ({kata.niveau})
                       </Typography>
                     </Stack>
                   </MenuItem>
@@ -219,11 +215,16 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
               </Select>
             </FormControl>
           )}
+
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
+            sx={{
+              mt: 2,
+              textTransform: "none",
+              fontSize: { xs: "0.9rem", md: "1rem" },
+            }}
           >
             {submitting ? "Enregistrement en cours..." : "S'inscrire"}
           </Button>

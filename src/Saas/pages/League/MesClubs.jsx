@@ -26,6 +26,7 @@ import {
 import { motion } from "framer-motion";
 import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import ErrorBlock from "../ErrorBlock";
 
 // --- Icons (Emoji ou MUI Icons) ---
 const icons = {
@@ -39,12 +40,9 @@ function MesClubs() {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { auth, activeRole } = UseAuth();
-  console.log("auth", auth);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Tous");
-  const leagueId = auth?.user?.current_league_id;
-  console.log("leagueId", leagueId);
+  const { activeId } = UseAuth();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedClub, setSelectedClub] = useState(null);
   const open = Boolean(anchorEl);
@@ -58,45 +56,40 @@ function MesClubs() {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
-  const getMyClubs = useCallback(async () => {
-    if (!leagueId) return;
+  const getMyClubs = useCallback(
+    async (searchVal = "", statusVal = "") => {
+      if (!activeId) return;
 
-    setLoading(true);
-    setError("");
+      setLoading(true);
+      setError("");
 
-    try {
-      const response = await Instance.get(
-        `api/leagues/myClubs?league_id=${leagueId}`,
-      );
-      console.log("clubs", response);
-      setClubs(response.data.data || []);
-    } catch (error) {
-      setError("Une erreur est survenue lors de la récupération des clubs");
-    } finally {
-      setLoading(false);
-    }
-  }, [leagueId]);
+      try {
+        const response = await Instance.get(
+          `api/leagues/myClubs?organisateur_id=${activeId}&search=${searchVal}&status=${statusVal}`,
+        );
+        console.log("clubs", response);
+        setClubs(response.data.data || []);
+      } catch (error) {
+        setError("Une erreur est survenue lors de la récupération des clubs");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeId],
+  );
 
   useEffect(() => {
     getMyClubs();
   }, [getMyClubs]);
 
   if (error) return <ErrorBlock message={error} onRetry={getMyClubs} />;
-  const statusConfig = {
-    0: {
-      label: "En attente",
-      color: "rgba(255, 193, 7, 0.15)",
-      text: "#FFC107",
-    }, // jaune
-    1: { label: "Actif", color: "rgba(76, 175, 80, 0.15)", text: "#4CAF50" }, // vert
-    2: { label: "Expiré", color: "rgba(244, 67, 54, 0.15)", text: "#F44336" }, // rouge
-    3: {
-      label: "En suspension",
-      color: "rgba(158, 158, 158, 0.15)",
-      text: "#9E9E9E",
-    }, // gris
-  };
-
+  const statusList = [
+    { label: "Tous", value: "" },
+    { label: "En attente", value: 0 },
+    { label: "Active", value: 1 },
+    { label: "Expirée", value: 2 },
+    { label: "Suspendue", value: 3 },
+  ];
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Stack spacing={3}>
@@ -112,8 +105,12 @@ function MesClubs() {
             fullWidth
             variant="outlined"
             placeholder="Rechercher un club par nom, ville ou téléphone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={search}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+              getMyClubs(value, status);
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">{icons.search}</InputAdornment>
@@ -140,19 +137,19 @@ function MesClubs() {
         >
           {/* Filtres de Status */}
           <Stack direction="row" spacing={1}>
-            {["Tous", "Actif", "Expiré", "En attente"].map((status) => (
+            {statusList.map((item) => (
               <Chip
-                key={status}
-                label={status}
+                key={item.label}
+                label={item.label}
                 clickable
-                onClick={() => setStatusFilter(status)}
+                onClick={() => {
+                  setStatus(item.value);
+                  getMyClubs(search, item.value);
+                }}
                 sx={{
-                  bgcolor:
-                    statusFilter === status
-                      ? "#e8c84a"
-                      : "rgba(255,255,255,0.05)",
-                  color: statusFilter === status ? "#1a1d23" : "#8b90a0",
                   fontWeight: 600,
+                  bgcolor: status === item.value ? "#e8c84a" : "transparent",
+                  color: status === item.value ? "#1a1d23" : "#fff",
                   "&:hover": { bgcolor: "#e8c84a", color: "#1a1d23" },
                 }}
               />
@@ -294,7 +291,9 @@ function MesClubs() {
                     <TableCell>
                       {club?.affiliations?.length > 0 ? (
                         club.affiliations.map((affiliation) => {
-                          const config = statusConfig[affiliation.status];
+                          const config = statusList.find(
+                            (s) => s.value === affiliation.status,
+                          );
 
                           return (
                             <Chip

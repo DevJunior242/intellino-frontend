@@ -34,12 +34,10 @@ function LicenceTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
-  const { auth, activeRole } = UseAuth();
-  console.log("auth", auth);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Tous");
-  const leagueId = auth?.user?.current_league_id;
-  console.log("leagueId", leagueId);
+  const { auth, activeId } = UseAuth();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedClub, setSelectedClub] = useState(null);
   const open = Boolean(anchorEl);
@@ -53,29 +51,34 @@ function LicenceTable() {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
-  const getLicences = useCallback(async () => {
-    if (!leagueId) return;
-    setError("");
-    setLoading(true);
-    try {
-      const response = await Instance.get(
-        `api/licences/licences?league_id=${leagueId}`,
-      );
-      console.log(response);
-      setPagination({
-        total: response.data.total,
-        current_page: response.data.current_page,
-        last_page: response.data.last_page,
-        per_page: response.data.per_page,
-      });
-      setLicences(response.data.data || []);
-    } catch (error) {
-      console.log(error);
-      setError("Une erreur est survenue lors de la récupération des licences");
-    } finally {
-      setLoading(false);
-    }
-  }, [leagueId]);
+  const getLicences = useCallback(
+    async (searchVal = "", statusVal = "") => {
+      if (!activeId) return;
+      setError("");
+      setLoading(true);
+      try {
+        const response = await Instance.get(
+          `api/licences/licences?organisateur_id=${activeId}&search=${searchVal}&status=${statusVal}`,
+        );
+        console.log(response);
+        setPagination({
+          total: response.data.total,
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          per_page: response.data.per_page,
+        });
+        setLicences(response.data.data || []);
+      } catch (error) {
+        console.log(error);
+        setError(
+          "Une erreur est survenue lors de la récupération des licences",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeId],
+  );
 
   useEffect(() => {
     getLicences();
@@ -90,6 +93,15 @@ function LicenceTable() {
     filter: "⚙️",
     more: "⋮",
   };
+
+  //status
+  const statusConfig = {
+    0: { color: "success", label: "Active" },
+    1: { color: "warning", label: "Expirée" },
+    2: { color: "danger", label: "Suspendue" },
+    3: { color: "error", label: "En attente" },
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Stack spacing={3}>
@@ -104,9 +116,12 @@ function LicenceTable() {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Rechercher un club par nom, ville ou téléphone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Rechercher une licence par nom, numero de licence..."
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+              getLicences(value, status);
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -136,18 +151,24 @@ function LicenceTable() {
           {/* Filtres de Status */}
           <Stack direction="row" spacing={1}>
             {/* //select status */}
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={statusFilter}
-              label="Statut"
-              onChange={(e) => setStatusFilter(e.target.value)}
+            <select
+              value={status}
+              onChange={(e) => {
+                const value =
+                  e.target.value === "" ? "" : Number(e.target.value);
+
+                setStatus(value);
+
+                getLicences(search, value);
+              }}
             >
-              <MenuItem value={"Tous"}>Tous</MenuItem>
-              <MenuItem value={"Actif"}>Actif</MenuItem>
-              <MenuItem value={"Expiré"}>Expiré</MenuItem>
-              <MenuItem value={"En attente"}>En attente</MenuItem>
-            </Select>
+              <option value="">Tous</option>
+              {Object.entries(statusConfig).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value.label}
+                </option>
+              ))}
+            </select>
           </Stack>
 
           {/* Actions : Export et Add */}
@@ -173,7 +194,7 @@ function LicenceTable() {
                 textTransform: "none",
                 "&:hover": { bgcolor: "#d4b63b" },
               }}
-              onClick={() => navigate("/dashboard/league/clubs/list")}
+              onClick={() => navigate("/dashboard/league/clubs")}
             >
               Nouvelle Licence
             </Button>
@@ -277,15 +298,10 @@ function LicenceTable() {
 
                     <TableCell>
                       <Chip
-                        label={licence.statut}
+                        label={statusConfig[licence.status].label}
+                        color={statusConfig[licence.status].color}
                         size="small"
                         sx={{
-                          bgcolor:
-                            licence.statut === "active"
-                              ? "rgba(76,175,80,0.1)"
-                              : "rgba(255,152,0,0.1)",
-                          color:
-                            licence.statut === "active" ? "#4caf50" : "#ff9800",
                           fontSize: "0.7rem",
                           fontWeight: 700,
                         }}

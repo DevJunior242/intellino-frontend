@@ -34,6 +34,7 @@ import DebtPage from "../../Saas/pages/DebtPage";
 import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
 import ClubCount from "../../Saas/pages/ClubCount";
 import ErrorBlock from "../../Saas/pages/ErrorBlock";
+import QuickActions from "../../Saas/pages/QuickActions";
 function ClubAdminDashboard() {
   const [stats, setStats] = useState({
     total_students: 0,
@@ -43,7 +44,6 @@ function ClubAdminDashboard() {
   });
 
   const { activeId } = UseAuth();
-  console.log("activeId", activeId);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const fetchStats = useCallback(async () => {
@@ -166,6 +166,7 @@ function ClubAdminDashboard() {
       <Box sx={{ mt: 3, mb: 2 }}>
         <Program activeId={activeId} role="admin" />
         <Activity />
+        <QuickActions />
       </Box>
     </Box>
   );

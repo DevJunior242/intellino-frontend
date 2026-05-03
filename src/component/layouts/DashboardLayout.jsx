@@ -40,7 +40,7 @@ import TopBar from "../../Header/Topbar";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
-import { Groups, PeopleAlt } from "@mui/icons-material";
+import { Groups, PeopleAlt, Settings } from "@mui/icons-material";
 
 const DRAWER_EXPANDED = 240;
 const DRAWER_COLLAPSED = 60;
@@ -62,7 +62,6 @@ export default function DashboardLayout() {
 
   const hasAccess = (allowedRoles = []) => {
     if (!auth?.isLogin) return false;
-    // if (auth?.roleSuperAdmin?.includes("super_admin")) return true;
     return allowedRoles.includes(activeRole);
   };
 
@@ -214,6 +213,17 @@ export default function DashboardLayout() {
           title: "Ajouter discipline",
           icon: <AddCircleOutlineIcon fontSize="small" />,
           to: "/dashboard/discipline/store",
+          role: ["super_admin"],
+        },
+      ],
+    },
+    {
+      label: "LEAGUE",
+      items: [
+        {
+          icon: <Settings />,
+          label: "Configuration ligue",
+          to: "/dashboard/league/setup",
           role: ["super_admin"],
         },
       ],

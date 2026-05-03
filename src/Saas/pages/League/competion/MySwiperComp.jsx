@@ -24,15 +24,21 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Instance } from "../../../../Api/Axios";
+import { UseAuth } from "../../../../Api/AuthContext";
+import ConfigSkeleton from "../../ConfigSkeleton";
 
 const MySwiperComp = ({ onSelect, selectedId }) => {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { activeId } = UseAuth();
 
   const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await Instance.get("/api/competitions/competitions");
+      const response = await Instance.get(
+        `/api/competitions/competitions?organisateur_id=${activeId}`,
+      );
       console.log("epreuves", response);
       setCompetitions(response.data.data || []);
     } catch (error) {
@@ -46,12 +52,7 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
     fetchCompetitions();
   }, [fetchCompetitions]);
 
-  if (loading)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
-        <CircularProgress />
-      </Box>
-    );
+  if (loading) return <ConfigSkeleton />;
 
   return (
     <Box sx={{ mb: 4 }}>

@@ -18,8 +18,10 @@ import PulseLoader from "react-spinners/PulseLoader";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import { UseAuth } from "../../../Api/AuthContext";
 
 function StoreAffiliation() {
+  const { activeId } = UseAuth();
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
@@ -28,7 +30,6 @@ function StoreAffiliation() {
 
   const [formData, setFormData] = useState({
     club_id: "",
-    saison: "",
     cotisation: "",
     date_debut: "",
     date_fin: "",
@@ -54,7 +55,10 @@ function StoreAffiliation() {
     try {
       console.log("FORM DATA", formData);
       const response = await Instance.post(
-        "/api/affiliations/affiliations?club_id=" + clubId,
+        "/api/affiliations/affiliations?club_id=" +
+          clubId +
+          "&organisateur_id=" +
+          activeId,
         formData,
       );
       console.log("RESPONSE", response);
@@ -102,19 +106,7 @@ function StoreAffiliation() {
 
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="club_id" value={formData.clubId} />
-          <TextField
-            error={hasError("saison")}
-            helperText={getError("saison")}
-            type="text"
-            name="saison"
-            placeholder="ex: 2024-2025"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={formData.saison}
-            onChange={handleChange}
-            required
-          />
+
           {/* <TextField
             error={hasError("cotisation")}
             helperText={getError("cotisation")}

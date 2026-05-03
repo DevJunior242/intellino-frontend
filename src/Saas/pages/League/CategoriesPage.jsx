@@ -16,16 +16,16 @@ import CategoryForm from "./CategoryForm";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import { useNavigate } from "react-router-dom";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 export default function CategoriesPage() {
+  const { activeId } = UseAuth();
+  console.log(activeId);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
+  const [error, setError] = useState("");
   const handleCloseModal = () => {
     setOpenModal(false);
   };
@@ -34,22 +34,33 @@ export default function CategoriesPage() {
 
   //gatcategories
   const getCategories = useCallback(async () => {
+    if (!activeId) return;
     setLoading(true);
+    setError("");
     try {
-      const response = await Instance.get(`/api/categories/categories`);
+      const response = await Instance.get(
+        `/api/categories?organisateur_id=${activeId}`,
+      );
       console.log(response);
-      setCategories(response.data || []);
+      setCategories(response.data.categories || []);
     } catch (error) {
       console.log(error);
+      setError(
+        "Une erreur est survenue lors de la récupération des catégories",
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeId]);
 
   useEffect(() => {
     getCategories();
   }, [getCategories]);
 
+  if (loading) {
+    return <ConfigSkeleton />;
+  }
+  if (error) return <ErrorBlock message={error} onRetry={getCategories} />;
   return (
     <Box sx={{ p: 1 }}>
       {/* Bouton Nouvelle Catégorie */}
@@ -127,12 +138,11 @@ export default function CategoriesPage() {
                   <TableCell>
                     {row.age_min}-{row.age_max} ans
                   </TableCell>
-                  {/* <TableCell>{row.disciplines[0].nom}</TableCell> */}
                   <TableCell
                     align="right"
                     sx={{ fontWeight: 500, color: "red" }}
                   >
-                    {row.licencies_count}
+                    {row.licencies_count || 0}
                   </TableCell>
                 </TableRow>
               ))}

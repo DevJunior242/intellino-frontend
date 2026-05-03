@@ -21,6 +21,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
+import { UseAuth } from "../../../Api/AuthContext";
 
 function LicenceForm() {
   const [data, setData] = useState([]);
@@ -34,6 +35,8 @@ function LicenceForm() {
   const getError = (field) => error?.[field]?.join(", ");
   const searchParams = new URLSearchParams(window.location.search);
   const clubId = searchParams.get("club");
+  console.log("clubid", clubId);
+  const { activeId } = UseAuth();
 
   const getStudents = useCallback(async () => {
     setLoading(true);
@@ -57,11 +60,8 @@ function LicenceForm() {
   }, [getStudents, clubId]);
 
   const [formData, setFormData] = useState({
-    club_id: "",
     student_id: "",
-    saison: "",
     type: "",
-    grade_au_moment: "",
     montant: "",
     date_emission: "",
     date_expiration: "",
@@ -94,10 +94,14 @@ function LicenceForm() {
     setSuccess("");
     setSubmitting(true);
     try {
-      const response = await Instance.post(
-        "/api/licences/licences?club_id=" + clubId,
-        formData,
-      );
+      const dataSend = {
+        ...formData,
+        club_id: clubId,
+        league_id: activeId,
+        organisateur_id: activeId,
+      };
+      console.log(dataSend);
+      const response = await Instance.post("/api/licences/licences", dataSend);
       console.log("RESPONSE", response);
       if (response.data.success) {
         setSuccess(response.data.message);
@@ -175,9 +179,9 @@ function LicenceForm() {
                   helperText="Seuls les élèves du club sélectionné sont affichés"
                 >
                   {data.map((data) => (
-                    <MenuItem key={data.id} value={data.student.id}>
-                      {data.student?.fullname} —
-                      {data.current_grade?.name || "Grade à récupérer"}
+                    <MenuItem key={data.id} value={data?.student?.id}>
+                      {data?.student?.fullname} —
+                      {data?.current_grade?.name || "Grade à récupérer"}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -208,7 +212,7 @@ function LicenceForm() {
                 )}
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <TextField
                   error={hasError("saison")}
                   helperText={getError("saison")}
@@ -222,7 +226,7 @@ function LicenceForm() {
                 {hasError("saison") && (
                   <FormHelperText error>{getError("saison")}</FormHelperText>
                 )}
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={12}>
                 <Divider

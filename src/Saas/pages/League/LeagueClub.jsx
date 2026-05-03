@@ -5,6 +5,8 @@ import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
+import { useNavigate } from "react-router-dom";
+import { UseAuth } from "../../../Api/AuthContext";
 
 const MotionCard = motion(Card);
 
@@ -14,12 +16,16 @@ export default function LeagueClub() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const [errorClub, setErrorClub] = useState("");
+  const navigate = useNavigate();
+  const { activeId } = UseAuth();
 
   const getClubsAvailable = async () => {
     setLoading(true);
-    setErrorClub("");
+    -setErrorClub("");
     try {
-      const response = await Instance.get("/api/clubs/getClubsAvailable");
+      const response = await Instance.get(
+        `/api/clubs/getClubsAvailable?organisateur_id=${activeId}`,
+      );
       console.log(response);
       setClubs(response.data.clubs.data || []);
     } catch (error) {
@@ -40,7 +46,9 @@ export default function LeagueClub() {
     setError({});
     setSuccess("");
     try {
-      const response = await Instance.post(`/api/leagues/addClub/${clubId}`);
+      const response = await Instance.post(`/api/leagues/addClub/${clubId}`, {
+        organisateur_id: activeId,
+      });
       console.log(response);
       if (response?.data?.success) {
         setSuccess(response.data.message);
@@ -63,6 +71,24 @@ export default function LeagueClub() {
     );
   return (
     <Box p={3}>
+      {/* button return */}
+      <Button
+        variant="outlined"
+        sx={{
+          mb: 4,
+          px: 4,
+          py: 1.5,
+          color: "#fff",
+          borderColor: "rgba(255,255,255,0.3)",
+          textTransform: "none",
+          borderRadius: 2,
+          fontSize: "1rem",
+          "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" },
+        }}
+        onClick={() => navigate("/dashboard/league/clubs")}
+      >
+        Retour à la liste des clubs
+      </Button>
       <Typography variant="h5" mb={3}>
         Clubs disponibles
       </Typography>

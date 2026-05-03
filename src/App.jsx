@@ -75,7 +75,6 @@ import DashboardLeagueLayout from "./component/layouts/DashboardLeagueLayout";
 import DashboardLeague from "./component/League/DashboardLeague";
 import StoreAffiliation from "./Saas/pages/League/StoreAffiliation";
 import LicenceForm from "./Saas/pages/League/LicenceForm";
-import LeagueLicence from "./Saas/pages/League/LeagueLicence";
 import CategoriesPage from "./Saas/pages/League/CategoriesPage";
 import LeagueSetupPage from "./Saas/pages/League/LeagueSetupPage";
 import ProgrammeActivites from "./Saas/pages/League/ProgrammeActivites";
@@ -107,6 +106,7 @@ import MentionsLegales from "./Saas/pages/legal/MentionsLegales.jsx";
 import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
+import LicenceTable from "./Saas/pages/League/LicenceTable.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -230,6 +230,8 @@ const AppRoutes = () => {
 
         {/* ROUTES STRICTEMENT SUPER ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
+          <Route path="/dashboard/league/setup" element={<LeagueSetupPage />} />
+
           <Route path="/dashboard/clubs" element={<ClubAdmin />} />
           <Route path="/dashboard/users" element={<Users />} />
           <Route path="/dashboard/karateka/list" element={<StudentList />} />
@@ -246,15 +248,17 @@ const AppRoutes = () => {
           }
         >
           <Route path="/dashboard/league/stats" element={<DashboardLeague />} />
+          {/* dashboard/programme-activites */}
+          <Route
+            path="/dashboard/programme-activites"
+            element={<ProgrammeActivites />}
+          />
           <Route
             path="/dashboard/league/:examenId/candidates"
             element={<ExamenDetails />}
           />
           <Route path="/dashboard/league/clubs/list" element={<LeagueClub />} />
-          <Route
-            path="/dashboard/league/licences"
-            element={<LeagueLicence />}
-          />
+          <Route path="/dashboard/league/licences" element={<LicenceTable />} />
           <Route
             path="/dashboard/league/categories"
             element={<CategoriesPage />}
@@ -262,8 +266,6 @@ const AppRoutes = () => {
           <Route path="/dashboard/league/clubs" element={<MesClubs />} />
           <Route path="/affiliations/create" element={<StoreAffiliation />} />
           <Route path="/licenses/generate" element={<LicenceForm />} />
-          <Route path="/dashboard/league/setup" element={<LeagueSetupPage />} />
-
           <Route
             path="dashboard/competitions"
             element={<CompetitionManager />}
@@ -271,7 +273,6 @@ const AppRoutes = () => {
           <Route path="dashboard/grades" element={<GradesExamens />} />
           <Route path="dashboard/bureau" element={<BureauRoles />} />
           <Route path="dashboard/notation" element={<FicheNotationGrade />} />
-
           <Route
             path="dashboard/confignotation"
             element={<ConfigNotationPage />}

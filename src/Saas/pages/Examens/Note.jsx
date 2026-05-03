@@ -65,34 +65,34 @@ function Note() {
     getNotes();
   }, [getNotes]);
 
-  const downloadNote = async (studentId) => {
-    setDownloadingId(studentId);
-    try {
-      const res = await Instance.get(
-        `/api/examens/${examenId}/notes/pdf?student_id=${studentId}&organisateur_id=${activeId}`,
-        {
-          responseType: "blob",
-        },
-      );
+  // const downloadNote = async (studentId) => {
+  //   setDownloadingId(studentId);
+  //   try {
+  //     const res = await Instance.get(
+  //       `/api/examens/${examenId}/notes/pdf?student_id=${studentId}&organisateur_id=${activeId}`,
+  //       {
+  //         responseType: "blob",
+  //       },
+  //     );
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Facture-${studentId.substring(0, 8)}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error("Erreur PDF:", error);
-    } finally {
-      setDownloadingId(null);
-    }
-  };
+  //     const url = window.URL.createObjectURL(new Blob([res.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", `Facture-${studentId.substring(0, 8)}.pdf`);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   } catch (error) {
+  //     console.error("Erreur PDF:", error);
+  //   } finally {
+  //     setDownloadingId(null);
+  //   }
+  // };
 
-  const handleOpenEditModal = (candidat) => {
-    setSelectCandidat(candidat);
-    setOpenEditModel(true);
-  };
+  // const handleOpenEditModal = (candidat) => {
+  //   setSelectCandidat(candidat);
+  //   setOpenEditModel(true);
+  // };
   const handleCloseModal = () => {
     setOpenEditModel(false);
     setSelectCandidat(null);
@@ -162,16 +162,12 @@ function Note() {
       20,
       finalY,
     );
+    //  la couleur de décision
+    const passage = originalStudent.passage?.trim().toLowerCase();
 
-    // Correction ici pour la couleur de décision
-    const isPass =
-      originalStudent.passage === "Passable" ||
-      originalStudent.passage === "Admis";
-    if (isPass) {
-      doc.setTextColor(0, 128, 0); // Vert
-    } else {
-      doc.setTextColor(220, 38, 38); // Rouge
-    }
+    const isPass = passage === "admis";
+
+    doc.setTextColor(isPass ? 0 : 220, isPass ? 128 : 38, isPass ? 0 : 38);
     doc.text(
       `DÉCISION DU JURY : ${originalStudent.passage || "En attente"}`,
       20,
@@ -215,7 +211,7 @@ function Note() {
           return (
             <Chip
               label={value ? value : "En attente"}
-              color={value === "Passable" ? "success" : "error"}
+              color={value === "Admis" ? "success" : "error"}
               size="small"
               sx={{ textTransform: "capitalize" }}
             />

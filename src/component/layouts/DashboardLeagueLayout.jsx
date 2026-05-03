@@ -1,20 +1,24 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
-  Avatar,
-  Chip,
-  Divider,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Chip,
   Badge,
+  ThemeProvider,
+  createTheme,
+  useMediaQuery,
+  Drawer,
+  IconButton,
+  Divider,
 } from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
-import { Settings } from "@mui/icons-material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import Settings from "@mui/icons-material/Settings";
+import { motion, AnimatePresence } from "framer-motion";
 import { UseAuth } from "../../Api/AuthContext";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 
@@ -32,9 +36,19 @@ const theme = createTheme({
   shape: { borderRadius: 12 },
   components: {
     MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundImage: "none",
+          backgroundColor: "#1e2229",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+        },
+      },
+    },
   },
 });
 
+// ─── Nav Config ───────────────────────────────────────────────────────────────
 const navSections = [
   {
     label: "PILOTAGE",
@@ -42,21 +56,21 @@ const navSections = [
       {
         icon: "🏠",
         label: "Acueil",
-        active: true,
         to: "/",
+        role: ["admin_league", "arbitre_league"],
       },
       {
         icon: "⊞",
         label: "Tableau de bord",
-        active: true,
         to: "/dashboard/league/stats",
+        role: ["admin_league", "arbitre_league"],
       },
-
-      {
-        icon: "≡",
-        label: "Programme d'activités",
-        to: "dashboard/programme-activites",
-      },
+      // {
+      //   icon: "≡",
+      //   label: "Programme d'activités",
+      //   to: "dashboard/programme-activites",
+      //   role: ["admin_league", "arbitre_league"],
+      // },
     ],
   },
   {
@@ -66,32 +80,58 @@ const navSections = [
         icon: "🏠",
         label: "Clubs",
         to: "dashboard/league/clubs",
+        role: ["admin_league", "arbitre_league"],
       },
-      { icon: "🪪", label: "Licences", to: "dashboard/league/licences" },
-      { icon: "⊞", label: "Catégories", to: "/dashboard/league/categories" },
-      { icon: "👤", label: "Bureau & rôles", to: "/dashboard/bureau" },
+      {
+        icon: "🪪",
+        label: "Licences",
+        to: "dashboard/league/licences",
+        role: ["admin_league", "arbitre_league"],
+      },
+      {
+        icon: "⊞",
+        label: "Catégories",
+        to: "/dashboard/league/categories",
+        role: ["admin_league", "arbitre_league"],
+      },
+      {
+        icon: "👤",
+        label: "Bureau & rôles",
+        to: "/dashboard/bureau",
+        role: ["admin_league", "arbitre_league"],
+      },
     ],
   },
   {
     label: "SPORTIF",
     items: [
-      { icon: "★", label: "Compétitions", to: "/dashboard/competitions" },
-      { icon: "▲", label: "Grades & examens", to: "/dashboard/grades" },
-      { icon: "▣", label: "Fiche de notation", to: "/dashboard/notation" },
-      { icon: "👥", label: "Athlètes", to: "/dashboard/athletes" },
-    ],
-  },
-  { label: "FINANCE", items: [{ icon: "▣", label: "Paiements" }] },
-  {
-    label: "LEAGUE",
-    items: [
       {
-        icon: <Settings />,
-        label: "Configuration ligue",
-        to: "/dashboard/league/setup",
+        icon: "★",
+        label: "Compétitions",
+        to: "/dashboard/competitions",
+        role: ["admin_league", "arbitre_league"],
+      },
+      {
+        icon: "▲",
+        label: "Grades & examens",
+        to: "/dashboard/grades",
+        role: ["admin_league", "arbitre_league"],
+      },
+      {
+        icon: "▣",
+        label: "Fiche de notation",
+        to: "/dashboard/notation",
+        role: ["super_admin", "arbitre_league"],
+      },
+      {
+        icon: "👥",
+        label: "Athlètes",
+        to: "/dashboard/athletes",
+        role: ["admin_league", "arbitre_league"],
       },
     ],
   },
+
   {
     label: "Notation",
     items: [
@@ -99,125 +139,162 @@ const navSections = [
         icon: <Settings />,
         label: "Configuration notation",
         to: "/dashboard/confignotation",
+        role: ["admin_league"],
       },
     ],
   },
 ];
+
+// ─── Motion Variants ──────────────────────────────────────────────────────────
 const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.4 } },
+  hidden: { opacity: 0, y: -8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function DashboardLeagueLayout() {
-  const [activeItem, setActiveItem] = useState("Tableau de bord");
-  const navigate = useNavigate();
-  const { activeType, auth } = UseAuth();
+const sidebarVariants = {
+  hidden: { x: -60, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
-  if (activeType !== "Ligue") {
-    if (!auth?.isLogin) return <Navigate to="/login" replace />;
-    return <Navigate to="/dashboard" replace />;
-  }
+const navItemVariants = {
+  hidden: { x: -16, opacity: 0 },
+  visible: (i) => ({
+    x: 0,
+    opacity: 1,
+    transition: { delay: i * 0.04, duration: 0.3, ease: "easeOut" },
+  }),
+};
+
+const pageVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+// ─── Sidebar Content ──────────────────────────────────────────────────────────
+function SidebarContent({
+  activeItem,
+  setActiveItem,
+  hasAccess,
+  navigate,
+  onClose,
+}) {
+  let itemIndex = 0;
+
   return (
-    <ThemeProvider theme={theme}>
+    <Box
+      sx={{
+        width: 240,
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflowY: "auto",
+        "&::-webkit-scrollbar": { width: 4 },
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: "rgba(255,255,255,0.1)",
+          borderRadius: 2,
+        },
+      }}
+    >
+      {/* Logo */}
       <Box
         sx={{
+          p: 2.5,
           display: "flex",
-          height: "100vh",
-          bgcolor: "#1a1d23",
-          fontFamily: "'Sora', sans-serif",
-          overflow: "hidden",
+          alignItems: "center",
+          gap: 1.5,
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        {/* ── Sidebar ── */}
-        <motion.div
-          initial={{ x: -60, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 2,
+            bgcolor: "#e8c84a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
         >
-          <Box
-            sx={{
-              width: 240,
-              bgcolor: "#1e2229",
-              borderRight: "1px solid rgba(255,255,255,0.06)",
-              display: "flex",
-              flexDirection: "column",
-              height: "100vh",
-              overflowY: "auto",
-              "&::-webkit-scrollbar": { width: 4 },
-              "&::-webkit-scrollbar-thumb": {
-                bgcolor: "rgba(255,255,255,0.1)",
-                borderRadius: 2,
-              },
-            }}
+          <Typography
+            sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
           >
-            {/* Logo */}
-            <Box
-              sx={{
-                p: 2.5,
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <Box
+            ★
+          </Typography>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
+          >
+            Karaté<span style={{ color: "#e8c84a" }}>Ligue</span>
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Ligue Nationale
+          </Typography>
+        </Box>
+        {/* Close button on mobile */}
+        {onClose && (
+          <IconButton
+            size="small"
+            onClick={onClose}
+            sx={{ color: "text.secondary", ml: "auto" }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+
+      <ContextSwitcher />
+
+      {/* Nav */}
+      <Box sx={{ flex: 1, py: 1 }}>
+        {navSections.map((section) => {
+          // Filter items by role
+          const visibleItems = section.items.filter((item) =>
+            item.role ? hasAccess(item.role) : true,
+          );
+
+          // Skip section entirely if no visible items
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <Box key={section.label} sx={{ mb: 1 }}>
+              <Typography
+                variant="caption"
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 2,
-                  bgcolor: "#e8c84a",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  px: 2.5,
+                  py: 1,
+                  display: "block",
+                  color: "#555a6b",
+                  fontWeight: 700,
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.08em",
                 }}
               >
-                <Typography
-                  sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
-                >
-                  ★
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
-                >
-                  Karaté<span style={{ color: "#e8c84a" }}>Ligue</span>
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Ligue Nationale
-                </Typography>
-              </Box>
-            </Box>
-            <ContextSwitcher />
+                {section.label}
+              </Typography>
 
-            {/* Nav */}
-            <Box sx={{ flex: 1, py: 1 }}>
-              {navSections.map((section) => (
-                <Box key={section.label} sx={{ mb: 1 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      px: 2.5,
-                      py: 1,
-                      display: "block",
-                      color: "#555a6b",
-                      fontWeight: 700,
-                      fontSize: "0.65rem",
-                      letterSpacing: "0.08em",
-                    }}
+              {visibleItems.map((item) => {
+                const idx = itemIndex++;
+                return (
+                  <motion.div
+                    key={item.label}
+                    custom={idx}
+                    variants={navItemVariants}
+                    initial="hidden"
+                    animate="visible"
                   >
-                    {section.label}
-                  </Typography>
-                  {section.items.map((item) => (
                     <ListItemButton
-                      key={item.label}
                       selected={activeItem === item.label}
                       onClick={() => {
                         setActiveItem(item.label);
-                        if (item.to) {
-                          navigate(item.to);
-                        }
+                        if (item.to) navigate(item.to);
+                        if (onClose) onClose(); // close drawer on mobile after nav
                       }}
                       sx={{
                         mx: 1,
@@ -244,12 +321,97 @@ export default function DashboardLeagueLayout() {
                         }}
                       />
                     </ListItemButton>
-                  ))}
-                </Box>
-              ))}
+                  </motion.div>
+                );
+              })}
             </Box>
-          </Box>
-        </motion.div>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function DashboardLeagueLayout() {
+  const [activeItem, setActiveItem] = useState("Tableau de bord");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const { activeType, auth, activeRole } = UseAuth();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  if (activeType !== "Ligue") {
+    if (!auth?.isLogin) return <Navigate to="/login" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const hasAccess = (allowedRoles = []) => {
+    if (!auth?.isLogin) return false;
+    return allowedRoles.includes(activeRole);
+  };
+
+  const sidebarProps = {
+    activeItem,
+    setActiveItem,
+    hasAccess,
+    navigate,
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+      <Box
+        sx={{
+          display: "flex",
+          height: "100vh",
+          bgcolor: "#1a1d23",
+          fontFamily: "'Sora', sans-serif",
+          overflow: "hidden",
+        }}
+      >
+        {/* ── Desktop Sidebar ── */}
+        {!isMobile && (
+          <motion.div
+            variants={sidebarVariants}
+            initial="hidden"
+            animate="visible"
+            style={{ flexShrink: 0 }}
+          >
+            <Box
+              sx={{
+                width: 240,
+                bgcolor: "#1e2229",
+                borderRight: "1px solid rgba(255,255,255,0.06)",
+                height: "100vh",
+              }}
+            >
+              <SidebarContent {...sidebarProps} onClose={null} />
+            </Box>
+          </motion.div>
+        )}
+
+        {/* ── Mobile Drawer ── */}
+        {isMobile && (
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={() => setMobileOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            SlideProps={{
+              // Use framer-motion-style easing via MUI's transition override
+              timeout: { enter: 320, exit: 240 },
+            }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: 240,
+              },
+            }}
+          >
+            <SidebarContent
+              {...sidebarProps}
+              onClose={() => setMobileOpen(false)}
+            />
+          </Drawer>
+        )}
 
         {/* ── Main Content ── */}
         <Box
@@ -258,34 +420,71 @@ export default function DashboardLeagueLayout() {
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
+            minWidth: 0, // prevent flex blowout
           }}
         >
           {/* Header */}
           <motion.div variants={fadeIn} initial="hidden" animate="visible">
             <Box
               sx={{
-                px: 3,
+                px: { xs: 2, md: 3 },
                 py: 2,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
                 bgcolor: "#1a1d23",
+                gap: 1,
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                {activeItem}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {/* Mobile hamburger */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                {isMobile && (
+                  <IconButton
+                    size="small"
+                    onClick={() => setMobileOpen(true)}
+                    sx={{
+                      color: "#e8eaf0",
+                      bgcolor: "rgba(255,255,255,0.06)",
+                      borderRadius: 1.5,
+                      "&:hover": { bgcolor: "rgba(232,200,74,0.12)" },
+                    }}
+                  >
+                    <MenuIcon fontSize="small" />
+                  </IconButton>
+                )}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: { xs: "0.95rem", md: "1.1rem" },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {activeItem}
+                </Typography>
+              </Box>
+
+              {/* Right side */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: { xs: 1, md: 2 },
+                  flexShrink: 0,
+                }}
+              >
                 <Chip
-                  label="Saison 2024–2025"
+                  label={isMobile ? "2025–2026" : "Saison 2025–2026"}
                   variant="outlined"
                   size="small"
                   sx={{
                     borderColor: "rgba(232,200,74,0.4)",
                     color: "#e8c84a",
                     fontWeight: 600,
-                    fontSize: "0.75rem",
+                    fontSize: "0.72rem",
                   }}
                 />
                 <Badge badgeContent={3} color="error">
@@ -299,6 +498,8 @@ export default function DashboardLeagueLayout() {
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
+                      transition: "background 0.2s",
                     }}
                   >
                     <Typography>🔔</Typography>
@@ -307,12 +508,13 @@ export default function DashboardLeagueLayout() {
               </Box>
             </Box>
           </motion.div>
+
           {/* Scrollable body */}
           <Box
             sx={{
               flex: 1,
               overflowY: "auto",
-              p: 3,
+              p: { xs: 2, md: 3 },
               "&::-webkit-scrollbar": { width: 4 },
               "&::-webkit-scrollbar-thumb": {
                 bgcolor: "rgba(255,255,255,0.1)",
@@ -320,8 +522,17 @@ export default function DashboardLeagueLayout() {
               },
             }}
           >
-            {/* {content} */}
-            <Outlet />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeItem}
+                variants={pageVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </Box>
         </Box>
       </Box>

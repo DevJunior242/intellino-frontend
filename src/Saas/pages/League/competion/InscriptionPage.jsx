@@ -12,7 +12,6 @@ import {
   Chip,
   Divider,
   Button,
-  CircularProgress,
   Collapse,
   IconButton,
   Alert,
@@ -69,7 +68,7 @@ const EpreuveCard = ({ epreuve, selected, onSelect }) => {
         borderRadius: 3,
         border: "2px solid",
         borderColor: selected ? "primary.main" : "divider",
-        bgcolor: selected ? "primary.50" : "background.paper",
+        bgcolor: "background.default",
         transition: "all 0.2s",
         cursor: "pointer",
         "&:hover": { transform: "translateY(-3px)", boxShadow: 4 },
@@ -167,8 +166,10 @@ const EvenementCard = ({ evenement, selectedEpreuveId, onSelectEpreuve }) => {
         height: "100%",
         borderRadius: 3,
         border: "2px solid",
+        cursor: "pointer",
+
         borderColor: hasSelected ? "primary.main" : "divider",
-        bgcolor: hasSelected ? "primary.50" : "background.paper",
+        bgcolor: "background.default",
         transition: "all 0.2s",
         "&:hover": { boxShadow: 4 },
       }}
@@ -276,7 +277,7 @@ const EvenementCard = ({ evenement, selectedEpreuveId, onSelectEpreuve }) => {
 // PAGE PRINCIPALE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const InscriptionPage = () => {
-  const { activeClubId } = UseAuth();
+  const { activeId } = UseAuth();
 
   // ── données ─────────────────────────────────────────────────────────────────
   const [evenements, setEvenements] = useState([]);
@@ -289,6 +290,7 @@ const InscriptionPage = () => {
 
   // ── inscriptions ─────────────────────────────────────────────────────────────
   const [inscriptions, setInscriptions] = useState([]);
+  const [epreuve, setEpreuve] = useState({});
   const [tableLoading, setTableLoading] = useState(false);
 
   // ── fetch événements ─────────────────────────────────────────────────────────
@@ -316,15 +318,16 @@ const InscriptionPage = () => {
     setTableLoading(true);
     try {
       const res = await Instance.get(
-        `/api/inscriptions/epreuve/${selectedEpreuve.id}?club_id=${activeClubId}`,
+        `/api/inscriptions/epreuve/${selectedEpreuve.id}?club_id=${activeId}`,
       );
       setInscriptions(res.data.inscriptions || []);
+      setEpreuve(res.data.epreuve);
     } catch (err) {
       console.error(err);
     } finally {
       setTableLoading(false);
     }
-  }, [selectedEpreuve, activeClubId]);
+  }, [selectedEpreuve, activeId]);
 
   useEffect(() => {
     fetchInscriptions();
@@ -361,7 +364,7 @@ const InscriptionPage = () => {
       )}
 
       {/* ── SECTION 1 : Swiper événements ── */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4, backgroundColor: "background.default" }}>
         <Typography
           variant="h6"
           gutterBottom
@@ -374,7 +377,13 @@ const InscriptionPage = () => {
         {loading ? (
           <ConfigSkeleton />
         ) : evenements.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 6 }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              backgroundColor: "background.default",
+            }}
+          >
             <EmojiEventsIcon
               sx={{ fontSize: 64, color: "text.disabled", mb: 2 }}
             />
@@ -413,9 +422,11 @@ const InscriptionPage = () => {
       {selectedEpreuve && selectedEvenement && (
         <Box
           sx={{
-            bgcolor: "background.paper",
+            bgcolor: "background.default",
             borderRadius: 3,
             boxShadow: 2,
+            maxWidth: 900,
+            mx: "auto",
             p: 3,
             animation: "fadeIn 0.4s ease-in-out",
             "@keyframes fadeIn": {
@@ -425,88 +436,87 @@ const InscriptionPage = () => {
           }}
         >
           {/* Header zone inscription */}
-          <Grid container spacing={3} alignItems="center" sx={{ mb: 3 }}>
-            <Grid item xs={12} md={8}>
-              <Stack direction="row" alignItems="center" gap={1.5}>
-                <Avatar
-                  sx={{
-                    bgcolor:
-                      selectedEpreuve.discipline?.nom?.toLowerCase() ===
-                      "kumite"
-                        ? "error.main"
-                        : "success.main",
-                    width: 48,
-                    height: 48,
-                  }}
-                >
-                  <SportsMartialArtsIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" fontWeight="bold">
-                    {selectedEvenement.nom} — {selectedEpreuve.category?.nom}
-                  </Typography>
-                  <Stack direction="row" gap={1} mt={0.5}>
-                    <Chip
-                      label={selectedEpreuve.discipline?.nom ?? "—"}
-                      size="small"
-                      color={
-                        DISC_COLOR[
-                          selectedEpreuve.discipline?.nom?.toLowerCase()
-                        ] ?? "default"
-                      }
-                    />
-                    <Chip
-                      label={
-                        selectedEpreuve.category?.sexe === "M"
-                          ? "Masculin"
-                          : selectedEpreuve.category?.sexe === "F"
-                            ? "Féminin"
-                            : "Mixte"
-                      }
-                      size="small"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${formatHeure(selectedEpreuve.heure_debut_prevu)} – ${formatHeure(selectedEpreuve.heure_fin_prevue)}`}
-                      size="small"
-                      variant="outlined"
-                      color="info"
-                    />
-                  </Stack>
-                </Box>
-              </Stack>
-            </Grid>
 
-            <Grid
-              item
-              xs={12}
-              md={4}
-              sx={{ textAlign: { xs: "left", md: "right" } }}
+          <Stack
+            direction="row"
+            gap={1.5}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ mb: 3 }}
+          >
+            {" "}
+            <Avatar
+              sx={{
+                bgcolor:
+                  selectedEpreuve.discipline?.nom?.toLowerCase() === "kumite"
+                    ? "error.main"
+                    : "success.main",
+                width: 48,
+                height: 48,
+              }}
             >
-              {/* <InscriptionForm
-                competitionId={selectedEpreuve.id}
-                discipline={selectedEpreuve.discipline?.nom}
-                onSuccess={fetchInscriptions}
-              /> */}
-              <InscriptionForm
-                competitionId={selectedEpreuve.id}
-                discipline={selectedEpreuve.discipline?.nom}
-                onSuccess={fetchInscriptions}
-              />
-            </Grid>
-          </Grid>
+              <SportsMartialArtsIcon />
+            </Avatar>
+            <Box>
+              <Typography variant="h5" fontWeight="bold">
+                {selectedEvenement.nom} — {selectedEpreuve.category?.nom}
+              </Typography>
+              <Stack direction="row" gap={1} m={1}>
+                <Chip
+                  label={selectedEpreuve.discipline?.nom ?? "—"}
+                  size="small"
+                  color={
+                    DISC_COLOR[
+                      selectedEpreuve.discipline?.nom?.toLowerCase()
+                    ] ?? "default"
+                  }
+                />
+                <Chip
+                  label={
+                    selectedEpreuve.category?.sexe === "M"
+                      ? "Masculin"
+                      : selectedEpreuve.category?.sexe === "F"
+                        ? "Féminin"
+                        : "Mixte"
+                  }
+                  size="small"
+                  variant="outlined"
+                />
+                <Chip
+                  label={`${formatHeure(selectedEpreuve.heure_debut_prevu)} – ${formatHeure(selectedEpreuve.heure_fin_prevue)}`}
+                  size="small"
+                  variant="outlined"
+                  color="info"
+                />
+              </Stack>
+            </Box>
+          </Stack>
+
+          <InscriptionForm
+            competitionId={selectedEpreuve.id}
+            discipline={selectedEpreuve.discipline?.nom}
+            onSuccess={fetchInscriptions}
+          />
 
           <Divider sx={{ mb: 3 }} />
 
           {/* Tableau des inscrits */}
-          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-            Athlètes inscrits ({inscriptions.length})
-          </Typography>
-          <InscribedAthletesTable
-            data={inscriptions}
-            loading={tableLoading}
-            onDelete={fetchInscriptions}
-          />
+          <Box sx={{ mt: 2 }}>
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              mb={2}
+              textAlign="center"
+            >
+              Athlètes inscrits ({inscriptions.length})
+            </Typography>
+            <InscribedAthletesTable
+              data={inscriptions}
+              epreuve={epreuve}
+              loading={tableLoading}
+              onDelete={fetchInscriptions}
+            />
+          </Box>
         </Box>
       )}
 
@@ -527,3 +537,52 @@ const InscriptionPage = () => {
 };
 
 export default InscriptionPage;
+
+// <Grid item xs={12} md={8}>
+//   <Stack direction="row" alignItems="center" gap={1.5}>
+//     <Avatar
+//       sx={{
+//         bgcolor:
+//           selectedEpreuve.discipline?.nom?.toLowerCase() === "kumite"
+//             ? "error.main"
+//             : "success.main",
+//         width: 48,
+//         height: 48,
+//       }}
+//     >
+//       <SportsMartialArtsIcon />
+//     </Avatar>
+//     <Box>
+//       <Typography variant="h5" fontWeight="bold">
+//         {selectedEvenement.nom} — {selectedEpreuve.category?.nom}
+//       </Typography>
+//       <Stack direction="row" gap={1} mt={0.5}>
+//         <Chip
+//           label={selectedEpreuve.discipline?.nom ?? "—"}
+//           size="small"
+//           color={
+//             DISC_COLOR[selectedEpreuve.discipline?.nom?.toLowerCase()] ??
+//             "default"
+//           }
+//         />
+//         <Chip
+//           label={
+//             selectedEpreuve.category?.sexe === "M"
+//               ? "Masculin"
+//               : selectedEpreuve.category?.sexe === "F"
+//                 ? "Féminin"
+//                 : "Mixte"
+//           }
+//           size="small"
+//           variant="outlined"
+//         />
+//         <Chip
+//           label={`${formatHeure(selectedEpreuve.heure_debut_prevu)} – ${formatHeure(selectedEpreuve.heure_fin_prevue)}`}
+//           size="small"
+//           variant="outlined"
+//           color="info"
+//         />
+//       </Stack>
+//     </Box>
+//   </Stack>
+// </Grid>;

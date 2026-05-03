@@ -1,72 +1,96 @@
 import { DataGrid } from "@mui/x-data-grid";
-import { Chip } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 
-const columns = [
-  {
-    field: "athlete",
-    headerName: "Athlète",
-    width: 200,
-    // Correction : params.row contient les données de la ligne
-    valueGetter: (value, row) => {
-      if (!row || !row.athlete) return "Inconnu";
-      return `${row.athlete.fullname || ""}`;
-    },
-  },
-  {
-    field: "category",
-    headerName: "Catégorie",
-    width: 150,
-    renderCell: (params) => (
-      <Chip
-        label={
-          params.row.category
-            ? `${params.row.category.nom} (${params.row.category.sexe})`
-            : "N/A"
-        }
-        size="small"
-        variant="outlined"
-      />
-    ),
-  },
-  {
-    field: "discipline",
-    headerName: "Discipline",
-    width: 120,
-    valueGetter: (value, row) => row.disciplineleague?.nom || "N/A",
-  },
-  {
-    field: "poids_declare",
-    headerName: "Poids (kg)",
-    width: 110,
-  },
-  {
-    field: "statut_pesee",
-    headerName: "Statut",
-    width: 130,
-    renderCell: (params) => {
-      const isValide = params.row.statut_pesee === 1;
-      return (
-        <Chip
-          label={isValide ? "Validé" : "En attente"}
-          color={isValide ? "success" : "warning"}
-          size="small"
-        />
-      );
-    },
-  },
-];
+export default function InscribedAthletesTable({ data, epreuve, loading }) {
+  const isKata = epreuve.discipline?.nom?.toLowerCase() === "kata";
 
-export default function InscribedAthletesTable({ data, loading }) {
+  const columns = [
+    {
+      field: "athlete",
+      headerName: "Athlète",
+      width: 200,
+      valueGetter: (value, row) => {
+        if (!row || !row.athlete) return "Inconnu";
+        return `${row.athlete.fullname || ""}`;
+      },
+      flex: 1,
+    },
+
+    {
+      field: "poids_declare",
+      headerName: "Poids (kg)",
+      width: 110,
+      hide: isKata,
+      flex: 1,
+    },
+    {
+      field: "statut_pesee",
+      headerName: "Statut",
+      width: 130,
+      renderCell: (params) => {
+        const isValide = params.row.statut_pesee === 1;
+        return (
+          <Chip
+            label={isValide ? "Validé" : "En attente"}
+            color={isValide ? "success" : "warning"}
+            size="small"
+          />
+        );
+      },
+    },
+  ];
+
   return (
-    <div style={{ height: 400, width: 700 }}>
+    <Box sx={{ height: 400, width: "100%" }}>
       <DataGrid
         rows={data}
         columns={columns}
+        pageSizeOptions={[5, 10, 20]}
         loading={loading}
-        pageSize={5}
-        getRowId={(row) => row.id}
-        disableSelectionOnClick
+        checkboxSelection
+        disableRowSelectionOnClick
+        showToolbar
+        localeText={{
+          noRowsLabel: "Aucun enregistrement disponible",
+          noResultsOverlayLabel: "Aucun résultat trouvé",
+        }}
+        autoPageSize
+        columnVisibilityModel={{
+          poids_declare: !isKata,
+        }}
+        sx={{
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "background.default",
+            borderBottom: "1px solid",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "bold",
+            fontSize: { xs: 8, md: 16 },
+          },
+          "&.MuiDataGrid-root .MuiDataGrid-cell": {
+            fontSize: { xs: 8, md: 16 },
+            display: "flex",
+            alignItems: "center",
+          },
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(0, 0, 0, 0.04)",
+            cursor: "pointer",
+          },
+          "& .MuiDataGrid-row.Mui-selected": {
+            backgroundColor: "rgba(255, 255, 255, 0.05) !important",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.1) !important",
+            },
+          },
+
+          backgroundColor: "background.default",
+          borderRadius: 2,
+          boxShadow: 1,
+        }}
       />
-    </div>
+    </Box>
   );
 }
