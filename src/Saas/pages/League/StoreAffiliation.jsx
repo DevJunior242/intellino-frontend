@@ -53,13 +53,17 @@ function StoreAffiliation() {
     setSuccess("");
     setSubmitting(true);
     try {
-      console.log("FORM DATA", formData);
+      const dataSend = {
+        ...formData,
+        organisateur_id: activeId,
+        organisateur_type: "Club",
+      };
+      if (clubId) {
+        dataSend.club_id = clubId;
+      }
       const response = await Instance.post(
-        "/api/affiliations/affiliations?club_id=" +
-          clubId +
-          "&organisateur_id=" +
-          activeId,
-        formData,
+        `/api/affiliations/affiliations`,
+        dataSend,
       );
       console.log("RESPONSE", response);
       if (response.data.success) {

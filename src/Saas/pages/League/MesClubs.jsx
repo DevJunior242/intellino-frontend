@@ -383,7 +383,9 @@ function MesClubs() {
         <MenuItem
           onClick={() => {
             handleCloseMenu();
-            navigate(`/affiliations/create?club=${selectedClub?.id}`);
+            navigate(
+              `/dashboard/league/affiliations/create?club=${selectedClub?.id}`,
+            );
           }}
         >
           <span>📝</span> Affilier le club
@@ -393,7 +395,9 @@ function MesClubs() {
         <MenuItem
           onClick={() => {
             handleCloseMenu();
-            navigate(`/licenses/generate?club=${selectedClub?.id}`);
+            navigate(
+              `/dashboard/league/licenses/generate?club=${selectedClub?.id}`,
+            );
           }}
         >
           <span>🪪</span> Donner licences
