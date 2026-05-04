@@ -198,6 +198,8 @@ const AppRoutes = () => {
           <Route path="student/attendance" element={<AttendanceIndex />} />
           <Route path="payment/factures" element={<PaymentIndex />} />
           <Route path="grades-history" element={<StudentsGradesOverview />} />
+          <Route path="examen" element={<ExamenIndex />} />
+          <Route path="competition" element={<InscriptionPage />} />
         </Route>
         <Route
           element={<ProtectedRoute allowedRoles={["parent", "karateka"]} />}
@@ -255,8 +257,6 @@ const AppRoutes = () => {
       <Route element={<LayoutMain />}>
         {/* Accès si connecté (n'importe quel rôle) */}
         <Route element={<ProtectedRoute allowedRoles="ANY" />}>
-          <Route path="/examen" element={<ExamenIndex />} />
-          <Route path="/competition" element={<InscriptionPage />} />
           <Route path="/settings" element={<AccountSettings />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={CAN_CREATE} />}>

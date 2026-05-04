@@ -34,7 +34,8 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import TuneIcon from "@mui/icons-material/Tune";
-
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import { UseAuth } from "../../Api/AuthContext";
 import TopBar from "../../Header/Topbar";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
@@ -224,13 +225,35 @@ export default function DashboardLayout() {
       ],
     },
     {
-      label: "LEAGUE",
+      section: "Ligue",
       items: [
         {
           icon: <Settings />,
           title: "Configuration ligue",
           to: "/dashboard/config/category",
           role: ["super_admin"],
+        },
+      ],
+    },
+    {
+      section: "Examens",
+      items: [
+        {
+          icon: <FactCheckIcon />,
+          title: "examens",
+          to: "/dashboard/examen",
+          role: ["admin_club", "instructeur"],
+        },
+      ],
+    },
+    {
+      section: "Competitions",
+      items: [
+        {
+          icon: <EmojiEventsIcon />,
+          title: "competitions",
+          to: "/dashboard/competition",
+          role: ["admin_club", "instructeur"],
         },
       ],
     },

@@ -31,9 +31,9 @@ import NotificationCenter from "./NotificationCenter";
 const items = [
   { title: "Accueil", href: "/" },
   { title: "A Propos", href: "/about" },
-  { title: "Competitions", href: "/competition" },
+  // { title: "Competitions", href: "/competition" },
 
-  { title: "Examens", href: "/examen" },
+  // { title: "Examens", href: "/examen" },
 
   { title: "Contact", href: "/contact" },
   { title: "Inscription", href: "/register" },
