@@ -277,7 +277,7 @@ const EvenementCard = ({ evenement, selectedEpreuveId, onSelectEpreuve }) => {
 // PAGE PRINCIPALE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const InscriptionPage = () => {
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   // ── données ─────────────────────────────────────────────────────────────────
   const [evenements, setEvenements] = useState([]);
@@ -298,7 +298,9 @@ const InscriptionPage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await Instance.get("/api/evenements/ouverts");
+      const res = await Instance.get(
+        `/api/evenements/ouverts?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+      );
       setEvenements(res.data.evenements || []);
     } catch (err) {
       setError("Impossible de charger les événements.");
