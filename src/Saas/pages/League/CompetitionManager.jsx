@@ -116,6 +116,7 @@ export default function CompetitionManager() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const { auth, activeId, activeType, activeRole } = UseAuth();
+  console.log("activeId", activeId);
   const arbitre =
     auth?.role?.includes("arbitre_league") ||
     auth?.role?.includes("admin_league");
@@ -139,11 +140,12 @@ export default function CompetitionManager() {
     } finally {
       setLoadingActive(false);
     }
-  }, []);
+  }, [activeId, activeType]);
 
   useEffect(() => {
+    if (!activeId) return;
     getEventActive();
-  }, [getEventActive]);
+  }, [activeId, activeType]);
 
   // Récupération des compétitions
   const getEvenements = useCallback(async () => {
