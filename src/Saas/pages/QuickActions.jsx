@@ -41,7 +41,7 @@ const ACTIONS = [
   {
     key: "competitions",
     label: "Compétitions",
-    to: "/dashboard/competitions",
+    to: "/dashboard/league/competitions",
     icon: EmojiEventsOutlined,
     color: "#BF360C",
     bg: "#FBE9E7",

@@ -54,8 +54,14 @@ export default function DashboardLayout() {
   const { logout, activeRole, auth, activeType } = UseAuth();
   console.log("activeRole", activeRole);
 
-  if (activeType !== "Club") {
-    if (!auth?.isLogin) return <Navigate to="/login" replace />;
+  const isSuperAdmin = activeRole === "super_admin";
+
+  const isWrongContext = activeType !== "Club" && !isSuperAdmin;
+  if (!auth?.isLogin) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isWrongContext) {
     return <Navigate to="/dashboard/league/stats" replace />;
   }
   const drawerWidth = collapsed ? DRAWER_COLLAPSED : DRAWER_EXPANDED;
@@ -222,8 +228,8 @@ export default function DashboardLayout() {
       items: [
         {
           icon: <Settings />,
-          label: "Configuration ligue",
-          to: "/dashboard/league/setup",
+          title: "Configuration ligue",
+          to: "/dashboard/config/category",
           role: ["super_admin"],
         },
       ],

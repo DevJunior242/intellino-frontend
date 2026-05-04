@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Instance } from "../../../../Api/Axios";
+import { UseAuth } from "../../../../Api/AuthContext";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🎨 DESIGN TOKENS
@@ -1250,6 +1251,8 @@ const SuccessScreen = ({ competition, mode, onReset }) => (
 // 🏠 PAGE PRINCIPALE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function ConfigNotationPage() {
+  //id
+  const { activeId } = UseAuth();
   // ── États communs ──────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
   const [competition, setCompetition] = useState(null);
@@ -1344,7 +1347,9 @@ export default function ConfigNotationPage() {
 
     const [resComps, resModes, resNbJuges, resKumiteFormats] =
       await Promise.allSettled([
-        Instance.get("/api/competitions/competitions"),
+        Instance.get(
+          `/api/competitions/competitions?organisateur_id=${activeId}`,
+        ),
         Instance.get("/api/modes-saisie/modes-saisie"),
         Instance.get("/api/nb-juges/nb-juges"),
         Instance.get("/api/kumite/kumite-formats"),

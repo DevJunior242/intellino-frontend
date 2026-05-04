@@ -115,11 +115,13 @@ export default function CompetitionManager() {
   const [evenements, setEvenements] = useState([]);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
-  const { auth, activeId, activeType } = UseAuth();
+  const { auth, activeId, activeType, activeRole } = UseAuth();
   const arbitre =
     auth?.role?.includes("arbitre_league") ||
     auth?.role?.includes("admin_league");
-  const isAdmin = auth?.role?.includes("admin_league");
+
+  const hasAccessRoles = ["admin_league", "arbitre_league"];
+  const allowAccess = hasAccessRoles.includes(activeRole);
 
   //auh
   // Récupération l'evenement actif (celui avec status "ouverte" ou "en_cours")
@@ -242,7 +244,7 @@ export default function CompetitionManager() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.bg, minHeight: "100vh" }}>
       {/* --- BOUTONS D'ACTION SUPÉRIEURS --- */}
-      {isAdmin && (
+      {allowAccess && (
         <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
           <Button
             variant="outlined"

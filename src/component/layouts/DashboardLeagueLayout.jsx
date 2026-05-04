@@ -79,13 +79,13 @@ const navSections = [
       {
         icon: "🏠",
         label: "Clubs",
-        to: "dashboard/league/clubs",
+        to: "/dashboard/league/clubs",
         role: ["admin_league", "arbitre_league"],
       },
       {
         icon: "🪪",
         label: "Licences",
-        to: "dashboard/league/licences",
+        to: "/dashboard/league/licences",
         role: ["admin_league", "arbitre_league"],
       },
       {
@@ -97,7 +97,7 @@ const navSections = [
       {
         icon: "👤",
         label: "Bureau & rôles",
-        to: "/dashboard/bureau",
+        to: "/dashboard/league/bureau",
         role: ["admin_league", "arbitre_league"],
       },
     ],
@@ -108,25 +108,25 @@ const navSections = [
       {
         icon: "★",
         label: "Compétitions",
-        to: "/dashboard/competitions",
+        to: "/dashboard/league/competitions",
         role: ["admin_league", "arbitre_league"],
       },
       {
         icon: "▲",
         label: "Grades & examens",
-        to: "/dashboard/grades",
+        to: "/dashboard/league/grades",
         role: ["admin_league", "arbitre_league"],
       },
       {
         icon: "▣",
         label: "Fiche de notation",
-        to: "/dashboard/notation",
+        to: "/dashboard/league/notation",
         role: ["super_admin", "arbitre_league"],
       },
       {
         icon: "👥",
         label: "Athlètes",
-        to: "/dashboard/athletes",
+        to: "/dashboard/league/athletes",
         role: ["admin_league", "arbitre_league"],
       },
     ],
@@ -138,7 +138,7 @@ const navSections = [
       {
         icon: <Settings />,
         label: "Configuration notation",
-        to: "/dashboard/confignotation",
+        to: "/dashboard/league/confignotation",
         role: ["admin_league"],
       },
     ],
@@ -339,9 +339,9 @@ export default function DashboardLeagueLayout() {
   const navigate = useNavigate();
   const { activeType, auth, activeRole } = UseAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  if (!auth?.isLogin) return <Navigate to="/login" replace />;
 
   if (activeType !== "Ligue") {
-    if (!auth?.isLogin) return <Navigate to="/login" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 

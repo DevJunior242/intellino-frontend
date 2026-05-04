@@ -51,18 +51,7 @@ function SuperAdminDashboard() {
   console.log("Active Role:", activeRole);
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <ConfigSkeleton />
-      </Box>
-    );
+    return <ConfigSkeleton />;
   }
   return (
     <Box>

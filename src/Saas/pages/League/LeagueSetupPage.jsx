@@ -177,6 +177,7 @@ const SectionCard = ({ index, color, title, subtitle, icon, children }) => {
 
 const Chip = ({ label, selected, onClick, color = C.accent }) => (
   <motion.button
+    type="button"
     onClick={onClick}
     whileHover={{ scale: 1.03 }}
     whileTap={{ scale: 0.97 }}
@@ -319,7 +320,8 @@ export default function LeagueSetupPage() {
     setNewDisc("");
   };
 
-  const addCategory = () => {
+  const addCategory = (e) => {
+    e?.preventDefault();
     const errs = {};
     if (!newCat.nom.trim()) errs.nom = "Nom requis";
     if (!newCat.age_min && newCat.age_min !== 0)
@@ -366,7 +368,6 @@ export default function LeagueSetupPage() {
     };
     try {
       const response = await Instance.post("/api/setup/setup", dataToSubmit);
-      console.log(response);
       if (response.data.success) {
         setSaisonId(response.data.data.saison.id);
         setSuccess(response.data.message);
@@ -557,6 +558,7 @@ export default function LeagueSetupPage() {
               }}
             >
               <button
+                type="button"
                 onClick={() => setSaison({ ...saison, active: !saison.active })}
                 style={{
                   width: 40,
@@ -620,10 +622,16 @@ export default function LeagueSetupPage() {
                 placeholder="ex: Bo Jutsu"
                 value={newDisc}
                 onChange={(e) => setNewDisc(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addDisc()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addDisc();
+                  }
+                }}
                 style={{ flex: 1 }}
               />
               <motion.button
+                type="button"
                 onClick={addDisc}
                 whileTap={{ scale: 0.95 }}
                 style={{
@@ -854,6 +862,7 @@ export default function LeagueSetupPage() {
                 <Err msg={catErrors.disciplines} />
               </div>
               <motion.button
+                type="button"
                 onClick={addCategory}
                 whileTap={{ scale: 0.97 }}
                 style={{
@@ -878,8 +887,7 @@ export default function LeagueSetupPage() {
           <AnimatePresence mode="wait">
             {!submitted ? (
               <motion.button
-                key="submit"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
