@@ -161,11 +161,12 @@ export default function CompetitionManager() {
     } finally {
       setLoadingEvenements(false);
     }
-  }, []);
+  }, [activeId, activeType]);
 
   useEffect(() => {
+    if (!activeId) return;
     getEvenements();
-  }, [getEvenements]);
+  }, [activeId, activeType]);
 
   const handleStatusChange = async (id, action) => {
     setSubmitting(true);
