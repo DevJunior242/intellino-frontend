@@ -91,6 +91,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
         "/api/inscriptions/inscriptions",
         dataSend,
       );
+      onSuccess();
       console.log(response);
       if (response.data.success) {
         setSuccess(response.data.message);
