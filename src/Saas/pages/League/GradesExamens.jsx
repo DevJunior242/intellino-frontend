@@ -116,15 +116,23 @@ export default function GradesExamens() {
   }, [activeId, fetchStats]);
   // — FORMAT DU DATE —
   const formatDate = (dateString) => {
-    if (!dateString || dateString === "Aucune session prévue")
-      return dateString;
+    if (!dateString) {
+      return "Aucune";
+    }
+
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) {
+      return "Date invalide";
+    }
 
     return new Intl.DateTimeFormat("fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
-    }).format(new Date(dateString));
+    }).format(date);
   };
+
   //
   const displayProgression = (value) => {
     const sign = value >= 0 ? "+" : "";
@@ -198,7 +206,7 @@ export default function GradesExamens() {
               variant="subtitle1"
               sx={{ color: theme.textMain, fontWeight: 600, mb: 1 }}
             >
-              Prochaine session d'examen — {formatDate(stats.next_exam_date)}
+              Prochaine session d'examen — {formatDate(stats?.next_exam_date)}
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
