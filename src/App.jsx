@@ -208,8 +208,6 @@ const AppRoutes = () => {
         </Route>
         {/* ROUTES STRICTEMENT SUPER ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
-          <Route path="config/category" element={<LeagueSetupPage />} />
-
           <Route path="clubs" element={<ClubAdmin />} />
           <Route path="users" element={<Users />} />
           <Route path="karateka/list" element={<StudentList />} />
@@ -222,6 +220,8 @@ const AppRoutes = () => {
       <Route path="/dashboard/league" element={<DashboardLeagueLayout />}>
         {" "}
         <Route element={<ProtectedRoute allowedRoles={["admin_league"]} />}>
+          <Route path="category" element={<LeagueSetupPage />} />
+
           <Route path="stats" element={<DashboardLeague />} />
           <Route path="programme-activites" element={<ProgrammeActivites />} />
           <Route path=":examenId/candidates" element={<ExamenDetails />} />
@@ -259,9 +259,9 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles="ANY" />}>
           <Route path="/settings" element={<AccountSettings />} />
         </Route>
-        <Route element={<ProtectedRoute allowedRoles={CAN_CREATE} />}>
+        {/* <Route element={<ProtectedRoute allowedRoles={CAN_CREATE} />}>
           <Route path="/examen/store" element={<StoreExamen />} />
-        </Route>
+        </Route> */}
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
@@ -272,6 +272,7 @@ const AppRoutes = () => {
         <Route path="/confidentialite" element={<PrivacyPolicy />} />
         <Route path="/club/store" element={<ClubStore />} />
         <Route path="/league/store" element={<Storeleague />} />
+        <Route path="/club/store" element={<ClubStore />} />
 
         {/* <Route path="/examen-league" element={<LeagueExams />} /> */}
         <Route path="/403" element={<Forbidden />} />

@@ -131,7 +131,17 @@ const navSections = [
       },
     ],
   },
-
+  {
+    label: "Ligue",
+    items: [
+      {
+        icon: <Settings />,
+        label: "Configuration ligue",
+        to: "/dashboard/league/category",
+        role: ["admin_league"],
+      },
+    ],
+  },
   {
     label: "Notation",
     items: [

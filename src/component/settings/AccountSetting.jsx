@@ -15,6 +15,7 @@ import Profile from "../../Saas/pages/Profile";
 import MeClub from "./MeClub";
 import UpdatePassword from "./UpdatePassword";
 import DeleAccount from "./DeleAccount";
+import StoreSaison from "./StoreSaison";
 
 const AccountSettings = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -41,7 +42,7 @@ const AccountSettings = () => {
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
-           variant="scrollable"
+          variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
           aria-label="scrollable tabs"
@@ -63,6 +64,7 @@ const AccountSettings = () => {
           <Tab label="Profil Public" />
           <Tab label="Sécurité & Réglages" />
           <Tab label="Mes Clubs" />
+          <Tab label="Saisons" />
         </Tabs>
       </Box>
 
@@ -103,6 +105,12 @@ const AccountSettings = () => {
       {tabIndex === 2 && (
         <Box sx={{ p: 2 }}>
           <MeClub />
+        </Box>
+      )}
+      {/* --- ONGLET 4 : SAISONS (APPARTENANCE) --- */}
+      {tabIndex === 3 && (
+        <Box sx={{ p: 2 }}>
+          <StoreSaison />
         </Box>
       )}
     </Box>

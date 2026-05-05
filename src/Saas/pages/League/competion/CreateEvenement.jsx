@@ -68,8 +68,12 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
     setLoadingInit(true);
     try {
       const [discRes, catRes, nivRes] = await Promise.all([
-        Instance.get("/api/disciplines/disciplines"),
-        Instance.get("/api/getCategories"),
+        Instance.get(
+          `/api/disciplineLeague?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        ),
+        Instance.get(
+          `/api/getCategories?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        ),
         Instance.get("/api/niveaux-competitions/niveaux-competitions"),
       ]);
       console.log(discRes);

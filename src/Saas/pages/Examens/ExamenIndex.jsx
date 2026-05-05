@@ -26,6 +26,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAllowAccess } from "../../../Hook/useAllowAccess";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
+import StoreExamen from "./StoreExamen";
 
 function ExamenIndex() {
   const [examens, setExamens] = useState([]);
@@ -38,6 +39,9 @@ function ExamenIndex() {
   const theme = useTheme();
   const colors = tokenTheme(theme.palette.mode);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [openModal, setOpenModal] = useState(false);
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
 
   const { allowAccess } = useAllowAccess();
   const navigate = useNavigate();
@@ -95,7 +99,7 @@ function ExamenIndex() {
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <Box
         sx={{
-          minHeight: "80vh",
+          Height: "50px",
           width: "100%",
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
@@ -103,8 +107,7 @@ function ExamenIndex() {
           alignItems: "center",
           backgroundImage: `linear-gradient(120deg, ${colors.primary[500]}, ${colors.zinc[300]})`,
           color: "white",
-          px: 4,
-          py: 6,
+          px: 2,
         }}
       >
         {/* Texte section */}
@@ -130,11 +133,11 @@ function ExamenIndex() {
 
           <Typography
             variant="h5"
-            sx={{ mt: 2, opacity: 0.9, fontSize: { xs: 16, md: 24 } }}
+            sx={{ mt: 2, opacity: 0.9, fontSize: { xs: 10, md: 16 } }}
           >
             Planifiez les passages de grade, suivez les candidats et centralisez
             toutes vos données sur une seule plateforme — rapide, fiable et
-            sécurisée.{" "}
+            sécurisée.
           </Typography>
 
           {allowAccess && (
@@ -144,8 +147,6 @@ function ExamenIndex() {
               transition={{ delay: 0.6 }}
             >
               <Button
-                component={Link}
-                to="/examen/store"
                 variant="contained"
                 sx={{
                   mt: 4,
@@ -156,6 +157,7 @@ function ExamenIndex() {
                   fontSize: { xs: 8, md: 24 },
                   textTransform: "none",
                 }}
+                onClick={handleOpenModal}
               >
                 creer un examen
               </Button>
@@ -170,7 +172,7 @@ function ExamenIndex() {
               display: { xs: "none", md: "block" },
               flex: 1,
               width: "100%",
-              height: "350px",
+              height: "250px",
               borderRadius: "16px",
               backgroundImage: `url('/slogan2.jpeg')`,
 
@@ -338,6 +340,8 @@ function ExamenIndex() {
           </Typography>
         </Box>
       )}
+      {/* modal */}
+      <StoreExamen open={openModal} handleClose={handleCloseModal} />
 
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
         {pagination.lastPage > 1 && (

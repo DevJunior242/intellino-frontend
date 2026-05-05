@@ -6,15 +6,21 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import PulseLoader from "react-spinners/PulseLoader";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 function Storeleague() {
   const [error, setError] = useState({});
@@ -22,9 +28,35 @@ function Storeleague() {
   const navigate = useNavigate();
   const { switchPortal, updateAuth } = UseAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorCountry, setErrorCountry] = useState("");
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+
+    setErrorCountry("");
+    try {
+      const res = await Instance.get("/api/countries");
+      setCountries(res.data || []);
+    } catch (error) {
+      console.log(error);
+      setErrorCountry(
+        "Une erreur est survenue lors de la récupération des pays",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
+    country_id: "",
+    region: "",
+    address: "",
     logo: "",
   });
 
@@ -46,7 +78,9 @@ function Storeleague() {
     setSubmitting(true);
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
-    formDataInitial.append("phone", formData.phone);
+    formDataInitial.append("region", formData.region);
+    formDataInitial.append("address", formData.address);
+    formDataInitial.append("country_id", formData.country_id);
     formDataInitial.append("logo", formData.logo);
 
     try {
@@ -94,8 +128,12 @@ function Storeleague() {
       setSubmitting(false);
     }
   };
+
+  if (loading) return <ConfigSkeleton />;
+  if (errorCountry) return <ErrorBlock text={errorCountry} type="error" />;
+
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Box
         component={motion.div}
         initial={{ opacity: 0, y: 50 }}
@@ -103,90 +141,127 @@ function Storeleague() {
         exit={{ opacity: 0, y: -50 }}
         transition={{ duration: 0.5 }}
         sx={{
-          mt: 8,
+          mb: 8,
+          mt: 2,
           boxShadow: 10,
           borderRadius: 2,
-          p: 4,
+
+          p: 5,
+          backgroundColor: "background.default",
         }}
       >
         <Typography
           variant="h4"
-          component={"h1"}
-          textAlign={"center"}
-          sx={{ fontWeight: "bold", fontSize: { xs: 8, md: 14 } }}
+          textAlign="center"
+          sx={{ fontWeight: "bold", fontSize: { xs: 18, md: 24 }, mb: 3 }}
         >
-          Espace de League
+          Espace Ligue
         </Typography>
+
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
 
         <form onSubmit={handleSubmit}>
+          {/* ── SECTION 1 ── */}
+          <Typography sx={{ fontWeight: "bold", mb: 1 }}>
+            🏫 Informations Ligue
+          </Typography>
+          <Box sx={{ display: { xs: "block", md: "flex" }, gap: 2 }}>
+            {/* Nom du club — demi-largeur */}
+            <TextField
+              error={hasError("name")}
+              helperText={getError("name")}
+              name="name"
+              label="Nom de la Ligue"
+              fullWidth
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </Box>
+
+          {/* ── SECTION 2 ── */}
+          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+            🌍 Localisation
+          </Typography>
+          <Box sx={{ display: { xs: "block", md: "flex" }, gap: 2 }}>
+            {/* Pays — demi-largeur */}
+            <FormControl fullWidth error={hasError("country_id")} required>
+              <InputLabel>Pays</InputLabel>
+              <Select
+                value={formData.country_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, country_id: e.target.value })
+                }
+                label="Pays"
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                {countries.length > 0 ? (
+                  countries.map((country) => (
+                    <MenuItem key={country.id} value={country.id}>
+                      {country.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Aucun pays</MenuItem>
+                )}
+              </Select>
+              {hasError("country_id") && (
+                <FormHelperText>{getError("country_id")}</FormHelperText>
+              )}
+            </FormControl>
+
+            {/* Région — demi-largeur (à côté du pays) */}
+            <TextField
+              error={hasError("region")}
+              helperText={getError("region")}
+              name="region"
+              label="Région(ex: centre)"
+              fullWidth
+              value={formData.region}
+              onChange={handleChange}
+              required
+            />
+          </Box>
+          {/* Adresse — pleine largeur */}
           <TextField
-            error={hasError("name")}
-            helperText={getError("name")}
-            id="name"
-            name="name"
-            label="Name"
-            variant="outlined"
+            error={hasError("address")}
+            helperText={getError("address")}
+            name="address"
+            label="Adresse(optionel)"
             fullWidth
             margin="normal"
+            value={formData.address}
             onChange={handleChange}
-            value={formData.name}
-            required
           />
 
-          <TextField
-            error={hasError("phone")}
-            helperText={getError("phone")}
-            id="phone"
-            name="phone"
-            label="Phone"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            onChange={handleChange}
-            value={formData.phone}
-            required
-          />
+          {/* ── SECTION 3 ── */}
+          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+            🖼️ Branding
+          </Typography>
 
-          {/* fichier logo */}
-          <label htmlFor="logo">
-            <Typography
-              variant="h6"
-              component={"h1"}
-              sx={{ fontWeight: "bold" }}
-            >
-              Logo
-            </Typography>
-          </label>
           <TextField
             error={hasError("logo")}
             helperText={getError("logo")}
-            id="logo"
-            type="file"
-            accept="image/*"
             name="logo"
-            variant="outlined"
+            type="file"
             fullWidth
-            margin="normal"
             onChange={handleChange}
           />
-          {error.logo && (
-            <FormHelperText error>{error.logo.join(", ")}</FormHelperText>
-          )}
 
+          {/* ── SUBMIT ── */}
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, textTransform: "none" }}
+            sx={{ p: 2, textTransform: "none", mt: 2 }}
             disabled={submitting}
           >
-            {submitting ? (
-              <PulseLoader size={20} color="#fff" />
-            ) : (
-              "créer une league"
-            )}
+            {submitting ? "Chargement..." : "Créer le club"}
           </Button>
         </form>
       </Box>

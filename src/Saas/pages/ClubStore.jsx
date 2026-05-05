@@ -8,12 +8,15 @@ import {
   Typography,
   Autocomplete,
   Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { motion } from "motion/react";
 import { Instance } from "../../Api/Axios";
 import { useState } from "react";
 import ErrorGlobal from "../../component/ErrorGlobal";
-import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../Api/AuthContext";
 import Message from "./Message";
 import ConfigSkeleton from "./ConfigSkeleton";
@@ -23,14 +26,14 @@ function ClubStore() {
   const [success, setSuccess] = useState("");
   const { switchPortal, updateAuth } = UseAuth();
   const [disciplines, setDisciplines] = useState([]);
+  const [countries, setCountries] = useState([]);
   const [selectDiscipline, setSelectDiscipline] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
     discipline_id: "",
     logo: "",
-    country: "",
+    country_id: "",
     city: "",
     address: "",
   });
@@ -38,11 +41,17 @@ function ClubStore() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   //fetch disciplines from api/disciplines
-  const fetchDisciplines = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await Instance.get("/api/disciplines");
-      setDisciplines(response.data.disciplines || []);
+      //promise all
+      const [disciplinesResponse, countriesResponse] = await Promise.all([
+        Instance.get("/api/disciplines"),
+        Instance.get("/api/countries"),
+      ]);
+      setDisciplines(disciplinesResponse.data || []);
+      setCountries(countriesResponse.data || []);
+      console.log(disciplinesResponse, countriesResponse);
     } catch (error) {
       console.log(error);
     } finally {
@@ -50,8 +59,8 @@ function ClubStore() {
     }
   }, []);
   useEffect(() => {
-    fetchDisciplines();
-  }, [fetchDisciplines]);
+    fetchData();
+  }, [fetchData]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -73,11 +82,10 @@ function ClubStore() {
     setSubmitting(true);
     const formDataInitial = new FormData();
     formDataInitial.append("name", formData.name);
-    formDataInitial.append("phone", formData.phone);
     formDataInitial.append("logo", formData.logo);
-    formDataInitial.append("country", formData.country);
     formDataInitial.append("city", formData.city);
     formDataInitial.append("address", formData.address);
+    formDataInitial.append("country_id", formData.country_id);
     formDataInitial.append("discipline_id", formData.discipline_id);
     try {
       const response = await Instance.post(
@@ -108,10 +116,9 @@ function ClubStore() {
         setSelectDiscipline(null);
         setFormData({
           name: "",
-          phone: "",
-          discipline: "",
+          discipline_id: "",
           logo: "",
-          country: "",
+          country_id: "",
           city: "",
           address: "",
         });
@@ -144,165 +151,154 @@ function ClubStore() {
           mt: 2,
           boxShadow: 10,
           borderRadius: 2,
-          p: 4,
+
+          p: 5,
           backgroundColor: "background.default",
         }}
       >
         <Typography
           variant="h4"
-          component="h1"
           textAlign="center"
-          sx={{ fontWeight: "bold", fontSize: { xs: 18, md: 24 }, mb: 2 }}
+          sx={{ fontWeight: "bold", fontSize: { xs: 18, md: 24 }, mb: 3 }}
         >
-          page de création de club
+          Création de club
         </Typography>
 
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
 
         <form onSubmit={handleSubmit}>
-          {/* ── Grid 2 colonnes sur desktop, 1 sur mobile ── */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                error={hasError("name")}
-                helperText={getError("name")}
-                id="name"
-                name="name"
-                label="Name"
-                variant="outlined"
-                fullWidth
-                onChange={handleChange}
-                value={formData.name}
-                required
-              />
-            </Grid>
+          {/* ── SECTION 1 ── */}
+          <Typography sx={{ fontWeight: "bold", mb: 1 }}>
+            🏫 Informations du club
+          </Typography>
+          <Box sx={{ display: { xs: "block", md: "flex" }, gap: 2 }}>
+            {/* Nom du club — demi-largeur */}
+            <TextField
+              error={hasError("name")}
+              helperText={getError("name")}
+              name="name"
+              label="Nom du club"
+              fullWidth
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                error={hasError("phone")}
-                helperText={getError("phone")}
-                id="phone"
-                name="phone"
-                label="Phone"
-                variant="outlined"
-                fullWidth
-                onChange={handleChange}
-                value={formData.phone}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Autocomplete
-                slotProps={{
-                  paper: {
+            {/* Discipline — demi-largeur (à côté du nom) */}
+            <FormControl fullWidth error={hasError("discipline_id")} required>
+              <InputLabel>Discipline</InputLabel>
+              <Select
+                label="Discipline"
+                value={formData.discipline_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, discipline_id: e.target.value })
+                }
+                MenuProps={{
+                  PaperProps: {
                     sx: { backgroundColor: "background.default" },
                   },
                 }}
-                disablePortal
-                options={Array.isArray(disciplines) ? disciplines : []}
-                getOptionLabel={(disciplines) => `${disciplines?.name || ""}`}
-                isOptionEqualToValue={(option, value) =>
-                  option.id === value?.id
-                }
-                value={selectDiscipline}
-                onChange={(e, newValue) => setSelectDiscipline(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    error={hasError("discipline_id")}
-                    helperText={getError("discipline_id")}
-                    {...params}
-                    fullWidth
-                    label="discipline"
-                    required
-                  />
+              >
+                {disciplines.length > 0 ? (
+                  disciplines.map((disp) => (
+                    <MenuItem key={disp.id} value={disp.id}>
+                      {disp.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Aucune discipline</MenuItem>
                 )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                error={hasError("country")}
-                helperText={getError("country")}
-                id="country"
-                name="country"
-                label="Country"
-                variant="outlined"
-                fullWidth
-                onChange={handleChange}
-                value={formData.country}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                error={hasError("city")}
-                helperText={getError("city")}
-                id="city"
-                name="city"
-                label="City"
-                variant="outlined"
-                fullWidth
-                onChange={handleChange}
-                value={formData.city}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                error={hasError("address")}
-                helperText={getError("address")}
-                id="address"
-                name="address"
-                label="Address"
-                variant="outlined"
-                fullWidth
-                onChange={handleChange}
-                value={formData.address}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <label htmlFor="logo">
-                <Typography
-                  variant="h6"
-                  component="span"
-                  sx={{ fontWeight: "bold" }}
-                >
-                  Logo
-                </Typography>
-              </label>
-              <TextField
-                error={hasError("logo")}
-                helperText={getError("logo")}
-                id="logo"
-                type="file"
-                accept="image/*"
-                name="logo"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                onChange={handleChange}
-              />
-              {error.logo && (
-                <FormHelperText error>{error.logo.join(", ")}</FormHelperText>
+              </Select>
+              {hasError("discipline_id") && (
+                <FormHelperText>{getError("discipline_id")}</FormHelperText>
               )}
-            </Grid>
+            </FormControl>
+          </Box>
 
-            <Button
-              type="submit"
-              variant="contained"
+          {/* ── SECTION 2 ── */}
+          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+            🌍 Localisation
+          </Typography>
+          <Box sx={{ display: { xs: "block", md: "flex" }, gap: 2 }}>
+            {/* Pays — demi-largeur */}
+            <FormControl fullWidth error={hasError("country_id")} required>
+              <InputLabel>Pays</InputLabel>
+              <Select
+                value={formData.country_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, country_id: e.target.value })
+                }
+                label="Pays"
+                MenuProps={{
+                  PaperProps: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+              >
+                {countries.length > 0 ? (
+                  countries.map((country) => (
+                    <MenuItem key={country.id} value={country.id}>
+                      {country.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Aucun pays</MenuItem>
+                )}
+              </Select>
+              {hasError("country_id") && (
+                <FormHelperText>{getError("country_id")}</FormHelperText>
+              )}
+            </FormControl>
+
+            {/* Région — demi-largeur (à côté du pays) */}
+            <TextField
+              error={hasError("city")}
+              helperText={getError("city")}
+              name="city"
+              label="La ville"
               fullWidth
-              sx={{ p: 2, textTransform: "none" }}
-              disabled={submitting}
-            >
-              {submitting ? "chargement..." : "créer un club"}
-            </Button>
-            {/* </Grid> */}
-          </Grid>
+              value={formData.city}
+              onChange={handleChange}
+              required
+            />
+          </Box>
+          {/* Adresse — pleine largeur */}
+          <TextField
+            error={hasError("address")}
+            helperText={getError("address")}
+            name="address"
+            label="Adresse"
+            fullWidth
+            margin="normal"
+            value={formData.address}
+            onChange={handleChange}
+          />
+
+          {/* ── SECTION 3 ── */}
+          <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
+            🖼️ Branding
+          </Typography>
+
+          <TextField
+            error={hasError("logo")}
+            helperText={getError("logo")}
+            name="logo"
+            type="file"
+            fullWidth
+            onChange={handleChange}
+          />
+
+          {/* ── SUBMIT ── */}
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ p: 2, textTransform: "none", mt: 2 }}
+            disabled={submitting}
+          >
+            {submitting ? "Chargement..." : "Créer le club"}
+          </Button>
         </form>
       </Box>
     </Container>

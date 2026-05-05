@@ -7,6 +7,9 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -18,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
 import ConfigSkeleton from "../ConfigSkeleton";
 
-function StoreExamen() {
+function StoreExamen({ open, handleClose }) {
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -120,156 +123,170 @@ function StoreExamen() {
     return <ConfigSkeleton />;
   }
   return (
-    <Container maxWidth="md" sx={{ mt: 10 }}>
-      <Box
-        component={motion.div}
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -50 }}
-        transition={{ duration: 0.5 }}
-        sx={{
-          mt: 8,
-          boxShadow: 10,
-          borderRadius: 2,
-          p: 4,
-        }}
-      >
-        <Typography>creation d'un examen</Typography>
-        {success && <Message text={success} type="success" />}
-        {error?.general && <Message text={error.general} type="error" />}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: "background.default",
+        },
+      }}
+    >
+      <DialogTitle>Programmer un examen</DialogTitle>
+      <DialogContent>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          transition={{ duration: 0.5 }}
+          sx={{
+            mt: 8,
+            boxShadow: 10,
+            borderRadius: 2,
+            p: 4,
+          }}
+        >
+          {success && <Message text={success} type="success" />}
+          {error?.general && <Message text={error.general} type="error" />}
 
-        <form onSubmit={handleSubmit}>
-          <Autocomplete
-            slotProps={{
-              paper: {
-                sx: { backgroundColor: "background.default" },
-              },
-            }}
-            disablePortal
-            options={Array.isArray(grade) ? grade : []}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            getOptionLabel={(grade) => `${grade.name || ""}`}
-            value={selectCurrentGrade}
-            onChange={(e, newValue) => setSelectCurrentGrade(newValue)}
-            renderInput={(params) => (
+          <form onSubmit={handleSubmit}>
+            <Autocomplete
+              slotProps={{
+                paper: {
+                  sx: { backgroundColor: "background.default" },
+                },
+              }}
+              disablePortal
+              options={Array.isArray(grade) ? grade : []}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              getOptionLabel={(grade) => `${grade.name || ""}`}
+              value={selectCurrentGrade}
+              onChange={(e, newValue) => setSelectCurrentGrade(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  error={hasError("current_grade_id")}
+                  {...params}
+                  fullWidth
+                  margin="normal"
+                  label="choisissez le niveau de grade actuel"
+                  required
+                />
+              )}
+            />
+            {hasError("current_grade_id") && (
+              <FormHelperText error>
+                {getError("current_grade_id")}
+              </FormHelperText>
+            )}
+            <Autocomplete
+              slotProps={{
+                paper: {
+                  sx: { backgroundColor: "background.default" },
+                },
+              }}
+              disablePortal
+              options={Array.isArray(grade) ? grade : []}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              getOptionLabel={(grade) => `${grade.name || ""}`}
+              value={selectNextGrade}
+              onChange={(e, newValue) => setSelectNextGrade(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  error={hasError("next_grade_id")}
+                  {...params}
+                  fullWidth
+                  margin="normal"
+                  label="choisissez le niveau de grade suivant"
+                  required
+                />
+              )}
+            />
+            {hasError("next_grade_id") && (
+              <FormHelperText error>{getError("next_grade_id")}</FormHelperText>
+            )}
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", md: "row" },
+              }}
+            >
               <TextField
-                error={hasError("current_grade_id")}
-                {...params}
+                error={hasError("start_date")}
+                helperText={getError("start_date")}
+                type="date"
+                name="start_date"
+                variant="outlined"
                 fullWidth
                 margin="normal"
-                label="choisissez le niveau de grade actuel"
+                value={formData.start_date}
+                onChange={handleChange}
                 required
               />
-            )}
-          />
-          {hasError("current_grade_id") && (
-            <FormHelperText error>
-              {getError("current_grade_id")}
-            </FormHelperText>
-          )}
-          <Autocomplete
-            slotProps={{
-              paper: {
-                sx: { backgroundColor: "background.default" },
-              },
-            }}
-            disablePortal
-            options={Array.isArray(grade) ? grade : []}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            getOptionLabel={(grade) => `${grade.name || ""}`}
-            value={selectNextGrade}
-            onChange={(e, newValue) => setSelectNextGrade(newValue)}
-            renderInput={(params) => (
+
               <TextField
-                error={hasError("next_grade_id")}
-                {...params}
+                error={hasError("end_date")}
+                helperText={getError("end_date")}
+                type="date"
+                name="end_date"
+                variant="outlined"
                 fullWidth
                 margin="normal"
-                label="choisissez le niveau de grade suivant"
+                value={formData.end_date}
+                onChange={handleChange}
                 required
               />
-            )}
-          />
-          {hasError("next_grade_id") && (
-            <FormHelperText error>{getError("next_grade_id")}</FormHelperText>
-          )}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              flexDirection: { xs: "column", md: "row" },
-            }}
-          >
-            <TextField
-              error={hasError("start_date")}
-              helperText={getError("start_date")}
-              type="date"
-              name="start_date"
-              variant="outlined"
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", md: "row" },
+              }}
+            >
+              <TextField
+                error={hasError("start_time")}
+                helperText={getError("start_time")}
+                fullWidth
+                type="time"
+                name="start_time"
+                label="heure de début"
+                InputLabelProps={{ shrink: true }}
+                value={formData.start_time}
+                onChange={handleChange}
+                margin="dense"
+              />
+              <TextField
+                error={hasError("end_time")}
+                helperText={getError("end_time")}
+                fullWidth
+                type="time"
+                name="end_time"
+                label="Fin"
+                InputLabelProps={{ shrink: true }}
+                value={formData.end_time}
+                onChange={handleChange}
+                margin="dense"
+              />
+            </Box>
+            <Button
+              disabled={submitting}
+              type="submit"
+              variant="contained"
               fullWidth
-              margin="normal"
-              value={formData.start_date}
-              onChange={handleChange}
-              required
-            />
-
-            <TextField
-              error={hasError("end_date")}
-              helperText={getError("end_date")}
-              type="date"
-              name="end_date"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={formData.end_date}
-              onChange={handleChange}
-              required
-            />
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              flexDirection: { xs: "column", md: "row" },
-            }}
-          >
-            <TextField
-              error={hasError("start_time")}
-              helperText={getError("start_time")}
-              fullWidth
-              type="time"
-              name="start_time"
-              label="heure de début"
-              InputLabelProps={{ shrink: true }}
-              value={formData.start_time}
-              onChange={handleChange}
-              margin="dense"
-            />
-            <TextField
-              error={hasError("end_time")}
-              helperText={getError("end_time")}
-              fullWidth
-              type="time"
-              name="end_time"
-              label="Fin"
-              InputLabelProps={{ shrink: true }}
-              value={formData.end_time}
-              onChange={handleChange}
-              margin="dense"
-            />
-          </Box>
-          <Button
-            disabled={submitting}
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            {submitting ? "Loading..." : "créer un examen"}
-          </Button>
-        </form>
-      </Box>
-    </Container>
+              sx={{ mt: 2 }}
+            >
+              {submitting ? "Loading..." : "créer un examen"}
+            </Button>
+          </form>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 }
 

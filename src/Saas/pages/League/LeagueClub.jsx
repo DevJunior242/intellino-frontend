@@ -7,12 +7,14 @@ import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
+import ErrorBlock from "../ErrorBlock";
 
 const MotionCard = motion(Card);
 
 export default function LeagueClub() {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const [errorClub, setErrorClub] = useState("");
@@ -45,6 +47,7 @@ export default function LeagueClub() {
   const handleAddClub = async (clubId) => {
     setError({});
     setSuccess("");
+    setSubmitting(true);
     try {
       const response = await Instance.post(`/api/leagues/addClub/${clubId}`, {
         organisateur_id: activeId,
@@ -60,6 +63,8 @@ export default function LeagueClub() {
       }
     } catch (error) {
       ErrorGlobal({ error, setError });
+    } finally {
+      setSubmitting(false);
     }
   };
   if (errorClub)
@@ -116,8 +121,9 @@ export default function LeagueClub() {
               <Button
                 variant="contained"
                 onClick={() => handleAddClub(club.id)}
+                disabled={submitting}
               >
-                Ajouter à la ligue
+                {submitting ? "Ajout en cours..." : "Ajouter à la ligue"}
               </Button>
             </CardContent>
           </MotionCard>

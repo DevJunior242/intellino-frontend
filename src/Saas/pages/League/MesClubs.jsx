@@ -208,7 +208,7 @@ function MesClubs() {
               >
                 <TableCell>Nom</TableCell>
                 <TableCell>VIlle</TableCell>
-                <TableCell>Phone</TableCell>
+                <TableCell>Addresse</TableCell>
                 <TableCell>Licenciés</TableCell>
 
                 <TableCell>Status(Cotisations)</TableCell>
@@ -285,7 +285,7 @@ function MesClubs() {
                     </TableCell>
 
                     <TableCell>{club.city}</TableCell>
-                    <TableCell>{club.phone}</TableCell>
+                    <TableCell>{club.address ?? "Pas d'adresse"}</TableCell>
                     <TableCell>{club.licences_count || 0}</TableCell>
 
                     <TableCell>

@@ -224,17 +224,7 @@ export default function DashboardLayout() {
         },
       ],
     },
-    {
-      section: "Ligue",
-      items: [
-        {
-          icon: <Settings />,
-          title: "Configuration ligue",
-          to: "/dashboard/config/category",
-          role: ["super_admin"],
-        },
-      ],
-    },
+
     {
       section: "Examens",
       items: [

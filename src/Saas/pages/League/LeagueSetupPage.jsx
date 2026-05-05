@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
+import { UseAuth } from "../../../Api/AuthContext";
 
 // ── Palette & tokens ─────────────────────────────────────────────────────────
 const C = {
@@ -230,16 +231,7 @@ const RecapRow = ({ label, value }) => (
 export default function LeagueSetupPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
-  // — Saison state
-  const [saisonId, setSaisonId] = useState("");
-  const [saison, setSaison] = useState({
-    libele: "",
-    dateDebut: "",
-    dateFin: "",
-    active: true,
-  });
-  const [saisonErrors, setSaisonErrors] = useState({});
-
+  const { activeId, activeType } = UseAuth();
   // — Disciplines state
   const DISC_PRESETS = ["Kata", "Kumite", "Kumite équipe", "Kata équipe"];
   const [disciplines, setDisciplines] = useState(
@@ -288,22 +280,6 @@ export default function LeagueSetupPage() {
   const [loading, setLoading] = useState(false);
 
   const selectedDiscs = disciplines.filter((d) => d.selected);
-
-  // Validation saison
-  const validateSaison = () => {
-    const errs = {};
-    if (!saison.libele.trim()) errs.libele = "Le libellé est requis";
-    if (!saison.dateDebut) errs.dateDebut = "Date de début requise";
-    if (!saison.dateFin) errs.dateFin = "Date de fin requise";
-    if (
-      saison.dateDebut &&
-      saison.dateFin &&
-      saison.dateFin <= saison.dateDebut
-    )
-      errs.dateFin = "La date de fin doit être après le début";
-    setSaisonErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
 
   const toggleDisc = (id) =>
     setDisciplines((ds) =>
@@ -354,23 +330,19 @@ export default function LeagueSetupPage() {
     setError({});
     setSuccess("");
 
-    if (!validateSaison()) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
     setLoading(true);
     const dataToSubmit = {
-      saison_id: saisonId,
-      saison,
       disciplines: selectedDiscs,
       categories: categories,
+      organisateur_id: activeId,
+      organisateur_type: activeType,
     };
     try {
       const response = await Instance.post("/api/setup/setup", dataToSubmit);
       if (response.data.success) {
-        setSaisonId(response.data.data.saison.id);
-        setSuccess(response.data.message);
+        setSuccess(
+          response.data.message || "votre configuration a bien été enregistrée",
+        );
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
         setError({});
@@ -490,106 +462,10 @@ export default function LeagueSetupPage() {
             </motion.div>
           )}
         </div>
+        {error.general && <Message text={error.general} type="error" />}
 
         {/* debut */}
         <form onSubmit={handleSubmit}>
-          {/* ── ÉTAPE 1 : SAISON ── */}
-          <SectionCard
-            index={0}
-            color="accent"
-            icon="📅"
-            title="Saison"
-            subtitle="Définir la saison active de la ligue"
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-              }}
-            >
-              <div style={{ gridColumn: "1 / -1" }}>
-                <Label required>Libellé de la saison</Label>
-                <Input
-                  placeholder="ex: 2024-2025"
-                  value={saison.libele}
-                  error={saisonErrors.libele || error["saison.libele"]}
-                  onChange={(e) =>
-                    setSaison({ ...saison, libele: e.target.value })
-                  }
-                />
-                <Err msg={error["saison.libele"]?.[0] || saisonErrors.libele} />
-              </div>
-              <div>
-                <Label required>Date de début</Label>
-                <Input
-                  type="date"
-                  value={saison.dateDebut}
-                  error={saisonErrors.dateDebut || error["saison.dateDebut"]}
-                  onChange={(e) =>
-                    setSaison({ ...saison, dateDebut: e.target.value })
-                  }
-                />
-                <Err
-                  msg={error["saison.dateFin"]?.[0] || saisonErrors.dateFin}
-                />
-              </div>
-              <div>
-                <Label required>Date de fin</Label>
-                <Input
-                  type="date"
-                  value={saison.dateFin}
-                  error={saisonErrors.dateFin || error["saison.dateFin"]}
-                  onChange={(e) =>
-                    setSaison({ ...saison, dateFin: e.target.value })
-                  }
-                />
-                <Err
-                  msg={error["saison.dateFin"]?.[0] || saisonErrors.dateFin}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                marginTop: 16,
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setSaison({ ...saison, active: !saison.active })}
-                style={{
-                  width: 40,
-                  height: 22,
-                  borderRadius: 11,
-                  background: saison.active ? C.accent : C.border,
-                  border: "none",
-                  cursor: "pointer",
-                  position: "relative",
-                  transition: "background 0.2s",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 3,
-                    left: saison.active ? 20 : 3,
-                    width: 16,
-                    height: 16,
-                    borderRadius: "50%",
-                    background: "#fff",
-                    transition: "left 0.2s",
-                  }}
-                />
-              </button>
-              <span style={{ fontSize: 13, color: C.textMuted }}>
-                {saison.active ? "Saison active" : "Saison inactive"}
-              </span>
-            </div>
-          </SectionCard>
-
           {/* ── ÉTAPE 2 : DISCIPLINES ── */}
           <SectionCard
             index={1}
@@ -967,32 +843,6 @@ export default function LeagueSetupPage() {
 
                 {/* recap body */}
                 <div style={{ padding: "20px 24px" }}>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      fontSize: 13,
-                      color: C.textMuted,
-                      marginBottom: 8,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.07em",
-                    }}
-                  >
-                    Saison
-                  </div>
-                  <RecapRow label="Libellé" value={saison.libele || "—"} />
-                  <RecapRow
-                    label="Période"
-                    value={
-                      saison.dateDebut && saison.dateFin
-                        ? `${saison.dateDebut} → ${saison.dateFin}`
-                        : "—"
-                    }
-                  />
-                  <RecapRow
-                    label="Statut"
-                    value={saison.active ? "🟢 Active" : "⚪ Inactive"}
-                  />
-
                   <div
                     style={{
                       fontWeight: 600,

@@ -20,8 +20,7 @@ import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
 export default function CategoriesPage() {
-  const { activeId } = UseAuth();
-  console.log(activeId);
+  const { activeId, activeType } = UseAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -39,7 +38,7 @@ export default function CategoriesPage() {
     setError("");
     try {
       const response = await Instance.get(
-        `/api/categories?organisateur_id=${activeId}`,
+        `/api/categories?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log(response);
       setCategories(response.data.categories || []);
@@ -51,11 +50,11 @@ export default function CategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeId]);
+  }, [activeId, activeType]);
 
   useEffect(() => {
-    getCategories();
-  }, [getCategories]);
+    if (activeId && activeType) getCategories();
+  }, [getCategories, activeId, activeType]);
 
   if (loading) {
     return <ConfigSkeleton />;
@@ -77,7 +76,9 @@ export default function CategoriesPage() {
           fontSize: "1rem",
           "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" },
         }}
-        onClick={() => navigate("/dashboard/league/setup")}
+        onClick={() =>
+          navigate("/dashboard/league/category", { replace: true })
+        }
       >
         + Nouvelle catégorie
       </Button>
