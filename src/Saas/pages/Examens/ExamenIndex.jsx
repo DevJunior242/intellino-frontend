@@ -230,8 +230,8 @@ function ExamenIndex() {
                   onClick={() => {
                     const routePrefix = isLigueUser
                       ? "/dashboard/league"
-                      : "/dashboard/student";
-                    navigate(`${routePrefix}/${examen.id}/candidates`);
+                      : "/dashboard/examen";
+                    navigate(`${routePrefix}/${examen.id}/show`);
                   }}
                 >
                   {/* Badge de Type (Ligue vs Club) */}

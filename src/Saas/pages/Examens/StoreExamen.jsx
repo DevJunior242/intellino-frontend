@@ -95,9 +95,8 @@ function StoreExamen({ open, handleClose }) {
       if (response.data.success) {
         const routePrefix = isLigueUser
           ? "/dashboard/league"
-          : "/dashboard/student";
-        navigate(`${routePrefix}/${response.data.data.id}/candidates`);
-        // navigate(`/dashboard/student/${response.data.data.id}/candidates`);
+          : "/dashboard/examen";
+        navigate(`${routePrefix}/${response.data.data.id}/show`);
         setSuccess(response.data.message);
 
         setError({});

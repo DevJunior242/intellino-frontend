@@ -189,10 +189,7 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
           <Route index element={<Dashboard />} />
           <Route path="members" element={<MemberTable />} />
-          <Route
-            path="student/:examenId/candidates"
-            element={<ExamenDetails />}
-          />
+          <Route path="examen/:examenId/show" element={<ExamenDetails />} />
           <Route path="session/list" element={<SessionList />} />
           <Route path="session/:sessionId/show" element={<SessionDetails />} />
           <Route path="student/attendance" element={<AttendanceIndex />} />
@@ -224,7 +221,7 @@ const AppRoutes = () => {
 
           <Route path="stats" element={<DashboardLeague />} />
           <Route path="programme-activites" element={<ProgrammeActivites />} />
-          <Route path=":examenId/candidates" element={<ExamenDetails />} />
+          <Route path=":examenId/show" element={<ExamenDetails />} />
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
           <Route path="categories" element={<CategoriesPage />} />

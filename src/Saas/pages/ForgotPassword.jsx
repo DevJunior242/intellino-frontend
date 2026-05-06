@@ -74,7 +74,7 @@ function ForgotPassword() {
           textAlign={"center"}
           sx={{ fontWeight: "bold", fontSize: { xs: 8, md: 14 } }}
         >
-          Forgot Password
+          Saisir votre email de récuperation
         </Typography>
         {success && <Message text={success} type="success" />}
         {error?.general && <Message text={error.general} type="error" />}
@@ -82,7 +82,7 @@ function ForgotPassword() {
           <TextField
             error={!!error.email}
             id="email"
-            label="Email"
+            label="Email de récuperation"
             name="email"
             value={formData.email}
             variant="outlined"
@@ -102,7 +102,7 @@ function ForgotPassword() {
             sx={{ mt: 2 }}
             disabled={isLoading}
           >
-            {isLoading ? "Loading..." : "submit"}
+            {isLoading ? "Loading..." : "envoyer"}
           </Button>
         </form>
         <Button
