@@ -156,7 +156,7 @@ const AppRoutes = () => {
         </Route>
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* ROUTES DASHBOARD (STAFF & CLUB) */}
@@ -217,10 +217,6 @@ const AppRoutes = () => {
       <Route path="/dashboard/league" element={<DashboardLeagueLayout />}>
         {" "}
         <Route element={<ProtectedRoute allowedRoles={["admin_league"]} />}>
-          <Route path="category" element={<LeagueSetupPage />} />
-
-          <Route path="stats" element={<DashboardLeague />} />
-          <Route path="programme-activites" element={<ProgrammeActivites />} />
           <Route path=":examenId/show" element={<ExamenDetails />} />
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
@@ -228,26 +224,26 @@ const AppRoutes = () => {
           <Route path="clubs" element={<MesClubs />} />
           <Route path="affiliations/create" element={<StoreAffiliation />} />
           <Route path="licenses/generate" element={<LicenceForm />} />
-          <Route path="competitions" element={<CompetitionManager />} />
           <Route path="grades" element={<GradesExamens />} />
-          <Route path="bureau" element={<BureauRoles />} />
           <Route path="notation" element={<FicheNotationGrade />} />
           <Route path="confignotation" element={<ConfigNotationPage />} />
-          <Route
-            path="ConfigNotationCardDetails"
-            element={<ConfigNotationCardDetails />}
-          />
+
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
           <Route path="athletes" element={<AdminCompetitionManagement />} />
         </Route>
-      </Route>
-
-      <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
-        <Route path="programme-activites" element={<ProgrammeActivites />} />
-        <Route path="competitions" element={<CompetitionManager />} />
-        <Route path="grades" element={<GradesExamens />} />
-        <Route path="bureau" element={<BureauRoles />} />
+        <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
+          <Route path="stats" element={<DashboardLeague />} />
+          <Route path="clubs/list" element={<LeagueClub />} />
+          <Route
+            path="ConfigNotationCardDetails"
+            element={<ConfigNotationCardDetails />}
+          />
+          <Route path="programme-activites" element={<ProgrammeActivites />} />
+          <Route path="competitions" element={<CompetitionManager />} />
+          <Route path="grades" element={<GradesExamens />} />
+          <Route path="bureau" element={<BureauRoles />} />
+        </Route>
       </Route>
 
       {/* ROUTES PUBLIQUES ET GÉNÉRALES */}

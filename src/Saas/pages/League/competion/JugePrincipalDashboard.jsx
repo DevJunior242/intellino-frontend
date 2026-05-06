@@ -23,6 +23,7 @@ import { Instance } from "../../../../Api/Axios";
 import SeanceAdminPanelKata from "./SeanceAdminPanelKata";
 import { Link } from "react-router-dom";
 import SeanceAdminPanelKumite from "./SeanceAdminPanelKumite";
+import ConfigSkeleton from "../../ConfigSkeleton";
 export default function JugePrincipalDashboard({
   configs,
   handleValider,
@@ -137,12 +138,7 @@ export default function JugePrincipalDashboard({
     }
   };
 
-  if (loading && configs.length === 0)
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+  if (loading && configs.length === 0) return <ConfigSkeleton />;
 
   const dataActive = configSelectee ? tatamiData[configSelectee.id] : null;
 

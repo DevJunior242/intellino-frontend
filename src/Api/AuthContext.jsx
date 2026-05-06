@@ -289,7 +289,6 @@ export const AuthProvider = ({ children }) => {
   const StoreLeagueUser = useCallback(async (userData) => {
     try {
       const res = await Instance.post("api/membres/league", userData);
-      console.log("membre enregistré avec succès", res);
       return {
         success: res.data.success,
         message: res.data.message,

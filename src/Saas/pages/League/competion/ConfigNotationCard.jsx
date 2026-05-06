@@ -38,7 +38,7 @@ export default function ConfigNotationCard({
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, p: 2 }}>
       {loading ? (
         // 1. ÉTAT CHARGEMENT (SKELETONS)
-        [1, 2, 3].map((i) => (
+        [1, 2].map((i) => (
           <Paper
             key={i}
             sx={{ p: 3, borderRadius: 4, width: 400, border: "1px solid #eee" }}

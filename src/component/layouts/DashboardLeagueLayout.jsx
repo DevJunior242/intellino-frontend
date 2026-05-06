@@ -151,6 +151,12 @@ const navSections = [
         to: "/dashboard/league/confignotation",
         role: ["admin_league"],
       },
+      {
+        icon: <Settings />,
+        label: "validation notation",
+        to: "/dashboard/league/ConfigNotationCardDetails",
+        role: ["admin_league", "arbitre_league"],
+      },
     ],
   },
 ];

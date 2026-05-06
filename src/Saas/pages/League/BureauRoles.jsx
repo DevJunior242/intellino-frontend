@@ -14,6 +14,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import MemberLeagueForm from "./MemberLeagueForm";
 import Membres from "./Membres";
 import { Instance } from "../../../Api/Axios";
+import { UseAuth } from "../../../Api/AuthContext";
 
 // Couleurs exactes de ton interface
 const theme = {
@@ -31,10 +32,14 @@ export default function BureauRoles() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const { activeId, activeType } = UseAuth();
   const getMembers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await Instance.get("/api/membres/league");
+      const response = await Instance.get(
+        `/api/membres/league?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+      );
       console.log(response);
       setMembers(response.data.members || []);
     } catch (error) {

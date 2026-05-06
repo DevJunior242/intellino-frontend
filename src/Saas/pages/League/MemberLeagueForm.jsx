@@ -33,7 +33,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
   const [submitting, setSubmitting] = useState(false);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const { StoreLeagueUser } = UseAuth();
+  const { StoreLeagueUser, activeId, activeType } = UseAuth();
 
   const [formData, setFormData] = useState({
     fullname: "",
@@ -44,8 +44,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
   const getRoles = async () => {
     setLoading(true);
     try {
-      const response = await Instance.get("api/membres/leagues/getRoles");
-      console.log("roles", response);
+      const response = await Instance.get(`api/leagues/getRoles`);
       setRole(response.data.roles || []);
     } catch (error) {
       console.error(error);
@@ -65,7 +64,12 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
     setError({});
     setSubmitting(true);
     try {
-      const res = await StoreLeagueUser(formData);
+      const dataSend = {
+        ...formData,
+        organisateur_id: activeId,
+        organisateur_type: activeType,
+      };
+      const res = await StoreLeagueUser(dataSend);
       console.log(res);
       if (res.success) {
         setFormData({

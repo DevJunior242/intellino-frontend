@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Instance } from "../../../../Api/Axios";
 import { UseAuth } from "../../../../Api/AuthContext";
+import ErrorGlobal from "../../../../component/ErrorGlobal";
+import Message from "../../Message";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🎨 DESIGN TOKENS
@@ -1252,14 +1254,14 @@ const SuccessScreen = ({ competition, mode, onReset }) => (
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function ConfigNotationPage() {
   //id
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
   // ── États communs ──────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
   const [competition, setCompetition] = useState(null);
   const [mode, setMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
 
   // ── États plateau ──────────────────────────────────────────────────────────
   const [plateaux, setPlateaux] = useState([]);
@@ -1348,7 +1350,7 @@ export default function ConfigNotationPage() {
     const [resComps, resModes, resNbJuges, resKumiteFormats] =
       await Promise.allSettled([
         Instance.get(
-          `/api/competitions/competitions?organisateur_id=${activeId}`,
+          `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
         ),
         Instance.get("/api/modes-saisie/modes-saisie"),
         Instance.get("/api/nb-juges/nb-juges"),
@@ -1515,13 +1517,14 @@ export default function ConfigNotationPage() {
   // ── handleSubmit ───────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setLoading(true);
-    setError("");
+    setError({});
     try {
       const dataSend = {
         competition_id: competition.id,
         mode_saisie_id: mode.id,
         evenement_id: competition.evenement_id,
-
+        organisateur_id: activeId,
+        organisateur_type: activeType,
         ...(plateauId
           ? { plateau_id: plateauId }
           : { nouveau_plateau_nom: plateauNom.trim() }),
@@ -1535,14 +1538,16 @@ export default function ConfigNotationPage() {
       await Instance.post("/api/config-notation/config-notation", dataSend);
       setDone(true);
     } catch (err) {
-      if (err.response?.status === 422) {
-        const msgs = Object.values(err.response.data.errors ?? {})
-          .flat()
-          .join(" — ");
-        setError(msgs);
-      } else {
-        setError(err.response?.data?.message ?? "Erreur serveur inattendue.");
-      }
+      console.error(err);
+      ErrorGlobal({ error: err, setError });
+      // if (err.response?.status === 422) {
+      //   const msgs = Object.values(err.response.data.errors ?? {})
+      //     .flat()
+      //     .join(" — ");
+      //   setError(msgs);
+      // } else {
+      //   setError(err.response?.data?.message ?? "Erreur serveur inattendue.");
+      // }
     } finally {
       setLoading(false);
     }
@@ -1904,7 +1909,7 @@ export default function ConfigNotationPage() {
             )}
 
             {/* Erreur submit */}
-            {error && (
+            {/* {error && (
               <div
                 style={{
                   background: C.dangerDim,
@@ -1918,7 +1923,8 @@ export default function ConfigNotationPage() {
               >
                 ⚠ {error}
               </div>
-            )}
+            )} */}
+            {error?.general && <Message text={error.general} type="error" />}
 
             {/* Navigation */}
             <div style={{ display: "flex", gap: 10 }}>

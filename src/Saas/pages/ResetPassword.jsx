@@ -21,7 +21,7 @@ function ResetPassword() {
   const [password_confirmation, setPasswordConfirmation] = useState("");
   const [searchParams] = useSearchParams();
   const isFirstTime = searchParams.get("first") === "true";
-  const { token } = useParams();
+ const token = searchParams.get("token");
   useEffect(() => {
     setEmail(searchParams.get("email"));
   }, [searchParams]);
@@ -33,12 +33,14 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      const res = await Instance.post("api/reset-password", {
+      const dataSend = {
         token: token,
         email: email,
         password: password,
         password_confirmation: password_confirmation,
-      });
+      };
+      console.log("datasend", dataSend);
+      const res = await Instance.post("api/reset-password", dataSend);
       console.log(res);
       if (res.data.success) {
         setSuccess(res.data.message);
@@ -94,6 +96,7 @@ function ResetPassword() {
         )}
         {error.general && <Message text={error.general} type="error" />}
         <form onSubmit={handleSubmit}>
+          <input type="hidden" name="token" value={token} />
           <TextField
             error={!!error.password}
             id="password"

@@ -24,8 +24,7 @@ export default function ConfigNotationCardDetails() {
   const [success, setSuccess] = useState({});
   const [configs, setConfigs] = useState([]);
   const [submitId, setSubmitId] = useState(null);
-  const { auth } = UseAuth();
-  const leagueId = auth?.user?.current_league_id;
+  const { auth, activeId, activeType } = UseAuth();
 
   const adminJuge =
     auth?.role?.includes("admin_league") ||
@@ -49,10 +48,10 @@ export default function ConfigNotationCardDetails() {
   // ── Fetch configs ──────────────────────────────────
   const getConfigs = useCallback(async () => {
     setLoading(true);
-    if (!leagueId) return;
+    if (!activeId) return;
     try {
       const res = await Instance.get(
-        `/api/config-notation/config-notation?league_id=${leagueId}`,
+        `/api/config-notation/config-notation?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log("getConfigs res", res);
       setConfigs(res.data || []);
@@ -62,7 +61,7 @@ export default function ConfigNotationCardDetails() {
     } finally {
       setLoading(false);
     }
-  }, [leagueId]);
+  }, [activeId, activeType]);
 
   useEffect(() => {
     getConfigs();
