@@ -107,6 +107,7 @@ import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
 import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
 import LicenceTable from "./Saas/pages/League/LicenceTable.jsx";
+import Arbitres from "./Saas/pages/League/Arbitres.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -217,16 +218,22 @@ const AppRoutes = () => {
       <Route path="/dashboard/league" element={<DashboardLeagueLayout />}>
         {" "}
         <Route element={<ProtectedRoute allowedRoles={["admin_league"]} />}>
+          <Route path="examen" element={<ExamenIndex />} />
+
           <Route path=":examenId/show" element={<ExamenDetails />} />
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="configCategory" element={<LeagueSetupPage />} />
+
           <Route path="clubs" element={<MesClubs />} />
           <Route path="affiliations/create" element={<StoreAffiliation />} />
           <Route path="licenses/generate" element={<LicenceForm />} />
           <Route path="grades" element={<GradesExamens />} />
           <Route path="notation" element={<FicheNotationGrade />} />
           <Route path="confignotation" element={<ConfigNotationPage />} />
+          <Route path="bureau" element={<BureauRoles />} />
+          <Route path="arbitres" element={<Arbitres />} />
 
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
@@ -234,15 +241,12 @@ const AppRoutes = () => {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
           <Route path="stats" element={<DashboardLeague />} />
-          <Route path="clubs/list" element={<LeagueClub />} />
           <Route
             path="ConfigNotationCardDetails"
             element={<ConfigNotationCardDetails />}
           />
           <Route path="programme-activites" element={<ProgrammeActivites />} />
           <Route path="competitions" element={<CompetitionManager />} />
-          <Route path="grades" element={<GradesExamens />} />
-          <Route path="bureau" element={<BureauRoles />} />
         </Route>
       </Route>
 
@@ -258,6 +262,7 @@ const AppRoutes = () => {
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
+        <Route path="/public/tatami/:configId" element={<VuePubliqueKata />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQSection />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
@@ -266,7 +271,6 @@ const AppRoutes = () => {
         <Route path="/club/store" element={<ClubStore />} />
         <Route path="/league/store" element={<Storeleague />} />
         <Route path="/club/store" element={<ClubStore />} />
-
         {/* <Route path="/examen-league" element={<LeagueExams />} /> */}
         <Route path="/403" element={<Forbidden />} />
         <Route path="*" element={<NotFound />} />

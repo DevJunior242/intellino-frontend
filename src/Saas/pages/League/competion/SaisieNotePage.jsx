@@ -18,14 +18,15 @@ export default function SaisieNotePage({ config }) {
   const [enCours, setEnCours] = useState(null);
   const [valeur, setValeur] = useState(7.0);
   const [dejaNote, setDejaNote] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [erreur, setErreur] = useState(null);
   const enCoursRef = useRef(null);
-  console.log("config dans saisienotepage", config);
 
   // Récupérer l'athlète en cours
   const fetchEnCours = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await Instance.get(
         `/api/seances/competition/${config.id}/en-cours`,
@@ -43,6 +44,8 @@ export default function SaisieNotePage({ config }) {
       setEnCours(newEnCours);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }, [config]);
 
@@ -55,7 +58,7 @@ export default function SaisieNotePage({ config }) {
   }, [fetchEnCours, config]);
 
   const handleSoumettre = async () => {
-    setLoading(true);
+    setSubmitting(true);
     setErreur(null);
     try {
       const res = await Instance.post("/api/notes", {
@@ -68,12 +71,12 @@ export default function SaisieNotePage({ config }) {
     } catch (err) {
       setErreur(err.response?.data?.message || "Erreur lors de la saisie");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   // Pas d'athlète en cours
-  if (!enCours) {
+  if (!enCours || loading) {
     return (
       <Box
         sx={{
@@ -186,7 +189,7 @@ export default function SaisieNotePage({ config }) {
             onClick={handleSoumettre}
             sx={{ py: 2, borderRadius: 3, fontWeight: "bold" }}
           >
-            {loading ? (
+            {submitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
               `Confirmer — ${valeur.toFixed(1)}`

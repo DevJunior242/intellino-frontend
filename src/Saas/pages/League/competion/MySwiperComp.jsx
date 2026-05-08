@@ -31,13 +31,15 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
+  console.log("activeId", activeId);
+  console.log("activeType", activeType);
 
   const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     try {
       const response = await Instance.get(
-        `/api/competitions/competitions?organisateur_id=${activeId}`,
+        `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log("epreuves", response);
       setCompetitions(response.data.data || []);
@@ -46,7 +48,7 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeId, activeType]);
 
   useEffect(() => {
     fetchCompetitions();

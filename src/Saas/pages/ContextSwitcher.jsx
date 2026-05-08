@@ -7,111 +7,106 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  Divider,
   Avatar,
+  Tooltip,
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import BusinessIcon from "@mui/icons-material/Business";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { UseAuth } from "../../Api/AuthContext";
-const ContextSwitcher = () => {
-  // On récupère activeId et activeType
+
+const ContextSwitcher = ({ isCollapsed = false }) => {
   const { auth, activeId, switchPortal } = UseAuth();
   const [isOpen, setIsOpen] = useState(false);
 
-  // 1. Fusionner les deux listes avec une étiquette 'type'
+  // Fusionner les clubs et ligues avec un type
   const clubs = (auth.clubs || []).map((c) => ({ ...c, type: "Club" }));
   const leagues = (auth.leagues || []).map((l) => ({ ...l, type: "Ligue" }));
-
   const allSpaces = [...clubs, ...leagues];
 
   if (allSpaces.length === 0) return null;
 
-  // 2. Trouver l'espace actuellement sélectionné
+  // Trouver l'espace actuellement sélectionné
   const currentSpace = allSpaces.find((s) => s.id === activeId) || allSpaces[0];
-  console.log("currentSpace", currentSpace);
-  const otherSpaces = allSpaces.filter((s) => s.id !== activeId);
 
+  // Formater le rôle (ex: "admin_league" → "Admin League")
   const formatRole = (roleData) => {
-    // 1. Sécurité : si la donnée est vide ou nulle
     if (!roleData) return "";
-
-    let roleText = "";
-
-    // 2. Détection du type
-    if (Array.isArray(roleData)) {
-      // Si c'est un tableau, on prend le premier élément
-      roleText = roleData[0] || "";
-    } else if (typeof roleData === "string") {
-      // Si c'est déjà une string, on l'utilise directement
-      roleText = roleData;
-    }
-
-    // 3. Transformation (replace et mise en majuscule)
+    let roleText = Array.isArray(roleData) ? roleData[0] || "" : roleData;
     if (!roleText) return "";
-
-    const cleanText = roleText.replace("_", " ");
-    return cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
+    return roleText.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  // Dans ton JSX :
-  {
-    formatRole(currentSpace?.role);
-  }
   return (
-    <Box sx={{ p: 2, position: "relative" }}>
-      {/* Bouton Principal */}
-      <Paper
-        elevation={0}
-        onClick={() => setIsOpen(!isOpen)}
-        sx={{
-          bgcolor: "background.default",
-          p: 1.5,
-          cursor: "pointer",
-          borderRadius: 2,
-          border: "1px solid",
-          borderColor:
-            currentSpace?.type === "Ligue" ? "primary.main" : "divider", // Bordure différente pour la ligue
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          "&:hover": { bgcolor: "action.hover" },
-        }}
+    <Box sx={{ p: isCollapsed ? 1 : 2, position: "relative" }}>
+      {/* Bouton principal */}
+      <Tooltip
+        title={
+          isCollapsed ? `${currentSpace?.name} (${currentSpace?.type})` : ""
+        }
+        placement="right"
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Avatar
+        <Paper
+          elevation={0}
+          onClick={() => setIsOpen(!isOpen)}
+          sx={{
+            bgcolor: "background.default",
+            p: isCollapsed ? 0.5 : 1.5,
+            cursor: "pointer",
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor:
+              currentSpace?.type === "Ligue" ? "primary.main" : "divider",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: isCollapsed ? "center" : "space-between",
+            "&:hover": { bgcolor: "action.hover" },
+          }}
+        >
+          <Box
             sx={{
-              bgcolor:
-                currentSpace?.type === "Ligue"
-                  ? "secondary.main"
-                  : "primary.main",
-              width: 32,
-              height: 32,
+              display: "flex",
+              alignItems: "center",
+              gap: isCollapsed ? 0 : 1.5,
+              width: "100%",
             }}
           >
-            {currentSpace?.type === "Ligue" ? (
-              <AccountBalanceIcon fontSize="small" />
-            ) : (
-              <BusinessIcon fontSize="small" />
-            )}
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle2" fontWeight="bold" noWrap>
-              {currentSpace?.name}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            <Avatar
+              sx={{
+                bgcolor:
+                  currentSpace?.type === "Ligue"
+                    ? "secondary.main"
+                    : "primary.main",
+                width: isCollapsed ? 32 : 32,
+                height: isCollapsed ? 32 : 32,
+              }}
             >
-              {currentSpace?.type} : {formatRole(currentSpace?.role)}
-            </Typography>
+              {currentSpace?.type === "Ligue" ? (
+                <AccountBalanceIcon fontSize="small" />
+              ) : (
+                <BusinessIcon fontSize="small" />
+              )}
+            </Avatar>
+
+            {!isCollapsed && (
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                  {currentSpace?.name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                >
+                  {currentSpace?.type} : {formatRole(currentSpace?.role)}
+                </Typography>
+              </Box>
+            )}
+
+            {!isCollapsed && <SwapHorizIcon fontSize="small" color="action" />}
           </Box>
-        </Box>
-        <SwapHorizIcon fontSize="small" color="action" />
-      </Paper>
+        </Paper>
+      </Tooltip>
 
       {/* Menu déroulant */}
       <AnimatePresence>
@@ -123,9 +118,10 @@ const ContextSwitcher = () => {
             style={{
               position: "absolute",
               top: "100%",
-              left: 16,
-              right: 16,
+              left: isCollapsed ? 0 : 16,
+              right: isCollapsed ? 0 : 16,
               zIndex: 1000,
+              minWidth: isCollapsed ? 200 : "auto", // Largeur minimale pour éviter un menu trop étroit
             }}
           >
             <Paper
@@ -133,7 +129,7 @@ const ContextSwitcher = () => {
               sx={{
                 borderRadius: 2,
                 overflow: "hidden",
-                backgroundColor: "background.paper",
+                backgroundColor: "background.default",
               }}
             >
               <Typography
@@ -149,11 +145,12 @@ const ContextSwitcher = () => {
                 Changer d'espace
               </Typography>
               <List sx={{ p: 0, maxHeight: 300, overflowY: "auto" }}>
-                {otherSpaces.map((space) => (
+                {allSpaces.map((space) => (
                   <ListItem key={space.id} disablePadding>
                     <ListItemButton
+                      selected={space.id === activeId}
                       onClick={() => {
-                        switchPortal(space.id, space.type, space.role); // On passe le type !
+                        switchPortal(space.id, space.type, space.role);
                         setIsOpen(false);
                       }}
                     >
@@ -172,8 +169,7 @@ const ContextSwitcher = () => {
                           {space.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {space.type === "Ligue" ? "Ligue" : "Club"} —{" "}
-                          {space.role}
+                          {space.type} — {formatRole(space.role)}
                         </Typography>
                       </Box>
                     </ListItemButton>
@@ -187,4 +183,5 @@ const ContextSwitcher = () => {
     </Box>
   );
 };
+
 export default ContextSwitcher;

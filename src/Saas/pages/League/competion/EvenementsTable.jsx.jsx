@@ -19,6 +19,7 @@ import {
   Avatar,
   Divider,
   Button,
+  CircularProgress, // ✅ AJOUT
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -68,10 +69,15 @@ const getStatut = (status) =>
   STATUT_CONFIG[status] ?? { label: String(status), color: "default" };
 
 // ─── Ligne épreuve ────────────────────────────────────────────────────────────
-const EpreuveRow = ({ epreuve, handleEpreuveStatusChange, submittingComp }) => {
+const EpreuveRow = ({
+  epreuve,
+  handleEpreuveStatusChange,
+  submittingCompId,
+}) => {
   const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
   const status = getStatut(epreuve.status);
+  const isSubmitting = submittingCompId === epreuve.id;
 
   return (
     <TableRow hover sx={{ "& td": { py: 1.2 } }}>
@@ -115,18 +121,18 @@ const EpreuveRow = ({ epreuve, handleEpreuveStatusChange, submittingComp }) => {
       <TableCell sx={{ color: "grey.800" }}>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <Typography variant="body2" sx={{ color: "grey.800" }}>
-            {formatHeure(epreuve.heure_debut_prevu)}
+            {formatHeure(epreuve?.heure_debut_prevu)}
           </Typography>
           <Typography variant="caption" color="text.disabled">
             →
           </Typography>
           <Typography variant="body2" sx={{ color: "grey.800" }}>
-            {formatHeure(epreuve.heure_fin_prevue)}
+            {formatHeure(epreuve?.heure_fin_prevue)}
           </Typography>
         </Stack>
         <Typography variant="caption" sx={{ color: "grey.800" }}>
-          {epreuve.heure_debut_prevu
-            ? new Date(epreuve.heure_debut_prevu).toLocaleDateString("fr-FR", {
+          {epreuve?.heure_debut_prevu
+            ? new Date(epreuve?.heure_debut_prevu).toLocaleDateString("fr-FR", {
                 weekday: "short",
                 day: "numeric",
                 month: "short",
@@ -154,45 +160,59 @@ const EpreuveRow = ({ epreuve, handleEpreuveStatusChange, submittingComp }) => {
       </TableCell>
       <TableCell>
         <Stack direction="row" gap={1}>
-          {epreuve.status === 0 && (
+          {/* Bouton unique qui change de label/couleur selon status ET loading */}
+          {epreuve.status === 0 || isSubmitting ? (
             <Button
-              disabled={submittingComp}
+              disabled={isSubmitting}
               variant="contained"
               color="success"
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : null
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 handleEpreuveStatusChange(epreuve.id, "ouvrir");
               }}
             >
-              ouvrir
+              {isSubmitting ? "Ouverture..." : "Ouvrir"}
             </Button>
-          )}
-          {epreuve.status === 1 && (
+          ) : epreuve.status === 1 ? (
             <Button
-              disabled={submittingComp}
+              disabled={isSubmitting}
               variant="contained"
               color="error"
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : null
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 handleEpreuveStatusChange(epreuve.id, "cloturer");
               }}
             >
-              Cloturer
+              {isSubmitting ? "Clôture..." : "Clôturer"}
             </Button>
-          )}
-          {epreuve.status === 2 && (
+          ) : epreuve.status === 2 ? (
             <Button
-              disabled={submittingComp}
+              disabled={isSubmitting}
               variant="contained"
               color="success"
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : null
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 handleEpreuveStatusChange(epreuve.id, "ouvrir");
               }}
             >
-              {submittingComp ? "Ouv..." : "Ouvrir"}
+              {isSubmitting ? "Ouverture..." : "Ouvrir"}
             </Button>
-          )}
+          ) : null}
         </Stack>
       </TableCell>
     </TableRow>
@@ -205,13 +225,15 @@ const EvenementRow = ({
   handleStatusChange,
   arbitre,
   auth,
-  submitting,
-  submittingComp,
+  submittingId,
+  submittingCompId,
   handleEpreuveStatusChange,
 }) => {
   const [open, setOpen] = useState(false);
   const epreuves = evenement.competitions ?? [];
   const status = getStatut(evenement.status);
+  const isSubmitting = submittingId === evenement.id;
+
   if (!auth) return null;
   return (
     <>
@@ -308,50 +330,69 @@ const EvenementRow = ({
           <Chip label={status.label} size="small" color={status.color} />
         </TableCell>
 
-        {/* action  ouvrir / cloturer */}
+        {/* Actions ouvrir / cloturer */}
         <TableCell>
           <Stack direction="row" gap={1}>
             {evenement.status === 0 && (
               <Button
                 variant="contained"
                 color="success"
+                disabled={isSubmitting}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleStatusChange(evenement.id, "ouvrir");
                 }}
               >
-                ouvrir
+                {isSubmitting ? "Ouverture..." : "Ouvrir"}
               </Button>
             )}
+
             {evenement.status === 1 && (
               <Button
                 variant="contained"
                 color="error"
+                disabled={isSubmitting}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleStatusChange(evenement.id, "cloturer");
                 }}
               >
-                Cloturer
+                {isSubmitting ? "Clôture..." : "Clôturer"}
               </Button>
             )}
+
             {evenement.status === 2 && (
               <Button
-                disabled={submitting}
                 variant="contained"
                 color="success"
+                disabled={isSubmitting}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleStatusChange(evenement.id, "ouvrir");
                 }}
               >
-                {submitting ? "Ouv..." : "Ouvrir"}
+                {isSubmitting ? "Ouverture..." : "Ouvrir"}
               </Button>
             )}
-            {/* arbitrer */}
+
             {arbitre && (
               <Button
-                disabled={submitting}
+                disabled={isSubmitting}
                 variant="contained"
                 color="success"
                 onClick={(e) => {
@@ -359,7 +400,7 @@ const EvenementRow = ({
                   handleStatusChange(evenement.id, "arbitrer");
                 }}
               >
-                {submitting ? "Arb..." : "Arbitrer"}
+                {isSubmitting ? "Arbitrage..." : "S'inscrire"}
               </Button>
             )}
           </Stack>
@@ -377,7 +418,6 @@ const EvenementRow = ({
                 borderColor: "divider",
               }}
             >
-              {/* Header épreuves */}
               <Stack
                 direction="row"
                 alignItems="center"
@@ -437,7 +477,7 @@ const EvenementRow = ({
                         key={ep.id}
                         epreuve={ep}
                         handleEpreuveStatusChange={handleEpreuveStatusChange}
-                        submittingComp={submittingComp}
+                        submittingCompId={submittingCompId}
                       />
                     ))}
                   </TableBody>
@@ -455,34 +495,16 @@ const EvenementRow = ({
 export default function EvenementsTable({
   evenements = [],
   loading,
-  submitting,
+  submittingId,
   handleStatusChange,
   handleEpreuveStatusChange,
-  submittingComp,
+  submittingCompId,
   auth,
   arbitre,
   success,
   errors,
+  allAccess,
 }) {
-  if (loading) {
-    return <ConfigSkeleton />;
-  }
-
-  if (evenements.length === 0) {
-    return (
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        <CardContent sx={{ textAlign: "center", py: 6 }}>
-          <EmojiEventsIcon
-            sx={{ fontSize: 48, color: "text.disabled", mb: 2 }}
-          />
-          <Typography color="text.secondary">
-            Aucun événement trouvé.
-          </Typography>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
       <TableContainer component={Paper} elevation={0}>
@@ -500,22 +522,39 @@ export default function EvenementsTable({
               <TableCell>Épreuves</TableCell>
               <TableCell>Disciplines</TableCell>
               <TableCell>Statut</TableCell>
-              <TableCell>Actions</TableCell>
+              {allAccess && <TableCell>Actions</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
-            {evenements.map((ev) => (
-              <EvenementRow
-                key={ev.id}
-                evenement={ev}
-                handleStatusChange={handleStatusChange}
-                submittingComp={submittingComp}
-                handleEpreuveStatusChange={handleEpreuveStatusChange}
-                auth={auth}
-                arbitre={arbitre}
-                submitting={submitting}
-              />
-            ))}
+            {loading ? (
+              <ConfigSkeleton />
+            ) : evenements.length > 0 ? (
+              evenements.map((ev) => (
+                <EvenementRow
+                  key={ev.id}
+                  evenement={ev}
+                  handleStatusChange={handleStatusChange}
+                  submittingCompId={submittingCompId}
+                  handleEpreuveStatusChange={handleEpreuveStatusChange}
+                  auth={auth}
+                  arbitre={arbitre}
+                  submittingId={submittingId}
+                />
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={100}>
+                  <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                    <CardContent sx={{ textAlign: "center", py: 6 }}>
+                      <EmojiEventsIcon
+                        sx={{ fontSize: 48, color: "text.disabled", mb: 2 }}
+                      />
+                      Aucun événement trouvé.
+                    </CardContent>
+                  </Card>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

@@ -38,7 +38,7 @@ export default function ConfigNotationCardDetails() {
   const [configActive, setConfigActive] = useState(null);
   const [enCours, setEnCours] = useState(null);
 
-  // Arbitre
+  // Arbitre69-
   const [poste, setPoste] = useState(null);
   const [pin, setPin] = useState("");
   const [erreurPin, setErreurPin] = useState({});
@@ -100,7 +100,6 @@ export default function ConfigNotationCardDetails() {
       const res = await Instance.post(
         `/api/seances/configs/${configId}/lancer`,
       );
-      console.log("lancer seance res", res);
       if (res.data.success) {
         const config = configs.find((c) => c.id === configId);
 
@@ -279,7 +278,6 @@ export default function ConfigNotationCardDetails() {
     );
   }
   if (vue === "repartition" && configActive) {
-    console.log("Données envoyées à Repartition:", configActive);
     return (
       <RepartitionAthletes
         competition={configActive.competition_id}
@@ -322,6 +320,7 @@ export default function ConfigNotationCardDetails() {
         success={success}
         initSeance={initSeance}
         config={configActive}
+        loading={loading}
         handleLaunchSeance={handleLaunchSeance}
         onAthleteSuivant={(suivant) => {
           console.log("NEW ATHLETE", suivant);

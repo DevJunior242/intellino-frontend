@@ -46,7 +46,7 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
   const [niveaux, setNiveaux] = useState([]);
   const [categories, setCategories] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
-  const [loadingInit, setLoadingInit] = useState(false);
+  const [loadingInit, setLoadingInit] = useState(true);
 
   // ── formulaire ──────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState({

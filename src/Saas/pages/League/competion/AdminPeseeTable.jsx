@@ -22,6 +22,7 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
       headerName: "Club",
       width: 180,
       valueGetter: (value, row) => row.club?.name || "Sans Club",
+      flex: 1,
     },
     {
       field: "athlete",
@@ -29,30 +30,30 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
       width: 200,
       valueGetter: (value, row) => row.athlete?.fullname || "Inconnu",
     },
-    // {
-    //   field: "category",
-    //   headerName: "Catégorie",
-    //   width: 150,
-    //   renderCell: (params) => (
-    //     <Chip
-    //       label={`${params.row.category?.nom} (${params.row.category?.sexe})`}
-    //       size="small"
-    //       variant="outlined"
-    //     />
-    //   ),
-    // },
-    // {
-    //   field: "disciplineleague",
-    //   headerName: "Discipline",
-    //   width: 150,
-    //   renderCell: (params) => (
-    //     <Chip
-    //       label={`${params.row.disciplineleague?.nom}`}
-    //       size="small"
-    //       variant="outlined"
-    //     />
-    //   ),
-    // },
+    {
+      field: "category",
+      headerName: "Catégorie",
+      width: 150,
+      renderCell: (params) => (
+        <Chip
+          label={`${params.row?.competition?.category?.nom} (${params.row?.competition?.category?.sexe})`}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
+    {
+      field: "disciplineleague",
+      headerName: "Discipline",
+      width: 150,
+      renderCell: (params) => (
+        <Chip
+          label={`${params.row?.competition?.discipline?.nom}`}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
     {
       field: "poids_declare",
       headerName: "Prévu (kg)",

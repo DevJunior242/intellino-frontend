@@ -37,7 +37,7 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   const [formData, setFormData] = useState({
     athlete_id: "",
     competition_id: "",
-
+    kata: "",
     statut_pesee: 0,
     poids_declare: "",
     poids_officiel: "",
@@ -52,17 +52,12 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  //promise all
   const getInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      const [resKata, resStudent] = await Promise.all([
-        Instance.get(`/api/katas/katas`),
-        Instance.get(`/api/students?club_id=${activeId}`),
-      ]);
-      console.log(resKata, resStudent);
-      setKatas(resKata.data);
-      setStudents(resStudent.data.students);
+      const res = await Instance.get(`/api/students?club_id=${activeId}`);
+      console.log(res);
+      setStudents(res.data.students || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -189,32 +184,17 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
 
           {/* Kata — sélection du kata */}
           {discipline === "Kata" && (
-            <FormControl fullWidth margin="normal" variant="outlined">
-              <InputLabel>Veuillez choisir le kata exécuté</InputLabel>
-              <Select
-                label="Veuillez choisir le kata exécuté"
-                value={formData.kata_id}
-                onChange={(e) =>
-                  setFormData({ ...formData, kata_id: e.target.value })
-                }
-                MenuProps={{
-                  PaperProps: {
-                    sx: { backgroundColor: "background.default" },
-                  },
-                }}
-              >
-                {katas.map((kata) => (
-                  <MenuItem key={kata.id} value={kata.id}>
-                    <Stack>
-                      <Typography variant="body2">{kata.nom}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {kata.nom} ({kata.niveau})
-                      </Typography>
-                    </Stack>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              error={!!error.kata}
+              helperText={getError("kata")}
+              label="Veuillez saisir le kata exécuté"
+              name="kata"
+              value={formData.kata}
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              onChange={handleChange}
+            />
           )}
 
           <Button

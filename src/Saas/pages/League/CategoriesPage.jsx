@@ -77,7 +77,7 @@ export default function CategoriesPage() {
           "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" },
         }}
         onClick={() =>
-          navigate("/dashboard/league/category", { replace: true })
+          navigate("/dashboard/league/configCategory", { replace: true })
         }
       >
         + Nouvelle catégorie

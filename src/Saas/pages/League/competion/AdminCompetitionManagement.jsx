@@ -11,16 +11,20 @@ export default function AdminCompetitionManagement() {
   const [inscriptions, setInscriptions] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
 
   const fetchInscriptions = async (compId) => {
     if (!compId) return;
     setLoading(true);
     setError("");
     try {
-      const res = await Instance.get(
-        `/api/admin/inscriptions?competition_id=${compId}&organisateur_id=${activeId}`,
-      );
+      const res = await Instance.get("/api/admin/inscriptions", {
+        params: {
+          competition_id: compId,
+          organisateur_id: activeId,
+          organisateur_type: activeType,
+        },
+      });
       console.log("athletes", res);
       setInscriptions(res.data || []);
     } catch (err) {

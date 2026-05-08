@@ -15,6 +15,7 @@ import { Instance } from "../../../Api/Axios";
 import ErrorBlock from "../ErrorBlock";
 import ConfigSkeleton from "../ConfigSkeleton";
 import VitalityGauge from "./VitalityGauge";
+import { useNavigate } from "react-router-dom";
 
 const theme = {
   bg: "#1a1d21",
@@ -92,6 +93,7 @@ export default function GradesExamens() {
   const { activeId } = UseAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
   const fetchStats = useCallback(async () => {
     if (!activeId) return;
     setLoading(true);
@@ -145,6 +147,29 @@ export default function GradesExamens() {
   if (error) return <ErrorBlock message={error} onRetry={fetchStats} />;
   return (
     <Box sx={{ p: 4, bgcolor: theme.bg, minHeight: "100vh" }}>
+      <Box>
+        <Button
+          variant="outlined"
+          sx={{
+            mb: 4,
+            ml: 2,
+            px: 4,
+            py: 1.5,
+            color: "#fff",
+            borderColor: "rgba(255,255,255,0.3)",
+            textTransform: "none",
+            borderRadius: 2,
+            fontSize: "1rem",
+            "&:hover": {
+              borderColor: "#fff",
+              bgcolor: "rgba(255,255,255,0.05)",
+            },
+          }}
+          onClick={() => navigate("/dashboard/league/examen/store")}
+        >
+          Ajouter un examen
+        </Button>
+      </Box>
       {/* HEADER */}
       <Stack
         direction="row"

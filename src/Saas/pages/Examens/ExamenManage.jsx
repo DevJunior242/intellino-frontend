@@ -172,7 +172,11 @@ function ExamenManage({ examen, fetchExamenData }) {
                   sx={{ py: 2, borderRadius: 2 }}
                   disabled={examen.status !== 0}
                 >
-                  Démarrer
+                  {confirmOpen && pendingAction === "start" ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Démarrer"
+                  )}
                 </Button>
               </Grid>
               <Grid item xs={6}>
@@ -186,7 +190,11 @@ function ExamenManage({ examen, fetchExamenData }) {
                   sx={{ py: 2, borderRadius: 2 }}
                   disabled={examen.status !== 1}
                 >
-                  Terminer
+                  {confirmOpen && pendingAction === "stop" ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Terminer"
+                  )}
                 </Button>
               </Grid>
             </Grid>
@@ -399,7 +407,7 @@ function ExamenManage({ examen, fetchExamenData }) {
             color={pendingAction === "start" ? "success" : "warning"}
             onClick={handleConfirmFinal}
           >
-            Confirmer
+            {confirmOpen ? "Confirmer" : "Annuler"}
           </Button>
         </DialogActions>
       </Dialog>

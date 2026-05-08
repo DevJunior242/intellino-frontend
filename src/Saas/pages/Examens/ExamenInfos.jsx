@@ -23,7 +23,7 @@ import ErrorBlock from "../ErrorBlock";
 
 const ExamenStatusAlert = ({ examen }) => {
   if (!examen) return null;
-   // 1. CAS : EXAMEN ANNULÉE
+  // 1. CAS : EXAMEN ANNULÉE
   if (examen.status === 3) {
     return (
       <Alert
@@ -141,8 +141,7 @@ const ExamenStatusAlert = ({ examen }) => {
   return null;
 };
 
-const ExamenInfos = ({ examen }) => {
- 
+const ExamenInfos = ({ examen, loading }) => {
   return (
     <Box sx={{ backgroundColor: "Background.default" }}>
       <ExamenStatusAlert examen={examen} />
@@ -177,7 +176,7 @@ const ExamenInfos = ({ examen }) => {
                 variant="body2"
                 sx={{ mt: 2, color: "text.secondary", fontStyle: "italic" }}
               >
-                {examen.description ||
+                {examen?.description ||
                   "Aucune description spécifique pour cette séance."}
               </Typography>
             </Box>
@@ -212,11 +211,11 @@ const ExamenInfos = ({ examen }) => {
                 variant="body1"
                 sx={{ display: "flex", alignItems: "center", gap: 1 }}
               >
-                <CalendarToday fontSize="small" /> {examen.start_date}
+                <CalendarToday fontSize="small" /> {examen?.start_date}
               </Typography>
               <Typography variant="body1">
-                <b>Horaire :</b> {examen.start_time.slice(0, 5)} -{" "}
-                {examen.end_time.slice(0, 5)}
+                <b>Horaire :</b> {examen?.start_time.slice(0, 5)} -{" "}
+                {examen?.end_time.slice(0, 5)}
               </Typography>
             </Box>
           </Paper>
@@ -239,7 +238,7 @@ const ExamenInfos = ({ examen }) => {
               ID Examen : {examen?.id.substr(0, 5)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Créé le : {new Date(examen.created_at).toLocaleDateString()}
+              Créé le : {new Date(examen?.created_at).toLocaleDateString()}
             </Typography>
           </Paper>
         </Grid>

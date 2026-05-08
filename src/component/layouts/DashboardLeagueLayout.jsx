@@ -21,7 +21,8 @@ import Settings from "@mui/icons-material/Settings";
 import { motion, AnimatePresence } from "framer-motion";
 import { UseAuth } from "../../Api/AuthContext";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
-
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const theme = createTheme({
   palette: {
@@ -80,25 +81,25 @@ const navSections = [
         icon: "🏠",
         label: "Clubs",
         to: "/dashboard/league/clubs",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
       {
         icon: "🪪",
         label: "Licences",
         to: "/dashboard/league/licences",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
       {
         icon: "⊞",
         label: "Catégories",
         to: "/dashboard/league/categories",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
       {
         icon: "👤",
         label: "Bureau & rôles",
         to: "/dashboard/league/bureau",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
     ],
   },
@@ -112,36 +113,48 @@ const navSections = [
         role: ["admin_league", "arbitre_league"],
       },
       {
+        icon: "📋",
+        label: "examens",
+        to: "/dashboard/league/examen",
+        role: ["admin_league", "arbitre_league"],
+      },
+      {
         icon: "▲",
         label: "Grades & examens",
         to: "/dashboard/league/grades",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
       {
         icon: "▣",
         label: "Fiche de notation",
         to: "/dashboard/league/notation",
-        role: ["super_admin", "arbitre_league"],
+        role: ["super_admin"],
       },
       {
         icon: "👥",
         label: "Athlètes",
         to: "/dashboard/league/athletes",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
-    ],
-  },
-  {
-    label: "Ligue",
-    items: [
       {
-        icon: <Settings />,
-        label: "Configuration ligue",
-        to: "/dashboard/league/category",
+        icon: "👤",
+        label: "Arbitres",
+        to: "/dashboard/league/arbitres",
         role: ["admin_league"],
       },
     ],
   },
+  // {
+  //   label: "Ligue",
+  //   items: [
+  //     {
+  //       icon: <Settings />,
+  //       label: "Configuration ligue",
+  //       to: "/dashboard/league/category",
+  //       role: ["admin_league"],
+  //     },
+  //   ],
+  // },
   {
     label: "Notation",
     items: [
@@ -197,13 +210,14 @@ function SidebarContent({
   hasAccess,
   navigate,
   onClose,
+  isCollapsed,
 }) {
   let itemIndex = 0;
 
   return (
     <Box
       sx={{
-        width: 240,
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         height: "100%",
@@ -223,37 +237,60 @@ function SidebarContent({
           alignItems: "center",
           gap: 1.5,
           borderBottom: "1px solid rgba(255,255,255,0.06)",
+          justifyContent: isCollapsed ? "center" : "flex-start", // Centrer si réduit
         }}
       >
-        <Box
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: 2,
-            bgcolor: "#e8c84a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Typography
-            sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
+        {!isCollapsed && (
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: 2,
+              bgcolor: "#e8c84a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
           >
-            ★
-          </Typography>
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
+            <Typography
+              sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
+            >
+              ★
+            </Typography>
+          </Box>
+        )}
+        {!isCollapsed && (
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
+            >
+              Karaté<span style={{ color: "#e8c84a" }}>Ligue</span>
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Ligue Nationale
+            </Typography>
+          </Box>
+        )}
+        {isCollapsed && (
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: 2,
+              bgcolor: "#e8c84a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            Karaté<span style={{ color: "#e8c84a" }}>Ligue</span>
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Ligue Nationale
-          </Typography>
-        </Box>
-        {/* Close button on mobile */}
+            <Typography
+              sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
+            >
+              ★
+            </Typography>
+          </Box>
+        )}
         {onClose && (
           <IconButton
             size="small"
@@ -265,35 +302,34 @@ function SidebarContent({
         )}
       </Box>
 
-      <ContextSwitcher />
+      <ContextSwitcher isCollapsed={isCollapsed} />
 
       {/* Nav */}
       <Box sx={{ flex: 1, py: 1 }}>
         {navSections.map((section) => {
-          // Filter items by role
           const visibleItems = section.items.filter((item) =>
             item.role ? hasAccess(item.role) : true,
           );
-
-          // Skip section entirely if no visible items
           if (visibleItems.length === 0) return null;
 
           return (
             <Box key={section.label} sx={{ mb: 1 }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  px: 2.5,
-                  py: 1,
-                  display: "block",
-                  color: "#555a6b",
-                  fontWeight: 700,
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                {section.label}
-              </Typography>
+              {!isCollapsed && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 2.5,
+                    py: 1,
+                    display: "block",
+                    color: "#555a6b",
+                    fontWeight: 700,
+                    fontSize: "0.65rem",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {section.label}
+                </Typography>
+              )}
 
               {visibleItems.map((item) => {
                 const idx = itemIndex++;
@@ -310,13 +346,14 @@ function SidebarContent({
                       onClick={() => {
                         setActiveItem(item.label);
                         if (item.to) navigate(item.to);
-                        if (onClose) onClose(); // close drawer on mobile after nav
+                        if (onClose) onClose();
                       }}
                       sx={{
                         mx: 1,
                         borderRadius: 2,
                         mb: 0.3,
                         py: 0.8,
+                        justifyContent: isCollapsed ? "center" : "flex-start", // Centrer si réduit
                         "&.Mui-selected": {
                           bgcolor: "rgba(232,200,74,0.12)",
                           "&:hover": { bgcolor: "rgba(232,200,74,0.18)" },
@@ -324,18 +361,26 @@ function SidebarContent({
                         "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
                       }}
                     >
-                      <ListItemIcon sx={{ minWidth: 28, fontSize: "0.9rem" }}>
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 28,
+                          fontSize: "0.9rem",
+                          justifyContent: "center",
+                        }}
+                      >
                         {item.icon}
                       </ListItemIcon>
-                      <ListItemText
-                        primary={item.label}
-                        primaryTypographyProps={{
-                          fontSize: "0.82rem",
-                          fontWeight: activeItem === item.label ? 600 : 400,
-                          color:
-                            activeItem === item.label ? "#e8c84a" : "#c0c4d0",
-                        }}
-                      />
+                      {!isCollapsed && (
+                        <ListItemText
+                          primary={item.label}
+                          primaryTypographyProps={{
+                            fontSize: "0.82rem",
+                            fontWeight: activeItem === item.label ? 600 : 400,
+                            color:
+                              activeItem === item.label ? "#e8c84a" : "#c0c4d0",
+                          }}
+                        />
+                      )}
                     </ListItemButton>
                   </motion.div>
                 );
@@ -347,7 +392,6 @@ function SidebarContent({
     </Box>
   );
 }
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function DashboardLeagueLayout() {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
@@ -355,6 +399,7 @@ export default function DashboardLeagueLayout() {
   const navigate = useNavigate();
   const { activeType, auth, activeRole } = UseAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [isCollapsed, setIsCollapsed] = useState(false);
   if (!auth?.isLogin) return <Navigate to="/login" replace />;
 
   if (activeType !== "Ligue") {
@@ -382,6 +427,8 @@ export default function DashboardLeagueLayout() {
           bgcolor: "#1a1d23",
           fontFamily: "'Sora', sans-serif",
           overflow: "hidden",
+          margin: 0,
+          padding: 0,
         }}
       >
         {/* ── Desktop Sidebar ── */}
@@ -394,17 +441,46 @@ export default function DashboardLeagueLayout() {
           >
             <Box
               sx={{
-                width: 240,
+                width: isCollapsed ? 64 : 240, // Largeur réduite ou normale
                 bgcolor: "#1e2229",
                 borderRight: "1px solid rgba(255,255,255,0.06)",
                 height: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                transition: "width 0.3s ease", // Animation fluide
               }}
             >
-              <SidebarContent {...sidebarProps} onClose={null} />
+              {/* Bouton pour réduire/étendre la sidebar */}
+              <Box
+                sx={{
+                  p: 1,
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                <IconButton
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  sx={{
+                    color: "#e8eaf0",
+                    bgcolor: "rgba(255,255,255,0.06)",
+                    borderRadius: 1.5,
+                    "&:hover": { bgcolor: "rgba(232,200,74,0.12)" },
+                  }}
+                >
+                  {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                </IconButton>
+              </Box>
+
+              {/* Contenu de la sidebar */}
+              <SidebarContent
+                {...sidebarProps}
+                isCollapsed={isCollapsed}
+                onClose={null}
+              />
             </Box>
           </motion.div>
         )}
-
         {/* ── Mobile Drawer ── */}
         {isMobile && (
           <Drawer
@@ -428,7 +504,6 @@ export default function DashboardLeagueLayout() {
             />
           </Drawer>
         )}
-
         {/* ── Main Content ── */}
         <Box
           sx={{
@@ -477,6 +552,7 @@ export default function DashboardLeagueLayout() {
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    color: "#e8c84a",
                   }}
                 >
                   {activeItem}

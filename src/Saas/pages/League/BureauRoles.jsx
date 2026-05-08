@@ -47,7 +47,7 @@ export default function BureauRoles() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeId, activeType]);
 
   useEffect(() => {
     getMembers();

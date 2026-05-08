@@ -149,7 +149,7 @@ function ExamenIndex() {
               <Button
                 variant="contained"
                 sx={{
-                  mt: 4,
+                  m: 2,
                   px: 4,
                   py: 1.5,
                   fontWeight: "bold",

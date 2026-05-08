@@ -47,7 +47,6 @@ function Navbar() {
   console.log("auth", auth);
   const navigate = useNavigate();
   const theme = useTheme();
-  const colors = tokenTheme(theme.palette.mode);
 
   const [openMenu, setOpenMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);

@@ -8,6 +8,7 @@ import ConfigSkeleton from "../ConfigSkeleton";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
 import ErrorBlock from "../ErrorBlock";
+import AddclubManuel from "./AddClubManuel";
 
 const MotionCard = motion(Card);
 
@@ -18,6 +19,9 @@ export default function LeagueClub() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const [errorClub, setErrorClub] = useState("");
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const navigate = useNavigate();
   const { activeId } = UseAuth();
 
@@ -94,6 +98,24 @@ export default function LeagueClub() {
       >
         Retour à la liste des clubs
       </Button>
+      <Button
+        variant="outlined"
+        sx={{
+          mb: 4,
+          ml: 2,
+          px: 4,
+          py: 1.5,
+          color: "#fff",
+          borderColor: "rgba(255,255,255,0.3)",
+          textTransform: "none",
+          borderRadius: 2,
+          fontSize: "1rem",
+          "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" },
+        }}
+        onClick={handleOpen}
+      >
+        Ajouter manuellement un club
+      </Button>
       <Typography variant="h5" mb={3}>
         Clubs disponibles
       </Typography>
@@ -133,6 +155,8 @@ export default function LeagueClub() {
           Aucun club disponible
         </Typography>
       )}
+
+      <AddclubManuel open={open} handleClose={handleClose} />
     </Box>
   );
 }
