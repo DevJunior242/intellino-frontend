@@ -650,7 +650,7 @@ export default function SeanceAdminPanelKata({
         />
       </Divider>
 
-      {actifs.length === 0 ? (
+      {!isValidated && arbitres.length === 0 ? (
         <Stack
           spacing={2}
           sx={{
