@@ -412,6 +412,8 @@ export default function SeanceAdminPanelKata({
   const { enCours, arbitres, superviseur } = data;
   console.log("data", data);
   console.log("encours", enCours);
+  console.log("arbitres", arbitres);
+
   const isValidated = config.est_valide;
   const actifs = useMemo(
     () => arbitres?.filter((a) => a.actif) ?? [],
@@ -426,6 +428,7 @@ export default function SeanceAdminPanelKata({
       const res = await Instance.get(
         `/api/arbitres/disponibles/${config.evenement_id}/${config.id}`,
       );
+      console.log("arbitres dispononibles", res.data);
       setArbitresDispos(res.data);
     } catch (error) {
       console.error("Erreur chargement arbitres", error);

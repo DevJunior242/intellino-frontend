@@ -1572,7 +1572,6 @@ export default function JugePrincipalDashboard({
     setConfigSelectee(config);
   };
 
-  // ✅ fetchTousLesTatamis corrigé
   const fetchTousLesTatamis = useCallback(async () => {
     setLoadingInitial(true);
     setIsDataReady(false);
@@ -1586,7 +1585,6 @@ export default function JugePrincipalDashboard({
             Instance.get(`/api/seances/configs/${config.id}/arbitres-rotation`),
           ]);
 
-          // ✅ Normaliser la réponse pour enCours
           const enCoursData =
             enCoursRes.data?.enCours || enCoursRes.data || null;
 
