@@ -17,9 +17,8 @@ export default function Config() {
   const theme = useTheme();
   const { activeRole } = UseAuth();
   const isAdmin = activeRole === "admin_league";
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Détecte les écrans mobiles
-  const [activeTab, setActiveTab] = useState(0);
-  //   const { id } = useParams(); // Si tu as besoin de l'ID de la configuration
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [activeTab, setActiveTab] = useState("competitions");
 
   // Gestion du changement d'onglet
   const handleTabChange = (event, newValue) => {
@@ -65,20 +64,23 @@ export default function Config() {
             allowScrollButtonsMobile
             {...tabProps}
           >
+            {" "}
             <Tab
+              value="competitions"
               icon={<CriteriaIcon />}
               iconPosition="start"
               label={isMobile ? "Competitions" : "Compétitions"}
             />
             {isAdmin && (
               <Tab
+                value="notation"
                 icon={<ScaleIcon />}
                 iconPosition="start"
                 label={isMobile ? "tatamis" : "Échelle de notation"}
               />
             )}
-
             <Tab
+              value="advanced"
               icon={<AdvancedIcon />}
               iconPosition="start"
               label={isMobile ? "Param." : "Paramètres avancés"}
@@ -88,9 +90,11 @@ export default function Config() {
 
         {/* Contenu des onglets */}
         <Box sx={{ mt: 2 }}>
-          {activeTab === 0 && <CompetitionManager />}
-          {activeTab === 1 && <ConfigNotationPage />}
-          {activeTab === 2 && <ConfigNotationCardDetails />}
+          {activeTab === "competitions" && <CompetitionManager />}
+
+          {activeTab === "notation" && isAdmin && <ConfigNotationPage />}
+
+          {activeTab === "advanced" && <ConfigNotationCardDetails />}
         </Box>
       </Paper>
     </Box>
