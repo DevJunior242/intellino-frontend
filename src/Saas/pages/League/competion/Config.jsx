@@ -70,18 +70,19 @@ export default function Config() {
               iconPosition="start"
               label={isMobile ? "Competitions" : "Compétitions"}
             />
-            <Tab
-              icon={<ScaleIcon />}
-              iconPosition="start"
-              label={isMobile ? "tatamis" : "Échelle de notation"}
-            />
             {isAdmin && (
               <Tab
-                icon={<AdvancedIcon />}
+                icon={<ScaleIcon />}
                 iconPosition="start"
-                label={isMobile ? "Param." : "Paramètres avancés"}
+                label={isMobile ? "tatamis" : "Échelle de notation"}
               />
             )}
+
+            <Tab
+              icon={<AdvancedIcon />}
+              iconPosition="start"
+              label={isMobile ? "Param." : "Paramètres avancés"}
+            />
           </Tabs>
         </Box>
 
