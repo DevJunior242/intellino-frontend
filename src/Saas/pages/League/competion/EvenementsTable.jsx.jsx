@@ -73,6 +73,7 @@ const EpreuveRow = ({
   epreuve,
   handleEpreuveStatusChange,
   submittingCompId,
+  allAccess,
 }) => {
   const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
@@ -158,63 +159,65 @@ const EpreuveRow = ({
           variant="filled"
         />
       </TableCell>
-      <TableCell>
-        <Stack direction="row" gap={1}>
-          {/* Bouton unique qui change de label/couleur selon status ET loading */}
-          {epreuve.status === 0 || isSubmitting ? (
-            <Button
-              disabled={isSubmitting}
-              variant="contained"
-              color="success"
-              startIcon={
-                isSubmitting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : null
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEpreuveStatusChange(epreuve.id, "ouvrir");
-              }}
-            >
-              {isSubmitting ? "Ouverture..." : "Ouvrir"}
-            </Button>
-          ) : epreuve.status === 1 ? (
-            <Button
-              disabled={isSubmitting}
-              variant="contained"
-              color="error"
-              startIcon={
-                isSubmitting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : null
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEpreuveStatusChange(epreuve.id, "cloturer");
-              }}
-            >
-              {isSubmitting ? "Clôture..." : "Clôturer"}
-            </Button>
-          ) : epreuve.status === 2 ? (
-            <Button
-              disabled={isSubmitting}
-              variant="contained"
-              color="success"
-              startIcon={
-                isSubmitting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : null
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEpreuveStatusChange(epreuve.id, "ouvrir");
-              }}
-            >
-              {isSubmitting ? "Ouverture..." : "Ouvrir"}
-            </Button>
-          ) : null}
-        </Stack>
-      </TableCell>
+      {allAccess && (
+        <TableCell>
+          <Stack direction="row" gap={1}>
+            {/* Bouton unique qui change de label/couleur selon status ET loading */}
+            {epreuve.status === 0 || isSubmitting ? (
+              <Button
+                disabled={isSubmitting}
+                variant="contained"
+                color="success"
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEpreuveStatusChange(epreuve.id, "ouvrir");
+                }}
+              >
+                {isSubmitting ? "Ouverture..." : "Ouvrir"}
+              </Button>
+            ) : epreuve.status === 1 ? (
+              <Button
+                disabled={isSubmitting}
+                variant="contained"
+                color="error"
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEpreuveStatusChange(epreuve.id, "cloturer");
+                }}
+              >
+                {isSubmitting ? "Clôture..." : "Clôturer"}
+              </Button>
+            ) : epreuve.status === 2 ? (
+              <Button
+                disabled={isSubmitting}
+                variant="contained"
+                color="success"
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEpreuveStatusChange(epreuve.id, "ouvrir");
+                }}
+              >
+                {isSubmitting ? "Ouverture..." : "Ouvrir"}
+              </Button>
+            ) : null}
+          </Stack>
+        </TableCell>
+      )}
     </TableRow>
   );
 };
@@ -228,6 +231,7 @@ const EvenementRow = ({
   submittingId,
   submittingCompId,
   handleEpreuveStatusChange,
+  allAccess,
 }) => {
   const [open, setOpen] = useState(false);
   const epreuves = evenement.competitions ?? [];
@@ -333,61 +337,64 @@ const EvenementRow = ({
         {/* Actions ouvrir / cloturer */}
         <TableCell>
           <Stack direction="row" gap={1}>
-            {evenement.status === 0 && (
-              <Button
-                variant="contained"
-                color="success"
-                disabled={isSubmitting}
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : null
-                }
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusChange(evenement.id, "ouvrir");
-                }}
-              >
-                {isSubmitting ? "Ouverture..." : "Ouvrir"}
-              </Button>
-            )}
-
-            {evenement.status === 1 && (
-              <Button
-                variant="contained"
-                color="error"
-                disabled={isSubmitting}
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : null
-                }
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusChange(evenement.id, "cloturer");
-                }}
-              >
-                {isSubmitting ? "Clôture..." : "Clôturer"}
-              </Button>
-            )}
-
-            {evenement.status === 2 && (
-              <Button
-                variant="contained"
-                color="success"
-                disabled={isSubmitting}
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : null
-                }
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusChange(evenement.id, "ouvrir");
-                }}
-              >
-                {isSubmitting ? "Ouverture..." : "Ouvrir"}
-              </Button>
+            {allAccess && (
+              <>
+                {" "}
+                {evenement.status === 0 && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    disabled={isSubmitting}
+                    startIcon={
+                      isSubmitting ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : null
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(evenement.id, "ouvrir");
+                    }}
+                  >
+                    {isSubmitting ? "Ouverture..." : "Ouvrir"}
+                  </Button>
+                )}
+                {evenement.status === 1 && (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={isSubmitting}
+                    startIcon={
+                      isSubmitting ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : null
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(evenement.id, "cloturer");
+                    }}
+                  >
+                    {isSubmitting ? "Clôture..." : "Clôturer"}
+                  </Button>
+                )}
+                {evenement.status === 2 && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    disabled={isSubmitting}
+                    startIcon={
+                      isSubmitting ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : null
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(evenement.id, "ouvrir");
+                    }}
+                  >
+                    {isSubmitting ? "Ouverture..." : "Ouvrir"}
+                  </Button>
+                )}
+              </>
             )}
 
             {arbitre && (
@@ -468,7 +475,12 @@ const EvenementRow = ({
                       <TableCell sx={{ color: "grey.800" }}>Horaire</TableCell>
                       <TableCell sx={{ color: "grey.800" }}>Inscrits</TableCell>
                       <TableCell sx={{ color: "grey.800" }}>Statut</TableCell>
-                      <TableCell sx={{ color: "grey.800" }}>Actions</TableCell>
+                      {/* visible pour arbitre et admin */}
+                      {allAccess && (
+                        <TableCell sx={{ color: "grey.800" }}>
+                          Actions
+                        </TableCell>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -478,6 +490,7 @@ const EvenementRow = ({
                         epreuve={ep}
                         handleEpreuveStatusChange={handleEpreuveStatusChange}
                         submittingCompId={submittingCompId}
+                        allAccess={allAccess}
                       />
                     ))}
                   </TableBody>
@@ -522,7 +535,10 @@ export default function EvenementsTable({
               <TableCell>Épreuves</TableCell>
               <TableCell>Disciplines</TableCell>
               <TableCell>Statut</TableCell>
+              {/* visible pour arbitre et admin */}
               {allAccess && <TableCell>Actions</TableCell>}
+              {/* visible pour arbitre */}
+              {arbitre && <TableCell>Arbitres</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -538,6 +554,7 @@ export default function EvenementsTable({
                   handleEpreuveStatusChange={handleEpreuveStatusChange}
                   auth={auth}
                   arbitre={arbitre}
+                  allAccess={allAccess}
                   submittingId={submittingId}
                 />
               ))

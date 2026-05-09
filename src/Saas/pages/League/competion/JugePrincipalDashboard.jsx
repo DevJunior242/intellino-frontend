@@ -1558,7 +1558,7 @@ export default function JugePrincipalDashboard({
   const [polling, setPolling] = useState(false);
   const [configSelectee, setConfigSelectee] = useState(null);
   const [showRepartition, setShowRepartition] = useState(false);
-  const [isDataReady, setIsDataReady] = useState(false); // ✅ Nouveau état
+  const [isDataReady, setIsDataReady] = useState(false);
 
   const configSelecteeRef = useRef(null);
   const isFirstLoad = useRef(true);
@@ -1575,14 +1575,14 @@ export default function JugePrincipalDashboard({
   // ✅ fetchTousLesTatamis corrigé
   const fetchTousLesTatamis = useCallback(async () => {
     setLoadingInitial(true);
-    setIsDataReady(false); // ✅ Réinitialiser isDataReady
+    setIsDataReady(false);
 
     const results = {};
     await Promise.all(
       configs.map(async (config) => {
         try {
           const [enCoursRes, arbitresRes] = await Promise.all([
-            Instance.get(`/api/seances/competition/${config.id}/en-cours`),
+            // Instance.get(`/api/seances/competition/${config.id}/en-cours`),
             Instance.get(`/api/seances/configs/${config.id}/arbitres-rotation`),
           ]);
 
@@ -1607,7 +1607,7 @@ export default function JugePrincipalDashboard({
     );
 
     setTatamiData(results);
-    setIsDataReady(true); // ✅ Marquer les données comme prêtes
+    setIsDataReady(true);
     setLoadingInitial(false);
 
     // ✅ Sélectionner la config uniquement si les données sont prêtes

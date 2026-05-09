@@ -120,7 +120,7 @@ const navSections = [
         icon: "📋",
         label: "examens",
         to: "/dashboard/league/examen",
-        role: ["admin_league", "arbitre_league"],
+        role: ["admin_league"],
       },
       {
         icon: "▲",
@@ -159,23 +159,23 @@ const navSections = [
   //     },
   //   ],
   // },
-  {
-    label: "Notation",
-    items: [
-      {
-        icon: <Settings />,
-        label: "Configuration notation",
-        to: "/dashboard/league/confignotation",
-        role: ["admin_league"],
-      },
-      {
-        icon: <Settings />,
-        label: "validation notation",
-        to: "/dashboard/league/ConfigNotationCardDetails",
-        role: ["admin_league", "arbitre_league"],
-      },
-    ],
-  },
+  // {
+  //   label: "Notation",
+  //   items: [
+  //     {
+  //       icon: <Settings />,
+  //       label: "Configuration notation",
+  //       to: "/dashboard/league/confignotation",
+  //       role: ["admin_league"],
+  //     },
+  //     {
+  //       icon: <Settings />,
+  //       label: "validation notation",
+  //       to: "/dashboard/league/ConfigNotationCardDetails",
+  //       role: ["admin_league", "arbitre_league"],
+  //     },
+  //   ],
+  // },
 ];
 
 // ─── Motion Variants ──────────────────────────────────────────────────────────

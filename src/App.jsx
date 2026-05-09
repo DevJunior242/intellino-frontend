@@ -108,6 +108,7 @@ import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
 import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
 import LicenceTable from "./Saas/pages/League/LicenceTable.jsx";
 import Arbitres from "./Saas/pages/League/Arbitres.jsx";
+import Config from "./Saas/pages/League/competion/Config.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -246,7 +247,7 @@ const AppRoutes = () => {
             element={<ConfigNotationCardDetails />}
           />
           <Route path="programme-activites" element={<ProgrammeActivites />} />
-          <Route path="competitions" element={<CompetitionManager />} />
+          <Route path="competitions" element={<Config />} />
         </Route>
       </Route>
 

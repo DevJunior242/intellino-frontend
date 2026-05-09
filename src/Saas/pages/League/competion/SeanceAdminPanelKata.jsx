@@ -34,11 +34,6 @@ import {
 import { Instance } from "../../../../Api/Axios";
 
 const AthleteCard = ({ enCours, config, notes }) => {
-  console.log(
-    "athlete directement:",
-    JSON.stringify(enCours?.inscription?.athlete),
-  );
-
   return (
     <Paper
       elevation={0}
