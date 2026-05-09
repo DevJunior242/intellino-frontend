@@ -302,16 +302,6 @@ export default function ConfigNotationCardDetails() {
     );
   }
 
-  // if (vue === "superviseur") {
-  //   return (
-  //     <DesignerSuperviseur
-  //       config={configActive}
-  //       onSuperviseurDesigne={() => setVue("config")}
-  //       handleLaunchSeance={handleLaunchSeance}
-  //     />
-  //   );
-  // }
-
   // Vue séance admin
   if (vue === "seance") {
     return (

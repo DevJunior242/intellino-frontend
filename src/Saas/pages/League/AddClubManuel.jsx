@@ -121,7 +121,6 @@ function AddclubManuel({ open, handleClose }) {
             variant="contained"
             fullWidth
             sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
-            disabled
           >
             {submitting ? (
               <CircularProgress size={20} />

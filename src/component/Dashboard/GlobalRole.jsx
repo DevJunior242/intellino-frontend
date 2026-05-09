@@ -8,6 +8,7 @@ import StudentDashboard from "./StudentDashboard";
 import SecretaireDashboard from "./SecretaireDashboard";
 import { Box } from "@mui/material";
 import AdminLeagueDashboard from "../League/AdminLeagueDashboard";
+import ArbitreDashboard from "./ArbitreDashboard";
 function GlobalRole() {
   const { auth, activeRole } = UseAuth();
 
@@ -24,6 +25,7 @@ function GlobalRole() {
       {!isSuperAdmin && activeRole === "admin_league" && (
         <AdminLeagueDashboard />
       )}
+      {!isSuperAdmin && activeRole === "arbitre_league" && <ArbitreDashboard />}
     </Box>
   );
 }

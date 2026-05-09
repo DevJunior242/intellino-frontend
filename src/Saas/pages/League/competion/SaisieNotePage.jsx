@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import axios from "axios";
 import {
   Box,
   Paper,
@@ -33,7 +32,7 @@ export default function SaisieNotePage({ config }) {
       );
       console.log("examen en cours data", res);
       // Reset si nouvel athlète
-      const newEnCours = res.data.enCours;
+      const newEnCours = res.data;
 
       if (newEnCours?.id !== enCoursRef.current?.id) {
         setDejaNote(false);
@@ -53,7 +52,7 @@ export default function SaisieNotePage({ config }) {
   useEffect(() => {
     if (!config) return;
     fetchEnCours();
-    const interval = setInterval(fetchEnCours, 2000);
+    const interval = setInterval(fetchEnCours, 3000);
     return () => clearInterval(interval);
   }, [fetchEnCours, config]);
 
@@ -75,29 +74,34 @@ export default function SaisieNotePage({ config }) {
     }
   };
 
-  // Pas d'athlète en cours
-  if (!enCours || loading) {
-    return (
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        <CircularProgress />
-        <Typography color="text.secondary">
-          En attente du prochain athlète...
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 2, maxWidth: 500, mx: "auto" }}>
+      {!enCours ||
+        (loading && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              height: 2,
+            }}
+          >
+            <Box
+              sx={{
+                height: "100%",
+                bgcolor: "#ffb547",
+                animation: "pollingBar 1s ease-in-out infinite",
+                "@keyframes pollingBar": {
+                  "0%,100%": { opacity: 0.4 },
+                  "50%": { opacity: 1 },
+                },
+              }}
+            />
+          </Box>
+        ))}
+
       {/* Athlète en cours */}
       <Paper sx={{ p: 3, borderRadius: 3, mb: 2, textAlign: "center" }}>
         <SportsMartialArts
@@ -185,7 +189,7 @@ export default function SaisieNotePage({ config }) {
             fullWidth
             variant="contained"
             size="large"
-            disabled={loading}
+            disabled={submitting}
             onClick={handleSoumettre}
             sx={{ py: 2, borderRadius: 3, fontWeight: "bold" }}
           >

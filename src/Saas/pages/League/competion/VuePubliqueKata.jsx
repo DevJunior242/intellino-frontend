@@ -54,7 +54,6 @@ console.log("Fichier VuePubliqueKata.js chargé");
 
 export default function VuePubliqueKata() {
   const { configId } = useParams();
-  console.log("Récupération de la configId depuis les params :", configId);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,7 +65,6 @@ export default function VuePubliqueKata() {
       const res = await Instance.get(
         `/api/seances/configs/${configId}/vue-publique`,
       );
-      console.log("Données reçues :", res.data);
       setData(res.data);
     } catch (err) {
       console.error("Erreur lors de la récupération des données :", err);
@@ -259,11 +257,42 @@ export default function VuePubliqueKata() {
                 sx={{
                   p: 3,
                   mb: 3,
-                  borderRadius: 3,
-                  bgcolor: "linear-gradient(135deg, #2a1810, #4a3000)",
+                  borderRadius: 4,
                   textAlign: "center",
-                  boxShadow: "0 6px 25px rgba(218, 165, 32, 0.2)",
-                  border: "2px solid #f0a500",
+                  position: "relative",
+                  overflow: "hidden",
+
+                  background: `
+      linear-gradient(
+        135deg,
+        #050505 0%,
+        #111111 25%,
+        #1a1200 60%,
+        #3b2a00 100%
+      )
+    `,
+
+                  border: "1px solid rgba(240,165,0,0.45)",
+
+                  boxShadow: `
+      0 0 12px rgba(240,165,0,0.18),
+      0 8px 30px rgba(0,0,0,0.75)
+    `,
+
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    inset: 0,
+                    background: `
+        linear-gradient(
+          120deg,
+          transparent 20%,
+          rgba(255,215,0,0.08) 50%,
+          transparent 80%
+        )
+      `,
+                    pointerEvents: "none",
+                  },
                 }}
               >
                 <Typography
@@ -274,7 +303,12 @@ export default function VuePubliqueKata() {
                 >
                   EN COURS
                 </Typography>
-                <Typography variant="h3" fontWeight="900" color="white" mt={1}>
+                <Typography
+                  variant="h3"
+                  fontWeight="900"
+                  color="primary.main"
+                  mt={1}
+                >
                   {enCours?.inscription?.athlete?.fullname ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)" mt={0.5}>

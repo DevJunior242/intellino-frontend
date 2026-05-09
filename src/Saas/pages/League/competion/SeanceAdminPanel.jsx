@@ -21,20 +21,24 @@ export default function SeanceAdminPanel({
   success,
 }) {
   const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [enCours, setEnCours] = useState(null);
   // Toutes les notes reçues pour l'athlète en cours
   const toutesNotees = notes?.length === config?.juges_option;
   //encours
   const getEnCours = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await Instance.get(
         `/api/seances/competition/${config.id}/en-cours`,
       );
       console.log("getEnCours res", res);
-      setEnCours(res.data.enCours);
+      setEnCours(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }, [config]);
 
@@ -42,19 +46,19 @@ export default function SeanceAdminPanel({
     if (!config) return;
     getEnCours();
     //polling pour rafraîchir enCours toutes les 5s
-    const interval = setInterval(getEnCours, 5000);
+    const interval = setInterval(getEnCours, 3000);
     return () => clearInterval(interval);
   }, [getEnCours, config]);
 
   const handleSuivant = async () => {
-    setLoading(true);
+    setSubmitting(true);
     const { data } = await Instance.post(
       `/api/seances/configs/${config.id}/athlete-suivant`,
     );
     initSeance();
     setNotes([]); // reset notes
     onAthleteSuivant(data.enCours);
-    setLoading(false);
+    setSubmitting(false);
   };
 
   return (

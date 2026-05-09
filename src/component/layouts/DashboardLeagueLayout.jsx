@@ -14,6 +14,9 @@ import {
   Drawer,
   IconButton,
   Divider,
+  List,
+  ListItem,
+  Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -23,6 +26,7 @@ import { UseAuth } from "../../Api/AuthContext";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import LogoutIcon from "@mui/icons-material/Logout";
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const theme = createTheme({
   palette: {
@@ -211,6 +215,7 @@ function SidebarContent({
   navigate,
   onClose,
   isCollapsed,
+  handleLogout,
 }) {
   let itemIndex = 0;
 
@@ -389,6 +394,58 @@ function SidebarContent({
           );
         })}
       </Box>
+      <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.07)", mt: "auto" }}>
+        {/* Bouton de déconnexion */}
+        <List disablePadding>
+          <ListItem disablePadding>
+            {isCollapsed ? (
+              <Tooltip title="Déconnexion" placement="right" arrow>
+                <ListItemButton
+                  onClick={handleLogout}
+                  sx={{
+                    justifyContent: "center",
+                    px: 0,
+                    minHeight: 44,
+                    color: "rgba(220,80,80,0.8)",
+                    "&:hover": {
+                      bgcolor: "rgba(220,80,80,0.08)",
+                      color: "#f55",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      color: "inherit",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                </ListItemButton>
+              </Tooltip>
+            ) : (
+              <ListItemButton
+                onClick={handleLogout}
+                sx={{
+                  px: 1.5,
+                  minHeight: 44,
+                  color: "rgba(220,80,80,0.8)",
+                  "&:hover": { bgcolor: "rgba(220,80,80,0.08)", color: "#f55" },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 34, color: "inherit" }}>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Déconnexion"
+                  primaryTypographyProps={{ fontSize: 13 }}
+                />
+              </ListItemButton>
+            )}
+          </ListItem>
+        </List>
+      </Box>
     </Box>
   );
 }
@@ -397,10 +454,15 @@ export default function DashboardLeagueLayout() {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
-  const { activeType, auth, activeRole } = UseAuth();
+  const { activeType, auth, activeRole, logout } = UseAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [isCollapsed, setIsCollapsed] = useState(false);
   if (!auth?.isLogin) return <Navigate to="/login" replace />;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   if (activeType !== "Ligue") {
     return <Navigate to="/dashboard" replace />;
@@ -477,6 +539,7 @@ export default function DashboardLeagueLayout() {
                 {...sidebarProps}
                 isCollapsed={isCollapsed}
                 onClose={null}
+                handleLogout={handleLogout}
               />
             </Box>
           </motion.div>
@@ -501,6 +564,7 @@ export default function DashboardLeagueLayout() {
             <SidebarContent
               {...sidebarProps}
               onClose={() => setMobileOpen(false)}
+              handleLogout={handleLogout}
             />
           </Drawer>
         )}
