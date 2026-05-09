@@ -29,8 +29,7 @@ export default function ConfigNotationCardDetails() {
   const adminJuge =
     auth?.role?.includes("admin_league") ||
     auth?.role?.includes("juge_principal");
-  // const estAdmin = auth?.role?.includes("admin_league");
-  // const estJugePrincipal = auth?.role?.includes("juge_principal");
+
   const estArbitre = auth?.role?.includes("arbitre_league");
 
   // UN seul système de vue
@@ -81,6 +80,7 @@ export default function ConfigNotationCardDetails() {
 
       setVue("repartition");
     } catch (err) {
+      console.error(" erreur valider ", err);
       const msg = err.response?.data?.problemes ||
         err.response?.data?.message || ["Une erreur est survenue."];
       setError((prev) => ({ ...prev, [id]: msg }));

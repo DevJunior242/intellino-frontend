@@ -126,7 +126,7 @@ export default function SeanceAdminPanel({
       <Button
         fullWidth
         variant="contained"
-        disabled={loading || (enCours && !toutesNotees)}
+        disabled={enCours && !toutesNotees}
         onClick={() => {
           if (!enCours) {
             handleLaunchSeance(config?.id);
