@@ -1582,7 +1582,7 @@ export default function JugePrincipalDashboard({
       configs.map(async (config) => {
         try {
           const [enCoursRes, arbitresRes] = await Promise.all([
-            // Instance.get(`/api/seances/competition/${config.id}/en-cours`),
+            Instance.get(`/api/seances/competition/${config.id}/en-cours`),
             Instance.get(`/api/seances/configs/${config.id}/arbitres-rotation`),
           ]);
 
