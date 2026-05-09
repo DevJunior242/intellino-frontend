@@ -26,22 +26,38 @@ import Message from "../../Message";
 export default function ConfigNotationCard({
   configs,
   loading,
-  handleValider,
-  handleLaunchSeance,
+
   errors,
   success,
-  submitId,
   estArbitre,
   onConnecterJuge,
 }) {
   return (
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, p: 2 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 3,
+        p: { xs: 1, sm: 2 },
+        justifyContent: { xs: "center", md: "flex-start" },
+      }}
+    >
+      {" "}
       {loading ? (
         // 1. ÉTAT CHARGEMENT (SKELETONS)
         [1, 2].map((i) => (
           <Paper
             key={i}
-            sx={{ p: 3, borderRadius: 4, width: 400, border: "1px solid #eee" }}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              width: {
+                xs: "100%",
+                sm: 400,
+              },
+              maxWidth: 400,
+              border: "1px solid #eee",
+            }}
           >
             <Skeleton
               variant="rectangular"
@@ -64,7 +80,6 @@ export default function ConfigNotationCard({
         // 2. ÉTAT AVEC DONNÉES (MAP)
         configs?.map((config) => {
           const isValidated = config.est_valide;
-          console.log("config pour valider", config);
           return (
             <motion.div
               key={config.id}
@@ -76,7 +91,11 @@ export default function ConfigNotationCard({
                 sx={{
                   borderRadius: 4,
                   overflow: "hidden",
-                  width: 400,
+                  width: {
+                    xs: "100%",
+                    sm: 400,
+                  },
+                  maxWidth: 400,
                   border: "1px solid",
                   borderColor: isValidated ? "success.light" : "divider",
                 }}
@@ -209,60 +228,4 @@ function DetailRow({ icon, label, value }) {
       </Typography>
     </Stack>
   );
-}
-
-{
-  /* <AnimatePresence mode="wait">
-          {errors.length > 0 && (
-            <motion.div
-              key="error-alert"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Alert
-                severity="error"
-                variant="filled"
-                onClose={() => setErrors([])}
-                sx={{
-                  borderRadius: 3,
-                  "& .MuiAlert-message": { width: "100%" },
-                }}
-              >
-                <p variant="subtitle2" fontWeight="bold" gutterBottom>
-                  Action Impossible
-                </p>
-                {errors.map((err, index) => (
-                  <p
-                    key={index}
-                    variant="caption"
-                    component="p"
-                    sx={{
-                      whiteSpace: "pre-line", // Important for your \n
-                      lineHeight: 1.4,
-                      opacity: 0.9,
-                    }}
-                  >
-                    {err.replace(/\s+/g, " ").replace("— ", "— \n")}
-                  </p>
-                ))}
-              </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence> */
-}
-
-{
-  /* message succès */
-}
-{
-  /* {success && (
-          <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
-            <div className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
-              <CheckCircle className="w-5 h-5" />
-              {success}
-            </div>
-          </div>
-        )} */
 }

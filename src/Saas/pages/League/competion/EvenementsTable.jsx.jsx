@@ -339,7 +339,6 @@ const EvenementRow = ({
           <Stack direction="row" gap={1}>
             {allAccess && (
               <>
-                {" "}
                 {evenement.status === 0 && (
                   <Button
                     variant="contained"
