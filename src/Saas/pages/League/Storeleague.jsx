@@ -261,7 +261,7 @@ function Storeleague() {
             sx={{ p: 2, textTransform: "none", mt: 2 }}
             disabled={submitting}
           >
-            {submitting ? "Chargement..." : "Créer le club"}
+            {submitting ? "Chargement..." : "Créer la ligue"}
           </Button>
         </form>
       </Box>

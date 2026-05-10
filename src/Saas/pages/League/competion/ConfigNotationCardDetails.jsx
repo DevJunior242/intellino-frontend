@@ -24,11 +24,9 @@ export default function ConfigNotationCardDetails() {
   const [success, setSuccess] = useState({});
   const [configs, setConfigs] = useState([]);
   const [submitId, setSubmitId] = useState(null);
-  const { auth, activeId, activeType } = UseAuth();
+  const { auth, activeId, activeType, activeRole } = UseAuth();
 
-  const adminJuge =
-    auth?.role?.includes("admin_league") ||
-    auth?.role?.includes("juge_principal");
+  const adminJuge = activeRole?.includes("admin_league");
 
   const estArbitre = auth?.role?.includes("arbitre_league");
 

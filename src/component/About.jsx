@@ -13,8 +13,14 @@ import AccessibilityIcon from "@mui/icons-material/Accessibility";
 import { motion } from "framer-motion";
 import Mission from "./Mission";
 import { UseAuth } from "../Api/AuthContext";
+import echo from "../echo.js";
+import { useEffect } from "react";
 
 function About() {
+  console.log(import.meta.env.VITE_REVERB_APP_KEY);
+  useEffect(() => {
+    console.log("Echo state:", echo.connector.pusher.connection.state);
+  }, []);
   const valeurs = [
     {
       id: 1,
