@@ -410,9 +410,7 @@ export default function SeanceAdminPanelKata({
   const [notes, setNotes] = useState([]);
 
   const { enCours, arbitres, superviseur } = data;
-  console.log("data", data);
-  console.log("encours", enCours);
-  console.log("arbitres", arbitres);
+   
 
   const isValidated = config.est_valide;
   const actifs = useMemo(
@@ -635,6 +633,7 @@ export default function SeanceAdminPanelKata({
             ordrePassageId={enCours?.id ?? null}
             nbJuges={config?.juges_option}
             onNotesChange={setNotes}
+            configId={config.id}
           />
         </>
       ) : (

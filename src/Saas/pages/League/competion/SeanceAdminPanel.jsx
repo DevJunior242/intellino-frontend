@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import NotesProgress from "./NotesProgress";
 import { ChildCareSharp } from "@mui/icons-material";
+import echo from "../../../../echo";
 
 export default function SeanceAdminPanel({
   config,
@@ -33,7 +34,7 @@ export default function SeanceAdminPanel({
       const res = await Instance.get(
         `/api/seances/competition/${config.id}/en-cours`,
       );
-      console.log("getEnCours res", res);
+      console.log("enCours data", res);
       setEnCours(res.data);
     } catch (err) {
       console.error(err);
@@ -41,13 +42,21 @@ export default function SeanceAdminPanel({
       setLoading(false);
     }
   }, [config]);
-
   useEffect(() => {
     if (!config) return;
     getEnCours();
-    //polling pour rafraîchir enCours toutes les 5s
-    const interval = setInterval(getEnCours, 3000);
-    return () => clearInterval(interval);
+  }, [config.id]);
+  //chanel de websocket pour recevoir les updates en temps réel
+  useEffect(() => {
+    if (!config) return;
+    const channel = echo.channel(`tatami.${config.id}`);
+    channel.listen(".tatami.updated", () => {
+      console.log("TatamiUpdated event received, fetching current athlete...");
+      getEnCours();
+    });
+    return () => {
+      echo.leaveChannel(`tatami.${config.id}`);
+    };
   }, [getEnCours, config]);
 
   const handleSuivant = async () => {
@@ -121,6 +130,7 @@ export default function SeanceAdminPanel({
         ordrePassageId={enCours?.id ?? null}
         nbJuges={config.juges_option}
         onNotesChange={setNotes}
+        configId={config.id}
       />
 
       <Button

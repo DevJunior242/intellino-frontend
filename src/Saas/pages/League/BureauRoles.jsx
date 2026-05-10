@@ -101,12 +101,14 @@ export default function BureauRoles() {
           Gérer les rôles
         </Button>
       </Stack>
-      <Membres members={members} loading={loading} />
-      <MemberLeagueForm
-        open={open}
-        handleClose={handleClose}
-        getMembers={getMembers}
-      />
+      <Box sx={{ p: 4, bgcolor: theme.bg, minHeight: "100vh" }}>
+        <Membres members={members} loading={loading} />
+        <MemberLeagueForm
+          open={open}
+          handleClose={handleClose}
+          getMembers={getMembers}
+        />
+      </Box>
     </Box>
   );
 }

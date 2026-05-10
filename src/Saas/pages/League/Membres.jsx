@@ -46,6 +46,8 @@ const MemberCard = ({
         border: "1px solid rgba(255,255,255,0.03)",
         transition: "transform 0.2s",
         "&:hover": { transform: "translateY(-4px)", bgcolor: "#32363b" },
+        maxWidth: "350px", // 👈 Limite la largeur maximale
+        margin: "0 auto", // 👈 Centre la carte
       }}
     >
       <Avatar
@@ -62,14 +64,36 @@ const MemberCard = ({
         {initials}
       </Avatar>
 
+      {/* Nom : limite la largeur et gère le débordement */}
       <Typography
         variant="h6"
-        sx={{ color: theme.textMain, fontWeight: 600, mb: 0.5 }}
+        sx={{
+          color: theme.textMain,
+          fontWeight: 600,
+          mb: 0.5,
+          width: "100%", // 👈 Prend toute la largeur disponible
+          overflow: "hidden", // 👈 Cache le texte qui dépasse
+          textOverflow: "ellipsis", // 👈 Affiche "..." si trop long
+          whiteSpace: "nowrap", // 👈 Empêche le retour à la ligne
+          maxWidth: "250px", // 👈 Largeur maximale pour le nom
+        }}
       >
         {name}
       </Typography>
 
-      <Typography variant="body2" sx={{ color: theme.textSecondary, mb: 2 }}>
+      {/* Rôle : limite aussi la largeur */}
+      <Typography
+        variant="body2"
+        sx={{
+          color: theme.textSecondary,
+          mb: 2,
+          width: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: "250px",
+        }}
+      >
         {role}
       </Typography>
 
@@ -89,27 +113,41 @@ const MemberCard = ({
 
       <Typography
         variant="caption"
-        sx={{ color: theme.textSecondary, letterSpacing: 0.5 }}
+        sx={{
+          color: theme.textSecondary,
+          letterSpacing: 0.5,
+          width: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: "250px",
+        }}
       >
         Mandat : {mandate}
       </Typography>
     </Paper>
   </Grid>
 );
-
 export default function Membres({ members, loading }) {
   return (
-    <Box>
+    <Box sx={{ px: 2 }}>
       {loading ? (
         <ConfigSkeleton />
       ) : members.length > 0 ? (
-        <Grid container spacing={3} sx={{ maxWidth: "900px" }}>
+        <Grid
+          container
+          spacing={3}
+          sx={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
           {members.map((member) => (
             <MemberCard
               key={member.id}
               initials={member.initials}
               name={member.name}
-              //role={member.role}
+              // role={member.role}
               badge={member.badge}
               badgeColor={member.badgeColor}
               mandate={member.mandate}

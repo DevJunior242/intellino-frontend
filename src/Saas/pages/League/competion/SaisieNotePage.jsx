@@ -12,8 +12,10 @@ import {
 } from "@mui/material";
 import { CheckCircle, SportsMartialArts } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
+import echo from "../../../../echo";
 
 export default function SaisieNotePage({ config }) {
+  console.log("config", config);
   const [enCours, setEnCours] = useState(null);
   const [valeur, setValeur] = useState(7.0);
   const [dejaNote, setDejaNote] = useState(false);
@@ -47,13 +49,22 @@ export default function SaisieNotePage({ config }) {
       setLoading(false);
     }
   }, [config]);
-
-  // Polling toutes les 2s
   useEffect(() => {
     if (!config) return;
     fetchEnCours();
-    const interval = setInterval(fetchEnCours, 3000);
-    return () => clearInterval(interval);
+  }, [config.id]);
+
+  //chanel de websocket pour recevoir les updates en temps réel
+  useEffect(() => {
+    if (!config) return;
+    const channel = echo.channel(`tatami.${config.id}`);
+    channel.listen(".tatami.updated", () => {
+      console.log("TatamiUpdated event received, fetching current athlete...");
+      fetchEnCours();
+    });
+    return () => {
+      echo.leaveChannel(`tatami.${config.id}`);
+    };
   }, [fetchEnCours, config]);
 
   const handleSoumettre = async () => {
@@ -68,6 +79,7 @@ export default function SaisieNotePage({ config }) {
       setDejaNote(true);
       setSuccess(true);
     } catch (err) {
+      console.log("note submission error", err);
       setErreur(err.response?.data?.message || "Erreur lors de la saisie");
     } finally {
       setSubmitting(false);
