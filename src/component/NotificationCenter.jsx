@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Badge,
   IconButton,
@@ -38,7 +38,7 @@ const NotificationCenter = () => {
     };
 
     const startPolling = () => {
-      interval = setInterval(fetchNotifications, 5000);
+      interval = setInterval(fetchNotifications, 500000000);
     };
 
     const stopPolling = () => {
