@@ -301,7 +301,7 @@ export default function VuePubliqueKata() {
                   {enCours?.ordre ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)">
-                  Kata : {enCours.inscription?.kata?.nom ?? "—"}
+                  Kata : {enCours.inscription?.kata ?? "—"}
                 </Typography>
               </Paper>
             ) : (
