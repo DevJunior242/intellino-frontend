@@ -12,6 +12,8 @@ import { EmojiEvents } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
 import { Instance } from "../../../../Api/Axios";
 import { motion, AnimatePresence } from "framer-motion";
+import ErrorBlock from "../../ErrorBlock";
+import echo from "../../../../echo";
 
 // Animation pour le loading
 const loadingContainer = {
@@ -62,9 +64,7 @@ export default function VuePubliqueKata() {
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const res = await Instance.get(
-        `/api/seances/configs/${configId}/vue-publique`,
-      );
+      const res = await Instance.get(`/api/configs/${configId}/vue-publique`);
       setData(res.data);
     } catch (err) {
       console.error("Erreur lors de la récupération des données :", err);
@@ -80,8 +80,19 @@ export default function VuePubliqueKata() {
   useEffect(() => {
     if (!configId) return;
     fetchData();
-    const interval = setInterval(fetchData, 3000);
-    return () => clearInterval(interval);
+  }, [fetchData, configId]);
+
+  //echo pour les mises à jour en temps réel
+  useEffect(() => {
+    if (!configId) return;
+    const channel = echo.channel(`tatami.${configId}`);
+    channel.listen(".tatami.updated", () => {
+      console.log("TatamiUpdated event received, fetching current athlete...");
+      fetchData();
+    });
+    return () => {
+      echo.leaveChannel(`tatami.${configId}`);
+    };
   }, [fetchData, configId]);
 
   // Calcul des notes avec statut (éliminées ou non)
@@ -180,33 +191,7 @@ export default function VuePubliqueKata() {
 
   // Affichage en cas d'erreur
   if (error) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          bgcolor: "#1a1a2e",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          p: 3,
-        }}
-      >
-        <Paper
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            bgcolor: "#6b2c2c",
-            maxWidth: 400,
-          }}
-        >
-          <Typography variant="h6" color="#ff6b6b" fontWeight="bold" mb={2}>
-            ⚠️ Erreur
-          </Typography>
-          <Typography color="rgba(255,255,255,0.8)">{error}</Typography>
-        </Paper>
-      </Box>
-    );
+    return <ErrorBlock message={error} onRetry={fetchData} />;
   }
 
   return (
