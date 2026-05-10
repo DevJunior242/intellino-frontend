@@ -37,34 +37,34 @@ const NotificationCenter = () => {
       }
     };
 
-    const startPolling = () => {
-      interval = setInterval(fetchNotifications, 500000000);
-    };
+    //   const startPolling = () => {
+    //     interval = setInterval(fetchNotifications, 500000000);
+    //   };
 
-    const stopPolling = () => {
-      if (interval) clearInterval(interval);
-    };
+    //   const stopPolling = () => {
+    //     if (interval) clearInterval(interval);
+    //   };
 
-    if (document.visibilityState === "visible") {
-      fetchNotifications();
-      startPolling();
-    }
+    //   if (document.visibilityState === "visible") {
+    //     fetchNotifications();
+    //     startPolling();
+    //   }
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        fetchNotifications();
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
+    //   const handleVisibilityChange = () => {
+    //     if (document.visibilityState === "visible") {
+    //       fetchNotifications();
+    //       startPolling();
+    //     } else {
+    //       stopPolling();
+    //     }
+    //   };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    //   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    return () => {
-      stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    //   return () => {
+    //     stopPolling();
+    //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+    //   };
   }, [auth?.isLogin]);
 
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
