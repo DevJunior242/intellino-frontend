@@ -18,10 +18,11 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
 
   const allColumns = [
     {
-      field: "club",
-      headerName: "Club",
+      field: "organisateur",
+      headerName: "Organisateur",
       width: 180,
-      valueGetter: (value, row) => row.club?.name || "Sans Club",
+      valueGetter: (value, row) =>
+        row.organisateur?.name || "Sans organisateur",
       flex: 1,
     },
     {

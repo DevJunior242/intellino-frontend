@@ -2,6 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box, Chip } from "@mui/material";
 
 export default function InscribedAthletesTable({ data, epreuve, loading }) {
+  console.log("data", data);
   const isKata = epreuve.discipline?.nom?.toLowerCase() === "kata";
 
   const columns = [
