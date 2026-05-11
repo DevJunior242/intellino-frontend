@@ -171,8 +171,8 @@ const CarteAssigne = ({ ordre, index, onRetirer, submitId }) => {
             display="block"
             noWrap
           >
-            {ordre.inscription?.club?.name ?? "—"}
-            {ordre.inscription?.kata && ` · ${ordre.inscription.kata.nom}`}
+            {ordre.inscription?.organisateur?.name ?? "—"}
+            {ordre.inscription?.kata ?? "_"}
           </Typography>
           <Typography
             variant="caption"
