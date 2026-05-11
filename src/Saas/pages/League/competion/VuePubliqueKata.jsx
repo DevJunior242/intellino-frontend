@@ -68,7 +68,7 @@ export default function VuePubliqueKata() {
 
       console.log("VuePubliqueKata data:", vueRes);
       console.log("VuePubliqueKata next:", nextRes);
-      setData(vueRes.data.enCours);
+      setData(vueRes.data);
       setNextAthlete(nextRes.data.prochain || []);
       setLoading(false);
     } catch (err) {
