@@ -24,11 +24,11 @@ export default function InscribedAthletesTable({ data, epreuve, loading }) {
       flex: 1,
     },
     {
-      field: "statut_pesee",
+      field: "status",
       headerName: "Statut",
       width: 130,
       renderCell: (params) => {
-        const isValide = params.row.statut_pesee === 1;
+        const isValide = params.row.status === 1;
         return (
           <Chip
             label={isValide ? "Validé" : "En attente"}

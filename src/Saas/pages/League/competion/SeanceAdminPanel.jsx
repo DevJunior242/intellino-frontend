@@ -34,7 +34,6 @@ export default function SeanceAdminPanel({
       const res = await Instance.get(
         `/api/seances/competition/${config.id}/en-cours`,
       );
-      console.log("enCours data", res);
       setEnCours(res.data);
     } catch (err) {
       console.error(err);

@@ -22,23 +22,19 @@ import PulseLoader from "react-spinners/PulseLoader";
 import ConfigSkeleton from "../../ConfigSkeleton";
 
 function InscriptionForm({ competitionId, discipline, onSuccess }) {
-  console.log(competitionId);
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [students, setStudents] = useState([]);
-  const [katas, setKatas] = useState([]);
   const [selectStudent, setSelectStudent] = useState(null);
-  const { activeId } = UseAuth();
-  console.log("activeId", activeId);
+  const { activeId, activeType } = UseAuth();
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const [formData, setFormData] = useState({
     athlete_id: "",
     competition_id: "",
     kata: "",
-    statut_pesee: 0,
     poids_declare: "",
     poids_officiel: "",
   });
@@ -79,7 +75,8 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
     try {
       const dataSend = {
         ...formData,
-        club_id: activeId,
+        organisateur_id: activeId,
+        organisateur_type: activeType,
         competition_id: competitionId,
       };
       const response = await Instance.post(
