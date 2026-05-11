@@ -54,20 +54,22 @@ const staggerItem = {
 
 export default function VuePubliqueKata() {
   const { configId } = useParams();
-  const [vuePublic, setVuePublique] = useState(null);
+  const [data, setData] = useState(null);
   const [nextAthlete, setNextAthlete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchVuePublique = useCallback(async () => {
     try {
-       const [vueRes, nextRes] = await Promise.all([
+      const [vueRes, nextRes] = await Promise.all([
         Instance.get(`/api/configs/${configId}/vue-publique`),
         Instance.get(`/api/configs/${configId}/next-athlete`),
       ]);
 
-      setVuePublique(vueRes.data.vuePublic);
-      setNextAthlete(nextRes.data.vuePublic?.prochain || null);
+      console.log("VuePubliqueKata data:", vueRes);
+      console.log("VuePubliqueKata next:", nextRes);
+      setData(vueRes.data.enCours);
+      setNextAthlete(nextRes.data.prochain || []);
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -126,7 +128,7 @@ export default function VuePubliqueKata() {
   // Données mémoïsées pour éviter les recalculs
   const { enCours, score, classement, nbJuges, notesAvecStatut } =
     useMemo(() => {
-      if (!vuePublic) {
+      if (!data) {
         return {
           enCours: null,
           notes: [],
@@ -138,23 +140,20 @@ export default function VuePubliqueKata() {
         };
       }
 
-      const nbJuges = vuePublic?.config?.juges_option || 5;
+      const nbJuges = data?.config?.juges_option || 5;
       const eliminer = nbJuges === 7 ? 2 : 1;
-      const notesAvecStatut = getNotesAvecStatut(
-        vuePublic?.notes || [],
-        nbJuges,
-      );
+      const notesAvecStatut = getNotesAvecStatut(data?.notes || [], nbJuges);
 
       return {
-        enCours: vuePublic?.enCours,
-        notes: vuePublic?.notes || [],
-        score: vuePublic?.score,
-        classement: vuePublic?.classement || [],
+        enCours: data?.enCours,
+        notes: data?.notes || [],
+        score: data?.score,
+        classement: data?.classement || [],
         nbJuges,
         eliminer,
         notesAvecStatut,
       };
-    }, [vuePublic, getNotesAvecStatut]);
+    }, [data, getNotesAvecStatut]);
 
   const medailles = ["🥇", "🥈", "🥉"];
 
@@ -290,7 +289,7 @@ export default function VuePubliqueKata() {
                   {enCours?.inscription?.athlete?.fullname ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
-                  {enCours?.inscription?.club?.name ?? "—"} · Passage N°
+                  {enCours?.inscription?.organisateur?.name ?? "—"} · Passage N°
                   {enCours?.ordre ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)">
@@ -373,7 +372,8 @@ export default function VuePubliqueKata() {
                   {nextAthlete?.inscription?.athlete?.fullname ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
-                  {nextAthlete?.inscription?.club?.name ?? "—"} · Passage N°
+                  {nextAthlete?.inscription?.organisateur?.name ?? "—"} ·
+                  Passage N°
                   {nextAthlete?.ordre ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)">
@@ -568,7 +568,7 @@ export default function VuePubliqueKata() {
                               variant="caption"
                               color="rgba(255,255,255,0.5)"
                             >
-                              {item.club}
+                              {item.organisateur}
                             </Typography>
                           </Box>
                         </Stack>
