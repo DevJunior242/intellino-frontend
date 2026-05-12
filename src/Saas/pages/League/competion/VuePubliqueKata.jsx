@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Fade,
   Zoom,
+  keyframes,
 } from "@mui/material";
 import { EmojiEvents } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
@@ -15,23 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ErrorBlock from "../../ErrorBlock";
 import echo from "../../../../echo";
 
-// Animation pour le loading
-const loadingContainer = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "100vh",
-  gap: 2,
-};
-
-const loadingIcon = {
-  width: 60,
-  height: 60,
-  color: "#f0a500",
-};
-
-// Variantes pour les animations Framer Motion
+// --- Animations Framer Motion ---
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -50,6 +35,82 @@ const staggerContainer = {
 const staggerItem = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+// Animation de pulsation pour le nom de l'athlète en cours
+const pulse = {
+  animate: {
+    scale: [1, 1.02, 1],
+    textShadow: [
+      "0 0 5px rgba(240, 165, 0, 0.5)",
+      "0 0 10px rgba(240, 165, 0, 0.8)",
+      "0 0 5px rgba(240, 165, 0, 0.5)",
+    ],
+  },
+  transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+};
+
+// Animation de glissement pour le prochain athlète
+const slideIn = {
+  initial: { x: 100, opacity: 0 },
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 80, damping: 10 },
+  },
+};
+
+// Animation de rebond pour les notes des juges
+const bounceIn = {
+  initial: { y: 20, opacity: 0 },
+  animate: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 200, damping: 10 },
+  },
+};
+
+// Animation de zoom pour le score
+const zoomIn = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 150, damping: 10 },
+  },
+};
+
+// Animation de défilement pour le classement
+const scrollIn = {
+  initial: { x: -50, opacity: 0 },
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100, damping: 10 },
+  },
+};
+
+// Animation de fond (dégradé dynamique)
+const gradientAnimation = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+// Animation pour le loading
+const loadingContainer = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "100vh",
+  gap: 2,
+};
+
+const loadingIcon = {
+  width: 60,
+  height: 60,
+  color: "#f0a500",
 };
 
 export default function VuePubliqueKata() {
@@ -89,7 +150,6 @@ export default function VuePubliqueKata() {
     if (!configId) return;
     const channel = echo.channel(`tatami.${configId}`);
     channel.listen(".tatami.updated", () => {
-      console.log("TatamiUpdated event received, fetching current athlete...");
       fetchVuePublique();
     });
     return () => {
@@ -124,7 +184,7 @@ export default function VuePubliqueKata() {
     });
   }, []);
 
-  // Données mémoïsées pour éviter les recalculs
+  // Données mémoïsées
   const { enCours, score, classement, nbJuges, notesAvecStatut } =
     useMemo(() => {
       if (!data) {
@@ -195,6 +255,12 @@ export default function VuePubliqueKata() {
         minHeight: "100vh",
         bgcolor: "#121217",
         p: { xs: 1, sm: 2, md: 3 },
+        background: `
+          linear-gradient(45deg, #121217, #1a1a2e, #121217, #1a1a2e),
+          linear-gradient(90deg, rgba(240,165,0,0.03), rgba(0, 180, 216, 0.03), rgba(240,165,0,0.03))
+        `,
+        backgroundSize: "400% 400%, 100% 100%",
+        animation: `${gradientAnimation} 20s ease infinite`,
       }}
     >
       <AnimatePresence mode="wait">
@@ -233,68 +299,77 @@ export default function VuePubliqueKata() {
           {/* Athlète en cours */}
           <motion.div variants={staggerItem}>
             {enCours ? (
-              <Paper
-                sx={{
-                  p: 3,
-                  mb: 3,
-                  borderRadius: 4,
-                  textAlign: "center",
-                  position: "relative",
-                  overflow: "hidden",
-                  background: `
-                    linear-gradient(
-                      135deg,
-                      #050505 0%,
-                      #111111 25%,
-                      #1a1200 60%,
-                      #3b2a00 100%
-                    )
-                  `,
-                  border: "1px solid rgba(240,165,0,0.45)",
-                  boxShadow: `
-                    0 0 12px rgba(240,165,0,0.18),
-                    0 8px 30px rgba(0,0,0,0.75)
-                  `,
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    inset: 0,
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 80 }}
+              >
+                <Paper
+                  sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 4,
+                    textAlign: "center",
+                    position: "relative",
+                    overflow: "hidden",
                     background: `
                       linear-gradient(
-                        120deg,
-                        transparent 20%,
-                        rgba(255,215,0,0.08) 50%,
-                        transparent 80%
+                        135deg,
+                        #050505 0%,
+                        #111111 25%,
+                        #1a1200 60%,
+                        #3b2a00 100%
                       )
                     `,
-                    pointerEvents: "none",
-                  },
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  color="#f0a500"
-                  fontWeight="bold"
-                  letterSpacing={2}
+                    border: "1px solid rgba(240,165,0,0.45)",
+                    boxShadow: `
+                      0 0 12px rgba(240,165,0,0.18),
+                      0 8px 30px rgba(0,0,0,0.75)
+                    `,
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      inset: 0,
+                      background: `
+                        linear-gradient(
+                          120deg,
+                          transparent 20%,
+                          rgba(255,215,0,0.08) 50%,
+                          transparent 80%
+                        )
+                      `,
+                      pointerEvents: "none",
+                    },
+                  }}
                 >
-                  EN COURS
-                </Typography>
-                <Typography
-                  variant="h3"
-                  fontWeight="900"
-                  color="primary.main"
-                  mt={1}
-                >
-                  {enCours?.inscription?.athlete?.fullname ?? "—"}
-                </Typography>
-                <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
-                  {enCours?.inscription?.organisateur?.name ?? "—"} · Passage N°
-                  {enCours?.ordre ?? "—"}
-                </Typography>
-                <Typography color="rgba(255,255,255,0.7)">
-                  Kata : {enCours.inscription?.kata ?? "—"}
-                </Typography>
-              </Paper>
+                  <Typography
+                    variant="caption"
+                    color="#f0a500"
+                    fontWeight="bold"
+                    letterSpacing={2}
+                  >
+                    EN COURS
+                  </Typography>
+                  <motion.div {...pulse}>
+                    <Typography
+                      variant="h3"
+                      fontWeight="900"
+                      color="primary.main"
+                      mt={1}
+                    >
+                      {enCours?.inscription?.athlete?.fullname ?? "—"}
+                    </Typography>
+                  </motion.div>
+                  <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
+                    {enCours?.inscription?.organisateur?.name ?? "—"} · Passage
+                    N°
+                    {enCours?.ordre ?? "—"}
+                  </Typography>
+                  <Typography color="rgba(255,255,255,0.7)">
+                    Kata : {enCours.inscription?.kata ?? "—"}
+                  </Typography>
+                </Paper>
+              </motion.div>
             ) : (
               <Paper
                 sx={{
@@ -315,7 +390,12 @@ export default function VuePubliqueKata() {
 
           {/* Prochain athlète */}
           {nextAthlete && (
-            <motion.div variants={staggerItem}>
+            <motion.div
+              initial="initial"
+              animate="animate"
+              variants={slideIn}
+              variants={staggerItem}
+            >
               <Paper
                 sx={{
                   p: 3,
@@ -354,14 +434,21 @@ export default function VuePubliqueKata() {
                   },
                 }}
               >
-                <Typography
-                  variant="caption"
-                  color="#00b4d8"
-                  fontWeight="bold"
-                  letterSpacing={2}
+                <motion.div
+                  animate={{
+                    opacity: [0.8, 1, 0.8],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  PROCHAIN ATHLÈTE
-                </Typography>
+                  <Typography
+                    variant="caption"
+                    color="#00b4d8"
+                    fontWeight="bold"
+                    letterSpacing={2}
+                  >
+                    PROCHAIN ATHLÈTE
+                  </Typography>
+                </motion.div>
                 <Typography
                   variant="h3"
                   fontWeight="900"
@@ -408,8 +495,11 @@ export default function VuePubliqueKata() {
                 return (
                   <motion.div
                     key={i}
-                    variants={fadeIn}
-                    whileHover={{ scale: 1.05 }}
+                    initial="initial"
+                    animate="animate"
+                    variants={bounceIn}
+                    custom={i}
+                    whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Paper
@@ -444,18 +534,26 @@ export default function VuePubliqueKata() {
 
                       {aNote ? (
                         <>
-                          <Typography
-                            variant="h4"
-                            fontWeight="900"
-                            color="white"
-                            sx={{
-                              textDecoration: elimine ? "line-through" : "none",
-                              opacity: elimine ? 0.6 : 1,
-                              mt: 1,
-                            }}
+                          <motion.div
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
                           >
-                            {note.valeur.toFixed(1)}
-                          </Typography>
+                            <Typography
+                              variant="h4"
+                              fontWeight="900"
+                              color="white"
+                              sx={{
+                                textDecoration: elimine
+                                  ? "line-through"
+                                  : "none",
+                                opacity: elimine ? 0.6 : 1,
+                                mt: 1,
+                              }}
+                            >
+                              {note.valeur.toFixed(1)}
+                            </Typography>
+                          </motion.div>
                           {elimine && (
                             <Typography variant="caption" color="#f09595">
                               éliminé
@@ -480,44 +578,46 @@ export default function VuePubliqueKata() {
 
           {/* Score final */}
           <motion.div variants={staggerItem}>
-            <Paper
-              sx={{
-                p: 3,
-                mb: 3,
-                borderRadius: 3,
-                bgcolor: score ? "#1e1e30" : "#121217",
-                textAlign: "center",
-                boxShadow: score
-                  ? "0 6px 25px rgba(74, 63, 140, 0.5)"
-                  : "0 4px 20px rgba(0, 0, 0, 0.3)",
-                border: score ? "1px solid #4a3f8c" : "none",
-                transition: "all 0.5s",
-              }}
-            >
-              {score ? (
-                <>
-                  <Typography
-                    variant="body2"
-                    color="rgba(255,255,255,0.6)"
-                    mb={1}
-                  >
-                    Score final (
-                    {notesAvecStatut
-                      .filter((n) => !n.elimine)
-                      .map((n) => n.valeur.toFixed(1))
-                      .join(" + ")}
-                    )
+            <motion.div initial="initial" animate="animate" variants={zoomIn}>
+              <Paper
+                sx={{
+                  p: 3,
+                  mb: 3,
+                  borderRadius: 3,
+                  bgcolor: score ? "#1e1e30" : "#121217",
+                  textAlign: "center",
+                  boxShadow: score
+                    ? "0 6px 25px rgba(74, 63, 140, 0.5)"
+                    : "0 4px 20px rgba(0, 0, 0, 0.3)",
+                  border: score ? "1px solid #4a3f8c" : "none",
+                  transition: "all 0.5s",
+                }}
+              >
+                {score ? (
+                  <>
+                    <Typography
+                      variant="body2"
+                      color="rgba(255,255,255,0.6)"
+                      mb={1}
+                    >
+                      Score final (
+                      {notesAvecStatut
+                        .filter((n) => !n.elimine)
+                        .map((n) => n.valeur.toFixed(1))
+                        .join(" + ")}
+                      )
+                    </Typography>
+                    <Typography variant="h2" fontWeight="900" color="#f0a500">
+                      {score}
+                    </Typography>
+                  </>
+                ) : (
+                  <Typography color="rgba(255,255,255,0.4)">
+                    Score final — en attente des notes
                   </Typography>
-                  <Typography variant="h2" fontWeight="900" color="#f0a500">
-                    {score}
-                  </Typography>
-                </>
-              ) : (
-                <Typography color="rgba(255,255,255,0.4)">
-                  Score final — en attente des notes
-                </Typography>
-              )}
-            </Paper>
+                )}
+              </Paper>
+            </motion.div>
           </motion.div>
 
           {/* Classement provisoire */}
@@ -534,7 +634,17 @@ export default function VuePubliqueKata() {
 
               <Stack spacing={1}>
                 {classement.map((item, index) => (
-                  <motion.div key={index} variants={fadeIn}>
+                  <motion.div
+                    key={index}
+                    initial="initial"
+                    animate="animate"
+                    variants={scrollIn}
+                    custom={index}
+                    whileHover={{
+                      x: 5,
+                      boxShadow: "0 8px 25px rgba(218, 165, 32, 0.4)",
+                    }}
+                  >
                     <Paper
                       sx={{
                         px: 2.5,
