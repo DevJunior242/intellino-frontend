@@ -32,11 +32,20 @@ const ACTIONS = [
   {
     key: "add_examen",
     label: "Examen grade",
-    to: "/examen/store",
+    to: "dashboard/league",
     icon: EmojiEventsOutlined,
     color: "#BF360C",
     bg: "#FBE9E7",
-    roles: ["admin_club", "instructeur", "admin_league"],
+    roles: ["admin_club", "instructeur"],
+  },
+  {
+    key: "add_examen",
+    label: "Examen grade",
+    to: "dashboard/league/examen",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    roles: ["admin_league"],
   },
   {
     key: "competitions",
