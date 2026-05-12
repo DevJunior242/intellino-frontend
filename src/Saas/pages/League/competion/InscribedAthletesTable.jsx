@@ -29,14 +29,13 @@ export default function InscribedAthletesTable({ data, epreuve, loading }) {
       headerName: "Statut",
       width: 130,
       renderCell: (params) => {
-        const isValide = params.row.status === 1;
-        return (
-          <Chip
-            label={isValide ? "Validé" : "En attente"}
-            color={isValide ? "success" : "warning"}
-            size="small"
-          />
-        );
+        const config = {
+          0: { label: "En attente", color: "default" },
+          1: { label: "Validé", color: "success" },
+          2: { label: "Échoué", color: "error" },
+        };
+        const s = config[params.value] || config[0];
+        return <Chip label={s.label} color={s.color} size="small" />;
       },
     },
   ];

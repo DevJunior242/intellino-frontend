@@ -60,14 +60,13 @@ export default function VuePubliqueKata() {
   const [error, setError] = useState(null);
 
   const fetchVuePublique = useCallback(async () => {
+    setLoading(true);
     try {
       const [vueRes, nextRes] = await Promise.all([
         Instance.get(`/api/configs/${configId}/vue-publique`),
         Instance.get(`/api/configs/${configId}/next-athlete`),
       ]);
 
-      console.log("VuePubliqueKata data:", vueRes);
-      console.log("VuePubliqueKata next:", nextRes);
       setData(vueRes.data);
       setNextAthlete(nextRes.data.prochain ?? null);
       setLoading(false);

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, act } from "react";
 import {
   Container,
   Typography,
@@ -308,11 +308,12 @@ const InscriptionPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeId, activeType]);
 
   useEffect(() => {
+    if (!activeId) return;
     fetchEvenements();
-  }, [fetchEvenements]);
+  }, [fetchEvenements, activeId]);
 
   // ── fetch inscriptions d'une épreuve ─────────────────────────────────────────
   const fetchInscriptions = useCallback(async () => {
@@ -320,8 +321,9 @@ const InscriptionPage = () => {
     setTableLoading(true);
     try {
       const res = await Instance.get(
-        `/api/inscriptions/epreuve/${selectedEpreuve.id}?club_id=${activeId}`,
+        `/api/inscriptions/epreuve/${selectedEpreuve.id}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
+      console.log("inscrit", res);
       setInscriptions(res.data.inscriptions || []);
       setEpreuve(res.data.epreuve);
     } catch (err) {

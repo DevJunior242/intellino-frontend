@@ -4,7 +4,7 @@ import { Chip, TextField, Box, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-const AdminPeseeTable = ({ rows, loading, onValidate }) => {
+const AdminPeseeTable = ({ rows, loading, handleStatusAction }) => {
   console.log("rows", rows);
   // État local pour gérer les poids saisis avant validation
   const [poidsInput, setPoidsInput] = React.useState({});
@@ -84,12 +84,12 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
       ),
     },
     {
-      field: "statut_pesee",
+      field: "status",
       headerName: "Statut",
       width: 130,
       renderCell: (params) => {
         const config = {
-          0: { label: "À peser", color: "default" },
+          0: { label: "En attente", color: "default" },
           1: { label: "Validé", color: "success" },
           2: { label: "Échoué", color: "error" },
         };
@@ -106,14 +106,14 @@ const AdminPeseeTable = ({ rows, loading, onValidate }) => {
         <GridActionsCellItem
           icon={<CheckCircleIcon color="success" />}
           label="Valider"
-          onClick={() => onValidate(params.id, poidsInput[params.id], 1)}
-          disabled={params.row.statut_pesee !== 0}
+          onClick={() => handleStatusAction("valider", params.id)}
+          disabled={params.row.status !== 0}
         />,
         <GridActionsCellItem
           icon={<CancelIcon color="error" />}
           label="Refuser"
-          onClick={() => onValidate(params.id, poidsInput[params.id], 2)}
-          disabled={params.row.statut_pesee !== 0}
+          onClick={() => handleStatusAction("annuler", params.id)}
+          disabled={params.row.status === 2}
         />,
       ],
     },

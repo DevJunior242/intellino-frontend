@@ -5,18 +5,20 @@ import { Alert, Box } from "@mui/material";
 import AdminPeseeTable from "./AdminPeseeTable";
 import { UseAuth } from "../../../../Api/AuthContext";
 import ErrorBlock from "../../ErrorBlock";
+import ErrorGlobal from "../../../../component/ErrorGlobal";
 
 export default function AdminCompetitionManagement() {
   const [selectedCompId, setSelectedCompId] = useState(null);
   const [inscriptions, setInscriptions] = useState([]);
-  const [error, setError] = useState("");
+  const [errorInscriptions, setErrorInscriptions] = useState("");
+  const [error, setError] = useState({});
   const [loading, setLoading] = useState(true);
   const { activeId, activeType } = UseAuth();
 
   const fetchInscriptions = async (compId) => {
     if (!compId) return;
     setLoading(true);
-    setError("");
+    setErrorInscriptions("");
     try {
       const res = await Instance.get("/api/admin/inscriptions", {
         params: {
@@ -29,7 +31,7 @@ export default function AdminCompetitionManagement() {
       setInscriptions(res.data || []);
     } catch (err) {
       console.error("Erreur de chargement", err);
-      setError("Erreur lors du chargement des athlètes");
+      setErrorInscriptions("Erreur lors du chargement des athlètes");
     } finally {
       setLoading(false);
     }
@@ -40,7 +42,25 @@ export default function AdminCompetitionManagement() {
       fetchInscriptions(selectedCompId);
     }
   }, [selectedCompId]);
-  if (error) return <ErrorBlock message={error} onRetry={fetchInscriptions} />;
+
+  //valider inscription
+  const handleStatusAction = async (id, action) => {
+    setError({});
+    try {
+      const res = await Instance.post(`/api/inscriptions/${id}/${action}`, {
+        organisateur_id: activeId,
+        organisateur_type: activeType,
+      });
+      console.log("res", res);
+      fetchInscriptions(selectedCompId);
+    } catch (err) {
+      console.error("Erreur lors de la validation", err);
+      ErrorGlobal({ error: err, setError });
+    }
+  };
+
+  if (errorInscriptions)
+    return <ErrorBlock message={error} onRetry={fetchInscriptions} />;
   return (
     <Box>
       {/* SECTION 1 : Swiper pour choisir LA compétition */}
@@ -51,7 +71,11 @@ export default function AdminCompetitionManagement() {
 
       {/* SECTION 2 : Le tableau de pesée (uniquement si une comp est choisie) */}
       {selectedCompId ? (
-        <AdminPeseeTable rows={inscriptions} loading={loading} />
+        <AdminPeseeTable
+          rows={inscriptions}
+          handleStatusAction={handleStatusAction}
+          loading={loading}
+        />
       ) : (
         <Alert severity="info">
           Veuillez sélectionner une compétition pour voir les athlètes.

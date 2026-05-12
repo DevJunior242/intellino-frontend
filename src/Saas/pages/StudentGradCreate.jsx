@@ -16,7 +16,7 @@ import PulseLoader from "react-spinners/PulseLoader";
 import Message from "./Message";
 import { UseAuth } from "../../Api/AuthContext";
 import ConfigSkeleton from "./ConfigSkeleton";
-import StudentAutocomplete from "./StudentAutocomplete";
+import StudentWithoutGrade from "./StudentWithoutGrade";
 
 function StudentGradCreate() {
   const [error, setError] = useState({});
@@ -39,7 +39,7 @@ function StudentGradCreate() {
   const getGrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await Instance(`/api/grade?club_id=${activeId}`);
+      const response = await Instance(`/api/grade`);
       console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
@@ -47,7 +47,7 @@ function StudentGradCreate() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeId]);
+  }, []);
   useEffect(() => {
     getGrade();
   }, [getGrade]);
@@ -151,7 +151,7 @@ function StudentGradCreate() {
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
         <form onSubmit={handleSubmit}>
-          <StudentAutocomplete
+          <StudentWithoutGrade
             activeId={activeId}
             value={selectStudent}
             onChange={(newValue) => setSelectStudent(newValue)}

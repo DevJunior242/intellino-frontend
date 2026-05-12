@@ -35,7 +35,7 @@ function SessionList() {
   const [sessions, setsessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
-  const { activeRole, activeId } = UseAuth();
+  const { activeRole, activeId, activeType } = UseAuth();
 
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
@@ -65,7 +65,7 @@ function SessionList() {
       setErrorSessions("");
       try {
         const response = await Instance(
-          `/api/sessions?page=${page}&club_id=${activeId}`,
+          `/api/sessions?page=${page}&organisateur_id=${activeId}&organisateur_type=${activeType}`,
         );
         const session = response.data.sessions || [];
         const sessionArray = session.data ? session.data : session;
@@ -97,7 +97,7 @@ function SessionList() {
     setSuccess("");
     try {
       const response = await Instance.delete(
-        `/api/sessions/remove/${sessionId}?club_id=${activeId}`,
+        `/api/sessions/remove/${sessionId}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       console.log("Réponse API après suppression :", response.data);
       if (response.data.success) {
@@ -216,7 +216,7 @@ function SessionList() {
                   data-aos-delay={index * 200}
                   onClick={() =>
                     navigate(
-                      `/dashboard/session/${session.id}/show?club_id=${session?.course?.club_id}`,
+                      `/dashboard/session/${session.id}/show?organisateur_id=${session?.course?.organisateur_id}`,
                     )
                   }
                 >

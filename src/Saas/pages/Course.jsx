@@ -35,7 +35,7 @@ const initialSessionState = {
 };
 
 function Course() {
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -192,11 +192,14 @@ function Course() {
       course: {
         name: courseData.name,
         current_grade_id: courseData.current_grade_id || selectCurrentGrade?.id,
+        organisateur_id: activeId,
+        organisateur_type: activeType,
       },
-      club_id: activeId,
+      organisateur_id: activeId,
+      organisateur_type: activeType,
       sessions: sessionsList,
     };
-    console.log(finalPayload);
+    console.log("finalPayload", finalPayload);
 
     try {
       const response = await Instance.post(
