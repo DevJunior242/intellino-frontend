@@ -3,10 +3,10 @@ import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
 import {
   EmojiEvents,
-  LockOutlinedIcon,
-  LoginIcon,
-  ArrowBackIcon,
-  ErrorOutlineOutlinedIcon,
+  LockOutlined,
+  Login,
+  ArrowBack,
+  ErrorOutlineOutlined,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -279,7 +279,7 @@ export default function ConfigNotationCardDetails() {
                       border: "1px solid",
                       borderColor: "error.light",
                     }}
-                    icon={<ErrorOutlineOutlinedIcon />}
+                    icon={<ErrorOutlineOutlined />}
                   >
                     <Typography variant="body2">{error.general}</Typography>
                   </Alert>
@@ -313,7 +313,7 @@ export default function ConfigNotationCardDetails() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockOutlinedIcon color="action" />
+                      <LockOutlined color="action" />
                     </InputAdornment>
                   ),
                 }}
@@ -373,7 +373,7 @@ export default function ConfigNotationCardDetails() {
                       border: "1px solid",
                       borderColor: "error.light",
                     }}
-                    icon={<ErrorOutlineOutlinedIcon />}
+                    icon={<ErrorOutlineOutlined />}
                   >
                     <Typography variant="body2">{error.code_acces}</Typography>
                   </Alert>
@@ -404,7 +404,7 @@ export default function ConfigNotationCardDetails() {
                   color: "action.disabled",
                 },
               }}
-              startIcon={loadingPin ? null : <LoginIcon />}
+              startIcon={loadingPin ? null : <Login />}
             >
               {loadingPin ? (
                 <CircularProgress size={24} color="inherit" />
