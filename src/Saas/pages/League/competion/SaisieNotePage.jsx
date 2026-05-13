@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
 import ProchainAthlete from "./ProchainAthlete";
-import NotesProgress from "./NotesProgress";
+import NoteArbitre from "./NoteArbitre";
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const C = {
@@ -895,9 +895,8 @@ export default function SaisieNotePage({ config }) {
                 notes={notes}
                 nbJuges={config?.juges_option}
               />
-              <NotesProgress
+              <NoteArbitre
                 ordrePassageId={enCours?.id ?? null}
-                nbJuges={config.juges_option}
                 onNotesChange={setNotes}
                 configId={config.id}
               />

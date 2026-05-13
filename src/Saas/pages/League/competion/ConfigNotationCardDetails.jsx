@@ -213,65 +213,228 @@ export default function ConfigNotationCardDetails() {
           alignItems: "center",
           justifyContent: "center",
           p: 2,
+          bgcolor: "background.default",
+          // Effet de fond subtil pour une ambiance professionnelle
+          backgroundImage:
+            "radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 40%)",
         }}
       >
-        <Paper sx={{ p: 4, borderRadius: 3, width: "100%", maxWidth: 400 }}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
-            {configActive.plateau_nom}
-          </Typography>
-          <Typography color="text.secondary" mb={3}>
-            Entrez votre code d'accès
-          </Typography>
-
-          {error.general && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error.general}
-            </Alert>
-          )}
-
-          <TextField
-            fullWidth
-            label="Code PIN"
-            name="code_acces"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            inputProps={{
-              maxLength: 6,
-              inputMode: "numeric",
-              style: {
-                fontSize: "2rem",
-                textAlign: "center",
-                letterSpacing: "0.5rem",
-              },
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              borderRadius: 4,
+              width: "100%",
+              maxWidth: 400,
+              textAlign: "center",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+              border: "1px solid",
+              borderColor: "divider",
             }}
-            sx={{ mb: 2 }}
-            required
-          />
-          {error?.code_acces && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error.code_acces}
-            </Alert>
-          )}
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={pin.length !== 6 || loadingPin}
-            onClick={soumettrePin}
-            sx={{ py: 2, borderRadius: 3 }}
           >
-            {loadingPin ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Se connecter"
-            )}
-          </Button>
+            {/* Logo ou icône pour identifier la plateforme */}
+            <Box sx={{ mb: 2 }}>
+              <EmojiEvents
+                sx={{
+                  fontSize: 48,
+                  color: "primary.main",
+                  mb: 1,
+                }}
+              />
+              <Typography variant="h5" fontWeight="bold" color="primary.main">
+                {configActive.plateau_nom}
+              </Typography>
+            </Box>
 
-          <Button fullWidth sx={{ mt: 1 }} onClick={() => setVue("config")}>
-            Retour
-          </Button>
-        </Paper>
+            <Typography variant="body1" color="text.secondary" mb={3}>
+              Veuillez entrer votre code d'accès à 6 chiffres
+            </Typography>
+
+            {/* Affichage des erreurs avec animation */}
+            <AnimatePresence>
+              {error.general && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Alert
+                    severity="error"
+                    sx={{
+                      mb: 2,
+                      borderRadius: 2,
+                      backgroundColor: "error.50",
+                      border: "1px solid",
+                      borderColor: "error.light",
+                    }}
+                    icon={<ErrorOutlineIcon />}
+                  >
+                    <Typography variant="body2">{error.general}</Typography>
+                  </Alert>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Champ PIN avec style amélioré */}
+            <Box sx={{ position: "relative", mb: 2 }}>
+              <TextField
+                fullWidth
+                label="Code PIN"
+                name="code_acces"
+                value={pin}
+                onChange={(e) => {
+                  // Limiter à 6 chiffres
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setPin(value);
+                }}
+                inputProps={{
+                  maxLength: 6,
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  style: {
+                    fontSize: "2rem",
+                    textAlign: "center",
+                    letterSpacing: "0.5rem",
+                    fontFamily: "monospace",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "background.paper",
+                    "&:hover": {
+                      backgroundColor: "action.hover",
+                    },
+                  },
+                }}
+                autoFocus
+                autoComplete="one-time-code"
+                required
+                error={!!error?.code_acces}
+              />
+              {/* Indicateur de longueur */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 1,
+                  gap: 1,
+                }}
+              >
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: index < pin.length ? "primary.main" : "divider",
+                      transition: "background-color 0.3s",
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+
+            {/* Erreur spécifique au code PIN */}
+            <AnimatePresence>
+              {error?.code_acces && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Alert
+                    severity="error"
+                    sx={{
+                      mb: 2,
+                      borderRadius: 2,
+                      backgroundColor: "error.50",
+                      border: "1px solid",
+                      borderColor: "error.light",
+                    }}
+                    icon={<ErrorOutlineIcon />}
+                  >
+                    <Typography variant="body2">{error.code_acces}</Typography>
+                  </Alert>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Bouton de connexion avec feedback visuel */}
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={pin.length !== 6 || loadingPin}
+              onClick={soumettrePin}
+              sx={{
+                py: 2,
+                borderRadius: 3,
+                mt: 1,
+                textTransform: "none",
+                fontWeight: "bold",
+                fontSize: "1rem",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "action.disabledBackground",
+                  color: "action.disabled",
+                },
+              }}
+              startIcon={loadingPin ? null : <LoginIcon />}
+            >
+              {loadingPin ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Se connecter"
+              )}
+            </Button>
+
+            {/* Bouton Retour avec style discret */}
+            <Button
+              fullWidth
+              sx={{
+                mt: 2,
+                color: "text.secondary",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                  color: "text.primary",
+                },
+              }}
+              onClick={() => setVue("config")}
+              startIcon={<ArrowBackIcon />}
+            >
+              Retour
+            </Button>
+
+            {/* Aide contextuelle */}
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ mt: 3, display: "block" }}
+            >
+              Besoin d'aide ? Contactez l'administrateur de la compétition.
+            </Typography>
+          </Paper>
+        </motion.div>
       </Box>
     );
   }
