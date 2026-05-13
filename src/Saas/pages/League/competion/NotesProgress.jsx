@@ -48,11 +48,6 @@ export default function NotesProgress({
     fetchNotes();
   }, [ordrePassageId]);
 
-  // useEffect(() => {
-  //   if (!ordrePassageId) return;
-  //   const interval = setInterval(fetchNotes, 3000);
-  //   return () => clearInterval(interval);
-  // }, [ordrePassageId, fetchNotes]);
   useEffect(() => {
     if (!ordrePassageId || !configId) return;
 
