@@ -391,12 +391,7 @@ export default function VuePubliqueKata() {
 
           {/* Prochain athlète */}
           {nextAthlete && (
-            <motion.div
-              initial="initial"
-              animate="animate"
-              variants={slideIn}
-              variants={staggerItem}
-            >
+            <motion.div initial="initial" animate="animate" variants={slideIn}>
               <Paper
                 sx={{
                   p: 3,
