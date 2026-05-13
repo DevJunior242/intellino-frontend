@@ -110,7 +110,6 @@ export default function ConfigNotationCardDetails() {
       if (res.data.success) {
         const config = configs.find((c) => c.id === configId);
 
-        // localStorage.setItem("config_active_id", configId);
         setConfigActive(config);
         setEnCours(res.data.enCours);
         setVue("seance");
@@ -134,14 +133,12 @@ export default function ConfigNotationCardDetails() {
       const { data } = await Instance.get(
         `/api/seances/competition/${config.id}/en-cours`,
       );
-      console.log("init seance data", data);
 
       setConfigActive(config);
 
       if (data.enCours) {
         // il y a encore un athlète en cours
         setEnCours(data.enCours);
-        // localStorage.setItem("enCours", JSON.stringify(data.enCours));
       }
 
       if (savedPoste) {
