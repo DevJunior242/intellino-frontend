@@ -9,8 +9,7 @@ import {
   ErrorOutlineIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
-import { InputAdornment } from "@mui/material";
-import {
+ import {
   Alert,
   Box,
   Button,
@@ -18,6 +17,7 @@ import {
   Paper,
   TextField,
   Typography,
+  InputAdornment
 } from "@mui/material";
 import ConfigNotationCard from "./ConfigNotationCard";
 import SeanceAdminPanel from "./SeanceAdminPanel";
