@@ -376,7 +376,7 @@ export default function ConfigNotationCardDetails() {
                       border: "1px solid",
                       borderColor: "error.light",
                     }}
-                    icon={<ErrorOutlineIcon />}
+                    icon={<ErrorOutlineOutlinedIcon />}
                   >
                     <Typography variant="body2">{error.code_acces}</Typography>
                   </Alert>
