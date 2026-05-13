@@ -2,6 +2,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
 import {
+  EmojiEvents,
+  LockOutlinedIcon,
+  LoginIcon,
+  ArrowBackIcon,
+  ErrorOutlineIcon,
+} from "@mui/icons-material";
+import { motion, AnimatePresence } from "framer-motion";
+import { InputAdornment } from "@mui/material";
+import {
   Alert,
   Box,
   Button,
