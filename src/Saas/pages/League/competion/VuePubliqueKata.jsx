@@ -129,7 +129,8 @@ export default function VuePubliqueKata() {
       ]);
 
       setData(vueRes.data);
-      setNextAthlete(nextRes.data.prochain ?? null);
+      const nextData = nextRes.data ?? null;
+      setNextAthlete(nextData);
       setLoading(false);
     } catch (err) {
       console.error(err);
