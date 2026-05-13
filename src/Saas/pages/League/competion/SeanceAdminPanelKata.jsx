@@ -32,6 +32,7 @@ import {
   Warning,
 } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
+import ProchainAthlete from "./ProchainAthlete";
 
 const AthleteCard = ({ enCours, config, notes }) => {
   return (
@@ -66,7 +67,7 @@ const AthleteCard = ({ enCours, config, notes }) => {
         justifyContent="space-between"
         alignItems={{ xs: "flex-start", sm: "center" }}
         gap={1}
-        mt={-10}
+        mt={-6}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Stack direction="row" alignItems="center" gap={1} mb={0.5}>
@@ -646,7 +647,11 @@ export default function SeanceAdminPanelKata({
           sx={{ bgcolor: "#141720", color: "#636b88", fontSize: "0.65rem" }}
         />
       </Divider>
-      {/* <ProchainAthlete nextAthlete={nextAthlete} compact /> */}
+      {nextAthlete ? (
+        <ProchainAthlete nextAthlete={nextAthlete} compact />
+      ) : (
+        <Typography color="text.secondary">Aucun athlète en attente</Typography>
+      )}
       {/* ── Arbitres ── */}
       <Divider sx={{ my: 2.5 }}>
         <Chip
