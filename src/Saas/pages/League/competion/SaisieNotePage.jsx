@@ -90,6 +90,8 @@ export default function SaisieNotePage({ config }) {
       setSubmitting(false);
     }
   };
+  console.log("enCours", enCours);
+  console.log("nextAthlete", nextAthlete);
 
   return (
     <Box sx={{ p: 2, maxWidth: 500, mx: "auto" }}>
