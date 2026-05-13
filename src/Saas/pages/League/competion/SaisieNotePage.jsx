@@ -118,11 +118,7 @@ export default function SaisieNotePage({ config }) {
             />
           </Box>
         ))}
-      {nextAthlete ? (
-        <ProchainAthlete nextAthlete={nextAthlete} compact />
-      ) : (
-        <Typography color="text.secondary">Aucun athlète en attente</Typography>
-      )}
+
       {/* Athlète en cours */}
       <Paper sx={{ p: 3, borderRadius: 3, mb: 2, textAlign: "center" }}>
         <SportsMartialArts
@@ -145,7 +141,11 @@ export default function SaisieNotePage({ config }) {
           />
         </Stack>
       </Paper>
-
+      {nextAthlete ? (
+        <ProchainAthlete nextAthlete={nextAthlete} compact />
+      ) : (
+        <Typography color="text.secondary">Aucun athlète en attente</Typography>
+      )}
       {/* Zone saisie note */}
       {!dejaNote ? (
         <Paper sx={{ p: 3, borderRadius: 3 }}>
