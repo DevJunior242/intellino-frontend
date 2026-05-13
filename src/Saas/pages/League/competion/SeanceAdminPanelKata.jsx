@@ -409,8 +409,7 @@ export default function SeanceAdminPanelKata({
   const [arbitreEnCours, setArbitreEnCours] = useState(null);
   const [notes, setNotes] = useState([]);
 
-  const { enCours, arbitres, superviseur } = data;
-   
+  const { enCours, arbitres, superviseur, nextAthlete } = data;
 
   const isValidated = config.est_valide;
   const actifs = useMemo(
@@ -639,7 +638,15 @@ export default function SeanceAdminPanelKata({
       ) : (
         <Typography color="text.secondary">Aucun athlète en cours</Typography>
       )}
-
+      {/* ── Prochain athlète ── */}
+      <Divider sx={{ my: 2.5 }}>
+        <Chip
+          label={`Prochain athlète · ${nextAthlete?.inscription?.athlete?.fullname ?? "—"}`}
+          size="small"
+          sx={{ bgcolor: "#141720", color: "#636b88", fontSize: "0.65rem" }}
+        />
+      </Divider>
+      {/* <ProchainAthlete nextAthlete={nextAthlete} compact /> */}
       {/* ── Arbitres ── */}
       <Divider sx={{ my: 2.5 }}>
         <Chip

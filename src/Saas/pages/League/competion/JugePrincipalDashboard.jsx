@@ -326,18 +326,22 @@ export default function JugePrincipalDashboard({
     await Promise.all(
       configs.map(async (config) => {
         try {
-          const [enCoursRes, arbitresRes] = await Promise.all([
+          const [enCoursRes, arbitresRes, nextAthleteRes] = await Promise.all([
             Instance.get(`/api/seances/competition/${config.id}/en-cours`),
             Instance.get(`/api/seances/configs/${config.id}/arbitres-rotation`),
+            Instance.get(`/api/configs/${config.id}/next-athlete`),
           ]);
 
           const enCoursData =
             enCoursRes.data?.enCours || enCoursRes.data || null;
+          const nextAthleteData =
+            nextAthleteRes.data?.prochain || nextAthleteRes.data || null;
 
           results[config.id] = {
             enCours: enCoursData,
             arbitres: arbitresRes.data?.arbitres || [],
             superviseur: arbitresRes.data?.superviseur || null,
+            nextAthlete: nextAthleteData,
           };
         } catch (error) {
           console.error("Erreur pour le tatami", config.id, error);
@@ -345,6 +349,7 @@ export default function JugePrincipalDashboard({
             enCours: null,
             arbitres: [],
             superviseur: null,
+            nextAthlete: null,
           };
         }
       }),
@@ -354,7 +359,7 @@ export default function JugePrincipalDashboard({
     setIsDataReady(true);
     setLoadingInitial(false);
 
-    // ✅ Sélectionner la config uniquement si les données sont prêtes
+    //  Sélectionner la config uniquement si les données sont prêtes
     if (!configSelecteeRef.current && configs.length > 0) {
       const premier =
         configs.find((c) => {
@@ -370,19 +375,22 @@ export default function JugePrincipalDashboard({
     }
   }, [configs]);
 
-  // ✅ fetchTatamiActif corrigé
+  //  fetchTatamiActif
   const fetchTatamiActif = useCallback(async (configId, silent = false) => {
     if (!silent) setLoadingActif(true);
     else setPolling(true);
 
     try {
-      const [enCoursRes, arbitresRes] = await Promise.all([
+      const [enCoursRes, arbitresRes, nextAthleteRes] = await Promise.all([
         Instance.get(`/api/seances/competition/${configId}/en-cours`),
         Instance.get(`/api/seances/configs/${configId}/arbitres-rotation`),
+        Instance.get(`/api/configs/${configId}/next-athlete`),
       ]);
 
-      // ✅ Normaliser la réponse pour enCours
+      //  Normaliser la réponse pour enCours
       const enCoursData = enCoursRes.data?.enCours || enCoursRes.data || null;
+      const nextAthleteData =
+        nextAthleteRes.data?.prochain || nextAthleteRes.data || null;
 
       setTatamiData((prev) => ({
         ...prev,
@@ -390,6 +398,7 @@ export default function JugePrincipalDashboard({
           enCours: enCoursData,
           arbitres: arbitresRes.data?.arbitres || [],
           superviseur: arbitresRes.data?.superviseur || null,
+          nextAthlete: nextAthleteData,
         },
       }));
     } catch (e) {
@@ -400,12 +409,12 @@ export default function JugePrincipalDashboard({
     }
   }, []);
 
-  // ✅ Premier chargement
+  //  Premier chargement
   useEffect(() => {
     if (configs.length > 0) fetchTousLesTatamis();
   }, [configs, fetchTousLesTatamis]);
 
-  // ✅ Switch de tatami
+  // Switch de tatami
   useEffect(() => {
     if (!configSelectee?.id) return;
     if (isFirstLoad.current) {
@@ -415,21 +424,12 @@ export default function JugePrincipalDashboard({
     fetchTatamiActif(configSelectee.id, false);
   }, [configSelectee?.id, fetchTatamiActif]);
 
-  // ✅ Polling toutes les 3 secondes (au lieu de 5 minutes)
-  // useEffect(() => {
-  //   if (!configSelectee?.id) return;
-  //   const interval = setInterval(() => {
-  //     fetchTatamiActif(configSelectee.id, true);
-  //   }, 3000); // ✅ 3 secondes
-  //   return () => clearInterval(interval);
-  // }, [configSelectee?.id, fetchTatamiActif]);
   useEffect(() => {
     if (!configSelectee?.id) return;
 
     const channel = echo.channel(`tatami.${configSelectee.id}`);
 
     channel.listen(".tatami.updated", () => {
-      // Quand le serveur pousse un event → on refetch silencieusement
       fetchTatamiActif(configSelectee.id, true);
     });
 
