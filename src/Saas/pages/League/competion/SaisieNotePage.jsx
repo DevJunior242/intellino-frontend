@@ -13,10 +13,12 @@ import {
 import { CheckCircle, SportsMartialArts } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
+import ProchainAthlete from "./ProchainAthlete";
 
 export default function SaisieNotePage({ config }) {
   console.log("config", config);
   const [enCours, setEnCours] = useState(null);
+  const [nextAthlete, setNextAthlete] = useState(null);
   const [valeur, setValeur] = useState(7.0);
   const [dejaNote, setDejaNote] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,12 +31,15 @@ export default function SaisieNotePage({ config }) {
   const fetchEnCours = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await Instance.get(
-        `/api/seances/competition/${config.id}/en-cours`,
-      );
-      console.log("examen en cours data", res);
-      // Reset si nouvel athlète
-      const newEnCours = res.data;
+      const [enCoursRes, nextAthleteRes] = await Promise.all([
+        Instance.get(`/api/seances/competition/${config.id}/en-cours`),
+        Instance.get(`/api/configs/${config.id}/next-athlete`),
+      ]);
+      const nextAthleteData =
+        nextAthleteRes.data?.prochain || nextAthleteRes.data || null;
+      setNextAthlete(nextAthleteData);
+      const enCoursData = enCoursRes.data?.enCours || enCoursRes.data || null;
+      const newEnCours = enCoursData;
 
       if (newEnCours?.id !== enCoursRef.current?.id) {
         setDejaNote(false);
@@ -113,7 +118,11 @@ export default function SaisieNotePage({ config }) {
             />
           </Box>
         ))}
-
+      {nextAthlete ? (
+        <ProchainAthlete nextAthlete={nextAthlete} compact />
+      ) : (
+        <Typography color="text.secondary">Aucun athlète en attente</Typography>
+      )}
       {/* Athlète en cours */}
       <Paper sx={{ p: 3, borderRadius: 3, mb: 2, textAlign: "center" }}>
         <SportsMartialArts

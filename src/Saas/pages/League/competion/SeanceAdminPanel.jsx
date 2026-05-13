@@ -12,6 +12,7 @@ import {
 import NotesProgress from "./NotesProgress";
 import { ChildCareSharp } from "@mui/icons-material";
 import echo from "../../../../echo";
+import ProchainAthlete from "./ProchainAthlete";
 
 export default function SeanceAdminPanel({
   config,
@@ -25,16 +26,23 @@ export default function SeanceAdminPanel({
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [enCours, setEnCours] = useState(null);
+  const [nextAthlete, setNextAthlete] = useState(null);
   // Toutes les notes reçues pour l'athlète en cours
   const toutesNotees = notes?.length === config?.juges_option;
   //encours
   const getEnCours = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await Instance.get(
-        `/api/seances/competition/${config.id}/en-cours`,
-      );
-      setEnCours(res.data);
+      const [enCoursRes, nextAthleteRes] = await Promise.all([
+        Instance.get(`/api/seances/competition/${config.id}/en-cours`),
+        Instance.get(`/api/configs/${config.id}/next-athlete`),
+      ]);
+      //  Normaliser la réponse pour enCours
+      const enCoursData = enCoursRes.data?.enCours || enCoursRes.data || null;
+      const nextAthleteData =
+        nextAthleteRes.data?.prochain || nextAthleteRes.data || null;
+      setEnCours(enCoursData);
+      setNextAthlete(nextAthleteData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -106,6 +114,11 @@ export default function SeanceAdminPanel({
             />
           </Stack>
         </Paper>
+      )}
+      {nextAthlete ? (
+        <ProchainAthlete nextAthlete={nextAthlete} compact />
+      ) : (
+        <Typography color="text.secondary">Aucun athlète en attente</Typography>
       )}
       {/* Erreurs / succès */}
       {success[config.id] && (
