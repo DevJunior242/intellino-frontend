@@ -77,6 +77,8 @@ export default function SeanceAdminPanel({
     setSubmitting(false);
   };
 
+  console.log("enCours", enCours);
+  console.log("nextAthlete", nextAthlete);
   return (
     <Box>
       {/* Athlète en cours */}
