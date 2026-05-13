@@ -237,7 +237,6 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             mb: 1,
           }}
         >
-          {enCours?.inscription?.organisateur?.name ?? "—"} ·
           {enCours?.inscription?.athlete?.fullname ?? "—"}
         </Typography>
 
@@ -249,6 +248,30 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
           flexWrap="wrap"
           mb={2}
         >
+          {/* organisateur.name */}
+          {enCours?.inscription?.organisateur && (
+            <Chip
+              icon={
+                <Tag
+                  sx={{
+                    fontSize: "0.75rem !important",
+                    color: `${C.accent} !important`,
+                  }}
+                />
+              }
+              label={enCours?.inscription?.organisateur?.name ?? "—"}
+              size="small"
+              sx={{
+                bgcolor: `${C.accent}15`,
+                color: C.accent,
+                border: `1px solid ${C.accent}30`,
+                fontSize: "0.72rem",
+                height: 24,
+              }}
+            />
+          )}
+
+          {/* athlete.fullname */}
           <Chip
             icon={
               <Tag
