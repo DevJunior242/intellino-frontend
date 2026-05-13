@@ -6,10 +6,10 @@ import {
   LockOutlinedIcon,
   LoginIcon,
   ArrowBackIcon,
-  ErrorOutlineIcon,
+  ErrorOutlineOutlinedIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
- import {
+import {
   Alert,
   Box,
   Button,
@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
   Paper,
   TextField,
   Typography,
-  InputAdornment
+  InputAdornment,
 } from "@mui/material";
 import ConfigNotationCard from "./ConfigNotationCard";
 import SeanceAdminPanel from "./SeanceAdminPanel";
@@ -282,7 +282,7 @@ export default function ConfigNotationCardDetails() {
                       border: "1px solid",
                       borderColor: "error.light",
                     }}
-                    icon={<ErrorOutlineIcon />}
+                    icon={<ErrorOutlineOutlinedIcon />}
                   >
                     <Typography variant="body2">{error.general}</Typography>
                   </Alert>
