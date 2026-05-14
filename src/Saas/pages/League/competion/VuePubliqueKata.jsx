@@ -121,7 +121,7 @@ export default function VuePubliqueKata() {
   const [error, setError] = useState(null);
 
   const fetchVuePublique = useCallback(async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const [vueRes, nextRes] = await Promise.all([
         Instance.get(`/api/configs/${configId}/vue-publique`),
