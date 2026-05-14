@@ -426,7 +426,7 @@ export default function ConfigNotationCardDetails() {
                 },
               }}
               onClick={() => setVue("config")}
-              startIcon={<ArrowBackIcon />}
+              startIcon={<ArrowBack />}
             >
               Retour
             </Button>
