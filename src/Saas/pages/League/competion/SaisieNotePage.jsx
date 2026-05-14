@@ -22,7 +22,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
 import ProchainAthlete from "./ProchainAthlete";
-import NoteArbitre from "./NoteArbitre";
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const C = {
@@ -328,7 +327,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
 
         {/* Barre progression notes */}
         <Box>
-          <Stack
+          {/* <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
@@ -353,7 +352,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             >
               {notesCount} / {nbJuges}
             </Typography>
-          </Stack>
+          </Stack> */}
           <Box
             sx={{
               height: 4,
@@ -771,9 +770,12 @@ export default function SaisieNotePage({ config }) {
   useEffect(() => {
     if (!config) return;
     const channel = echo.channel(`tatami.${config.id}`);
-
     channel.listen(".tatami.updated", () => fetchEnCours());
-
+    channel.listen(".note.ajoutee", (e) => {
+      if (e.ordrePassageId === enCoursRef.current?.id) {
+        setNotes((prev) => [...prev, e]);
+      }
+    });
     return () => echo.leaveChannel(`tatami.${config.id}`);
   }, [config.id, fetchEnCours]);
 
@@ -788,6 +790,7 @@ export default function SaisieNotePage({ config }) {
       setDejaNote(true);
       setSuccess(true);
     } catch (err) {
+      console.error("Erreur lors de la saisie de la note:", err);
       setErreur(err.response?.data?.message || "Erreur lors de la saisie");
     } finally {
       setSubmitting(false);
@@ -892,11 +895,7 @@ export default function SaisieNotePage({ config }) {
                 notes={notes}
                 nbJuges={config?.juges_option}
               />
-              <NoteArbitre
-                ordrePassageId={enCours?.id ?? null}
-                onNotesChange={setNotes}
-                configId={config.id}
-              />
+
               {/* Prochain athlète */}
               <ProchainAthlete nextAthlete={nextAthlete} compact />
 
