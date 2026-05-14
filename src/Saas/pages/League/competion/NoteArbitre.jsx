@@ -7,6 +7,8 @@ export default function NoteArbitre({
   onNotesChange,
   configId,
 }) {
+  console.log("NoteArbitre rendu avec ordrePassageId:", ordrePassageId);
+
   const [notes, setNotes] = useState([]);
   const [score, setScore] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
