@@ -437,6 +437,7 @@ export default function JugePrincipalDashboard({
       echo.leaveChannel(`tatami.${configSelectee.id}`);
     };
   }, [configSelectee?.id, fetchTatamiActif]);
+
   const handleDesignerSuperviseur = async (configId, arbitreCompetitionId) => {
     try {
       await Instance.patch(`/api/rotation-arbitres/${configId}/superviseur`, {

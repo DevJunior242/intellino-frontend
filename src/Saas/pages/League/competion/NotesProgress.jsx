@@ -63,6 +63,7 @@ export default function NotesProgress({
       echo.leaveChannel(`tatami.${configId}`);
     };
   }, [ordrePassageId, configId]);
+
   const progression = nbJuges > 0 ? (notes.length / nbJuges) * 100 : 0;
   const toutesRecues = notes.length === nbJuges && nbJuges > 0;
 
