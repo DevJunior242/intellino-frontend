@@ -771,12 +771,9 @@ export default function SaisieNotePage({ config }) {
   useEffect(() => {
     if (!config) return;
     const channel = echo.channel(`tatami.${config.id}`);
+
     channel.listen(".tatami.updated", () => fetchEnCours());
-    channel.listen(".note.ajoutee", (e) => {
-      if (e.ordrePassageId === enCoursRef.current?.id) {
-        setNotes((prev) => [...prev, e]);
-      }
-    });
+
     return () => echo.leaveChannel(`tatami.${config.id}`);
   }, [config.id, fetchEnCours]);
 

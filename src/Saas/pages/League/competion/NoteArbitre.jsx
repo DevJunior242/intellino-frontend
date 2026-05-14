@@ -57,18 +57,15 @@ export default function NoteArbitre({
   // Écoute des mises à jour en temps réel via WebSocket
   useEffect(() => {
     if (!ordrePassageId || !configId) return;
-
     const channel = echo.channel(`tatami.${configId}`);
 
-    channel.listen(".note.ajoutee", (e) => {
-      if (e.ordrePassageId === ordrePassageId) {
-        fetchNotes(); // Met à jour les notes en temps réel
-      }
-    });
+    const handler = (e) => {
+      if (e.ordrePassageId === ordrePassageId) fetchNotes();
+    };
+    channel.listen(".note.ajoutee", handler);
 
-    // Nettoyage du channel
     return () => {
-      echo.leaveChannel(`tatami.${configId}`);
+      channel.stopListening(".note.ajoutee", handler);
     };
   }, [ordrePassageId, configId, fetchNotes]);
 
