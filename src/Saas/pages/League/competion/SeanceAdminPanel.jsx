@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Instance } from "../../../../Api/Axios";
 import {
   Alert,
@@ -41,39 +41,34 @@ export default function SeanceAdminPanel({
   const [loading, setLoading] = useState(true);
   const [enCours, setEnCours] = useState(null);
   const [nextAthlete, setNextAthlete] = useState(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Pour différencier le chargement initial des mises à jour
+  const isInitialLoadRef = useRef(true);
 
   // Toutes les notes reçues pour l'athlète en cours
   const toutesNotees = notes?.length === config?.juges_option;
 
   // Récupération des données avec gestion intelligente du loading
+
   const getEnCours = useCallback(async () => {
     if (!config?.id) return;
-
     try {
-      // Ne pas afficher le loading si c'est une mise à jour (pas le chargement initial)
-      if (!isInitialLoad) setLoading(true);
-
+      if (isInitialLoadRef.current) setLoading(true);
       const [enCoursRes, nextAthleteRes] = await Promise.all([
         Instance.get(`/api/seances/competition/${config.id}/en-cours`),
         Instance.get(`/api/configs/${config.id}/next-athlete`),
       ]);
-
-      // Normaliser les réponses
       const enCoursData = enCoursRes.data?.enCours || enCoursRes.data || null;
       const nextAthleteData =
         nextAthleteRes.data?.prochain || nextAthleteRes.data || null;
-
       setEnCours(enCoursData);
       setNextAthlete(nextAthleteData);
-      setNotes([]); // Réinitialiser les notes à chaque nouvel athlète
+      setNotes([]);
     } catch (err) {
-      console.error("Erreur lors de la récupération des données:", err);
+      console.error(err);
     } finally {
       setLoading(false);
-      setIsInitialLoad(false); // Le chargement initial est terminé
+      isInitialLoadRef.current = false;
     }
-  }, [config, isInitialLoad]);
+  }, [config]); // ← isInitialLoad retiré des deps
 
   useEffect(() => {
     if (!config) return;
@@ -108,7 +103,7 @@ export default function SeanceAdminPanel({
   };
 
   // Affichage du skeleton pendant le chargement initial
-  if (isInitialLoad && loading) {
+  if (isInitialLoadRef && loading) {
     return (
       <Box>
         <Paper sx={{ p: 2, mb: 2, borderRadius: 3 }}>
