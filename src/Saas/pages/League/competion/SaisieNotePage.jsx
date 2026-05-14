@@ -324,55 +324,6 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             />
           )}
         </Stack>
-
-        {/* Barre progression notes */}
-        <Box>
-          {/* <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={0.5}
-          >
-            <Typography
-              sx={{
-                fontSize: "0.65rem",
-                color: C.muted,
-                letterSpacing: 1,
-                textTransform: "uppercase",
-              }}
-            >
-              Notes reçues
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: "0.72rem",
-                color: toutesRecues ? C.success : C.accent,
-                fontWeight: 700,
-              }}
-            >
-              {notesCount} / {nbJuges}
-            </Typography>
-          </Stack> */}
-          <Box
-            sx={{
-              height: 4,
-              borderRadius: 99,
-              bgcolor: "#1e2a3a",
-              overflow: "hidden",
-            }}
-          >
-            <motion.div
-              style={{
-                height: "100%",
-                borderRadius: 99,
-                background: toutesRecues ? C.success : C.accent,
-              }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progression}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </Box>
-        </Box>
       </Box>
     </motion.div>
   );
@@ -738,7 +689,7 @@ export default function SaisieNotePage({ config }) {
         Instance.get(`/api/configs/${config.id}/next-athlete`),
       ]);
 
-      const nextAthleteData = nextAthleteRes.data?.prochain || null;
+      const nextAthleteData = nextAthleteRes.data || null;
       setNextAthlete(nextAthleteData);
 
       const enCoursData = enCoursRes.data?.enCours || enCoursRes.data || null;
