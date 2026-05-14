@@ -153,6 +153,9 @@ export default function VuePubliqueKata() {
     channel.listen(".tatami.updated", () => {
       fetchVuePublique();
     });
+    channel.listen(".note.ajoutee", () => {
+      fetchVuePublique();
+    });
     return () => {
       echo.leaveChannel(`tatami.${configId}`);
     };
