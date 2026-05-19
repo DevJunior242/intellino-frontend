@@ -109,6 +109,7 @@ import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
 import LicenceTable from "./Saas/pages/League/LicenceTable.jsx";
 import Arbitres from "./Saas/pages/League/Arbitres.jsx";
 import Config from "./Saas/pages/League/competion/Config.jsx";
+import AdminKeyGenerator from "./Saas/pages/AdminKeyGenerator.jsx";
 
 const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -207,6 +208,7 @@ const AppRoutes = () => {
         </Route>
         {/* ROUTES STRICTEMENT SUPER ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
+          <Route path="activation-keys" element={<AdminKeyGenerator />} />
           <Route path="clubs" element={<ClubAdmin />} />
           <Route path="users" element={<Users />} />
           <Route path="karateka/list" element={<StudentList />} />

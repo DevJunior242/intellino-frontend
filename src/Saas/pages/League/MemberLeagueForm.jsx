@@ -95,9 +95,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
       setSubmitting(false);
     }
   };
-  if (loading) {
-    return <ConfigSkeleton />;
-  }
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>Ajouter un membre</DialogTitle>

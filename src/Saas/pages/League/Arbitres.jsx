@@ -291,16 +291,6 @@ function Arbitres() {
       </Box>
 
       <Box>
-        {selectedMember && (
-          <ToggleRole
-            open={openEditModel}
-            handleClose={handleCloseEditModal}
-            member={selectedMember}
-            setMembers={setMembers}
-            activeId={activeId}
-            onRefresh={getMembers}
-          />
-        )}
         <MemberLeagueForm
           open={open}
           handleClose={handleClose}

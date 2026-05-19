@@ -305,7 +305,7 @@ export default function JugePrincipalDashboard({
   const [configSelectee, setConfigSelectee] = useState(null);
   const [showRepartition, setShowRepartition] = useState(false);
   const [isDataReady, setIsDataReady] = useState(false);
-
+  const [loadingAction, setLoadingAction] = useState(null);
   const configSelecteeRef = useRef(null);
   const isFirstLoad = useRef(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -439,6 +439,7 @@ export default function JugePrincipalDashboard({
   }, [configSelectee?.id, fetchTatamiActif]);
 
   const handleDesignerSuperviseur = async (configId, arbitreCompetitionId) => {
+    setLoadingAction({ id: arbitreCompetitionId, type: "chef" });
     try {
       await Instance.patch(`/api/rotation-arbitres/${configId}/superviseur`, {
         config_notation_id: configId,
@@ -447,6 +448,8 @@ export default function JugePrincipalDashboard({
       fetchTatamiActif(configId, true);
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -491,6 +494,7 @@ export default function JugePrincipalDashboard({
       <SeanceAdminPanelKata
         config={configSelectee}
         data={dataActive}
+        loadingAction={loadingAction}
         handleValider={handleValider}
         handleDesignerSuperviseur={handleDesignerSuperviseur}
         success={success}

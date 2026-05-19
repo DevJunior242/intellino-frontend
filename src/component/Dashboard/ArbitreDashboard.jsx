@@ -9,8 +9,6 @@ import {
   CircularProgress,
   Avatar,
   LinearProgress,
-  useTheme,
-  useMediaQuery,
 } from "@mui/material";
 import {
   EmojiEvents,
@@ -23,8 +21,8 @@ import {
   Star,
   Gavel,
 } from "@mui/icons-material";
-import { Instance } from "../../Api/Axios";
 import { UseAuth } from "../../Api/AuthContext";
+import { Instance } from "../../Api/Axios";
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PURPLE = "#6c63ff";
@@ -213,11 +211,20 @@ export default function ArbitreDashboard() {
   const [loading, setLoading] = useState(true);
   const { auth } = UseAuth();
 
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await Instance.get("api/arbitre/stats");
+      setStats(res.data);
+    } catch (err) {
+      console.error("Erreur lors du chargement des statistiques :", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    Instance.get("/api/arbitre/stats")
-      .then((res) => setStats(res.data.stats))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    fetchStats();
   }, []);
 
   if (loading) {

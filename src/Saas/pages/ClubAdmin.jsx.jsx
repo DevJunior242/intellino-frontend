@@ -60,8 +60,8 @@ function ClubAdmin() {
       minWidth: 150,
     },
     {
-      field: "country",
-      headerName: "Country",
+      field: "city",
+      headerName: "Ville",
       flex: 1,
       editable: true,
       minWidth: 150,

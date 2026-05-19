@@ -53,8 +53,9 @@ export default function ConfigNotationCardDetails() {
 
   // ── Fetch configs ──────────────────────────────────
   const getConfigs = useCallback(async () => {
-    setLoading(true);
     if (!activeId) return;
+
+    setLoading(true);
     try {
       const res = await Instance.get(
         `/api/config-notation/config-notation?organisateur_id=${activeId}&organisateur_type=${activeType}`,
@@ -79,7 +80,8 @@ export default function ConfigNotationCardDetails() {
     setSuccess((prev) => ({ ...prev, [id]: null }));
     setError((prev) => ({ ...prev, [id]: [] }));
     try {
-      await Instance.post(`/api/seances/configs/${id}/valider`);
+      const res = await Instance.post(`/api/seances/configs/${id}/valider`);
+      console.log("valider res", res);
       const freshConfigs = await getConfigs();
 
       const config = freshConfigs?.find((c) => c.id === id);
@@ -151,10 +153,6 @@ export default function ConfigNotationCardDetails() {
       console.error(err);
     }
   }, [configs]);
-
-  useEffect(() => {
-    getConfigs();
-  }, [getConfigs]);
 
   useEffect(() => {
     if (configs.length > 0) {

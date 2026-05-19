@@ -41,7 +41,7 @@ import TopBar from "../../Header/Topbar";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
-import { Groups, PeopleAlt, Settings } from "@mui/icons-material";
+import { Groups, Key, PeopleAlt, Settings } from "@mui/icons-material";
 
 const DRAWER_EXPANDED = 240;
 const DRAWER_COLLAPSED = 60;
@@ -120,6 +120,13 @@ export default function DashboardLayout() {
     {
       section: "Gestion",
       items: [
+        {
+          title: "Clés d'activation",
+          icon: <Key fontSize="small" />,
+          to: "/dashboard/activation-keys",
+          role: ["super_admin"],
+        },
+
         {
           title: "Clubs",
           icon: <Groups fontSize="small" />,

@@ -148,34 +148,18 @@ const navSections = [
       },
     ],
   },
-  // {
-  //   label: "Ligue",
-  //   items: [
-  //     {
-  //       icon: <Settings />,
-  //       label: "Configuration ligue",
-  //       to: "/dashboard/league/category",
-  //       role: ["admin_league"],
-  //     },
-  //   ],
-  // },
-  // {
-  //   label: "Notation",
-  //   items: [
-  //     {
-  //       icon: <Settings />,
-  //       label: "Configuration notation",
-  //       to: "/dashboard/league/confignotation",
-  //       role: ["admin_league"],
-  //     },
-  //     {
-  //       icon: <Settings />,
-  //       label: "validation notation",
-  //       to: "/dashboard/league/ConfigNotationCardDetails",
-  //       role: ["admin_league", "arbitre_league"],
-  //     },
-  //   ],
-  // },
+
+  {
+    label: "General",
+    items: [
+      {
+        icon: <Settings />,
+        label: "Paramétrage général",
+        to: "/settings",
+        role: ["admin_league", "arbitre_league"],
+      },
+    ],
+  },
 ];
 
 // ─── Motion Variants ──────────────────────────────────────────────────────────

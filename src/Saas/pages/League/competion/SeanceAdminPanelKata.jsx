@@ -131,12 +131,18 @@ const AthleteCard = ({ enCours, config, notes }) => {
 const ArbitreItem = ({
   arbitre,
   config,
+  loadingAction,
+  posteAction,
   onDesignerSuperviseur,
   onLibérerPoste,
   onOuvrirMenuPostes,
 }) => {
   const aUnPoste = arbitre.poste !== null;
-
+  const isLoadingChef =
+    loadingAction?.id === arbitre.arbitre_competition_id &&
+    loadingAction?.type === "chef";
+  const isLoadingPoste =
+    posteAction?.id === arbitre.id && posteAction?.type === "poste";
   return (
     <Paper
       elevation={0}
@@ -227,8 +233,13 @@ const ArbitreItem = ({
                   color="error"
                   onClick={() => onLibérerPoste(arbitre.id)}
                   sx={{ width: 26, height: 26 }}
+                  disabled={isLoadingPoste}
                 >
-                  <Logout sx={{ fontSize: 14 }} />
+                  {isLoadingPoste ? (
+                    <CircularProgress size={10} />
+                  ) : (
+                    <Logout sx={{ fontSize: 14 }} />
+                  )}
                 </IconButton>
               </Tooltip>
             </>
@@ -254,8 +265,9 @@ const ArbitreItem = ({
                   color: "#8b90a0",
                   minWidth: "auto",
                 }}
+                disabled={isLoadingPoste}
               >
-                Poste
+                {isLoadingPoste ? <CircularProgress size={10} /> : "Poste"}
               </Button>
             </>
           )}
@@ -264,7 +276,6 @@ const ArbitreItem = ({
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<Star sx={{ fontSize: "0.7rem !important" }} />}
                 onClick={() =>
                   onDesignerSuperviseur(
                     config.id,
@@ -280,8 +291,16 @@ const ArbitreItem = ({
                   color: "#8b90a0",
                   minWidth: "auto",
                 }}
+                disabled={isLoadingChef}
+                startIcon={
+                  isLoadingChef ? (
+                    <CircularProgress size={10} />
+                  ) : (
+                    <Star sx={{ fontSize: "0.7rem !important" }} />
+                  )
+                }
               >
-                Chef
+                {isLoadingChef ? "..." : "Chef"}{" "}
               </Button>
             </Tooltip>
           )}
@@ -397,6 +416,7 @@ export default function SeanceAdminPanelKata({
   data,
   handleLaunchSeance,
   handleValider,
+  loadingAction,
   handleDesignerSuperviseur,
   success,
   errors,
@@ -409,6 +429,7 @@ export default function SeanceAdminPanelKata({
   const [anchorEl, setAnchorEl] = useState(null);
   const [arbitreEnCours, setArbitreEnCours] = useState(null);
   const [notes, setNotes] = useState([]);
+  const [posteAction, setPostAction] = useState(null);
 
   const { enCours, arbitres, superviseur, nextAthlete } = data;
 
@@ -421,13 +442,13 @@ export default function SeanceAdminPanelKata({
   const chargerArbitresDispos = async () => {
     if (!config?.evenement_id) return;
     setLoadingArbitres(true);
-    setOpenModal(true);
     try {
       const res = await Instance.get(
         `/api/arbitres/disponibles/${config.evenement_id}/${config.id}`,
       );
       console.log("arbitres dispononibles", res.data);
       setArbitresDispos(res.data);
+      setOpenModal(true);
     } catch (error) {
       console.error("Erreur chargement arbitres", error);
     } finally {
@@ -436,12 +457,18 @@ export default function SeanceAdminPanelKata({
   };
 
   const assignerArbitre = async (arbitreCompId) => {
-    await Instance.post(`/api/rotation-arbitres`, {
-      config_notation_id: config.id,
-      arbitre_competition_id: arbitreCompId,
-    });
-    setOpenModal(false);
+    try {
+      const res = await Instance.post(`/api/rotation-arbitres`, {
+        config_notation_id: config.id,
+        arbitre_competition_id: arbitreCompId,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
+    //setOpenModal(false);
     onRefresh();
+    chargerArbitresDispos();
   };
 
   const handleOuvrirMenuPostes = (event, arbitre) => {
@@ -450,6 +477,8 @@ export default function SeanceAdminPanelKata({
   };
 
   const handleAssignerPoste = async (rotationId, numeroPoste) => {
+    if (!rotationId || !numeroPoste) return;
+    setPostAction({ id: rotationId, type: "poste" });
     try {
       const response = await Instance.patch(`/api/rotation-arbitres/update`, {
         rotation_id: rotationId,
@@ -458,10 +487,13 @@ export default function SeanceAdminPanelKata({
       if (response.data.success) onRefresh();
     } catch (error) {
       alert(error.response?.data?.message || "Erreur lors de l'assignation");
+    } finally {
+      setPostAction(null);
     }
   };
 
   const handleLibérerPoste = async (rotationId) => {
+    setPostAction({ id: rotationId, type: "poste" });
     try {
       await Instance.patch(`/api/rotation-arbitres/assigner`, {
         rotation_id: rotationId,
@@ -470,6 +502,8 @@ export default function SeanceAdminPanelKata({
       onRefresh();
     } catch (error) {
       console.error(error);
+    } finally {
+      setPostAction(null);
     }
   };
 
@@ -690,6 +724,8 @@ export default function SeanceAdminPanelKata({
               key={arbitre.id}
               arbitre={arbitre}
               config={config}
+              loadingAction={loadingAction}
+              posteAction={posteAction}
               onDesignerSuperviseur={handleDesignerSuperviseur}
               onLibérerPoste={handleLibérerPoste}
               onOuvrirMenuPostes={handleOuvrirMenuPostes}
