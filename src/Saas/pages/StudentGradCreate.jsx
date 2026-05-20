@@ -106,7 +106,7 @@ function StudentGradCreate() {
           awarded_at: "",
         });
         setSuccess(response.data.message);
-
+        getGrade();
         setError({});
         setTimeout(() => {
           setSuccess("");

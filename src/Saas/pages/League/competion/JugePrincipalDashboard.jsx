@@ -29,6 +29,7 @@ import { Link } from "react-router-dom";
 import RepartitionAthletes from "./RepartitionAthletes";
 import SeanceAdminPanelKata from "./SeanceAdminPanelKata";
 import echo from "../../../../echo";
+import SeanceAdminPanelKumite from "./SeanceAdminPanelKumite";
 
 // ─── Skeleton sidebar ─────────────────────────────────────────────────────────
 const SidebarSkeleton = () => (
@@ -441,10 +442,14 @@ export default function JugePrincipalDashboard({
   const handleDesignerSuperviseur = async (configId, arbitreCompetitionId) => {
     setLoadingAction({ id: arbitreCompetitionId, type: "chef" });
     try {
-      await Instance.patch(`/api/rotation-arbitres/${configId}/superviseur`, {
-        config_notation_id: configId,
-        arbitre_competition_id: arbitreCompetitionId,
-      });
+      const res = await Instance.patch(
+        `/api/rotation-arbitres/${configId}/superviseur`,
+        {
+          config_notation_id: configId,
+          arbitre_competition_id: arbitreCompetitionId,
+        },
+      );
+      console.log("res superviseur", res);
       fetchTatamiActif(configId, true);
     } catch (e) {
       console.log(e);
