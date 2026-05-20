@@ -462,7 +462,7 @@ export default function VuePubliqueKata() {
                   {nextAthlete?.ordre ?? "—"}
                 </Typography>
                 <Typography color="rgba(255,255,255,0.7)">
-                  Kata : {nextAthlete?.inscription?.kata ?? "—"}
+                  Kata : {nextAthlete.inscription?.kata ?? "—"}
                 </Typography>
               </Paper>
             </motion.div>
