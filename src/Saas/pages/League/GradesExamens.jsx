@@ -165,7 +165,7 @@ export default function GradesExamens() {
               bgcolor: "rgba(255,255,255,0.05)",
             },
           }}
-          onClick={() => navigate("/dashboard/league/examen/store")}
+          onClick={() => navigate("/dashboard/league/examen")}
         >
           Ajouter un examen
         </Button>

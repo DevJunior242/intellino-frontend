@@ -70,7 +70,7 @@ function LicenceProgress() {
     setError("");
     try {
       const response = await Instance.get(
-        `/api/categories?league_id=${activeId}`,
+        `/api/categories?organisateur_id=${activeId}`,
       );
       console.log(response);
       setData(response.data.categories || []);

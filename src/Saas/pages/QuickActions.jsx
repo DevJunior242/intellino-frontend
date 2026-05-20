@@ -41,7 +41,7 @@ const ACTIONS = [
   {
     key: "add_examen",
     label: "Examen grade",
-    to: "dashboard/league/examen",
+    to: "/dashboard/league/examen",
     icon: EmojiEventsOutlined,
     color: "#BF360C",
     bg: "#FBE9E7",
