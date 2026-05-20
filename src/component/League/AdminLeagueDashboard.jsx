@@ -18,7 +18,6 @@ import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
 import ErrorBlock from "../../Saas/pages/ErrorBlock";
 import AlertCard from "./Alerts";
 import Alerts from "./Alerts";
-import LicenceProgress from "./LicenceProgress";
 import QuickActions from "../../Saas/pages/QuickActions";
 import ActivityFeed from "../../Saas/pages/ActivityFeed";
 
@@ -209,7 +208,7 @@ function AdminLeagueDashboard() {
         <Alerts />
 
         {/* Categories */}
-        <LicenceProgress />
+        {/* <LicenceProgress /> */}
       </Box>
       {/* Activity Table */}
       <motion.div
