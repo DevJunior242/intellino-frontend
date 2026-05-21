@@ -215,8 +215,7 @@ export default function ArbitreDashboard() {
     setLoading(true);
     try {
       const res = await Instance.get("api/arbitre/stats");
-      setStats(res.data);
-      console.log("arbitre stats", res.data);
+      setStats(res.data.stats);
     } catch (err) {
       console.error("Erreur lors du chargement des statistiques :", err);
     } finally {
