@@ -12,8 +12,6 @@ import {
   CircularProgress,
   Stack,
   Fade,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import TimerIcon from "@mui/icons-material/Timer";
 import { Instance } from "../../../../Api/Axios";
@@ -34,9 +32,6 @@ const SeanceAdminPanelKumite = ({
   const athleteAka = currentCombat?.athlete_aka;
   const athleteAo = currentCombat?.athlete_ao;
   const { arbitres, superviseur } = data;
-
-  const muiTheme = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down("md"));
 
   return (
     <Box

@@ -799,11 +799,11 @@ const StepKumiteFormat = ({
 const StepKumiteDuration = ({ value, onChange }) => {
   const durees = [
     {
-      valeur: 120,
+      valeur: 2,
       label: "2 min",
       desc: "Catégories jeunes (benjamins, minimes)",
     },
-    { valeur: 180, label: "3 min", desc: "Catégories seniors et juniors" },
+    { valeur: 3, label: "3 min", desc: "Catégories seniors et juniors" },
   ];
   return (
     <div style={{ display: "flex", gap: 12 }}>

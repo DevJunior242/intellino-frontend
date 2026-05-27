@@ -26,6 +26,8 @@ import SaisieNotePage from "./SaisieNotePage";
 import JugePrincipalDashboard from "./JugePrincipalDashboard";
 import DesignerSuperviseur from "./DesignerSuperviseur";
 import RepartitionAthletes from "./RepartitionAthletes";
+import SeanceConfig from "./SeanceConfig";
+import SaisieConfig from "./SaisieConfig";
 
 export default function ConfigNotationCardDetails() {
   const [loading, setLoading] = useState(true);
@@ -199,7 +201,7 @@ export default function ConfigNotationCardDetails() {
   // Vue saisie notes arbitre
   if (vue === "saisie") {
     return (
-      <SaisieNotePage
+      <SaisieConfig
         config={configActive}
         competitionId={configActive.competition_id}
         poste={poste}
@@ -470,7 +472,7 @@ export default function ConfigNotationCardDetails() {
   // Vue séance admin
   if (vue === "seance") {
     return (
-      <SeanceAdminPanel
+      <SeanceConfig
         error={error}
         success={success}
         initSeance={initSeance}
