@@ -42,7 +42,6 @@ const DebtPage = () => {
         const response = await Instance.get(
           `/api/payments/finance/debts?club_id=${activeId}&page=${page}`,
         );
-        console.log("Debts response:", response);
         const debts = response.data.data;
         setDebts(debts.data || []);
         setPagination({

@@ -37,9 +37,7 @@ export default function CategoriesPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await Instance.get(
-        `/api/categories?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      );
+      const response = await Instance.get(`/api/categories`);
       console.log(response);
       setCategories(response.data.categories || []);
     } catch (error) {
@@ -50,7 +48,7 @@ export default function CategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeId, activeType]);
+  }, [activeId]);
 
   useEffect(() => {
     if (activeId && activeType) getCategories();
@@ -60,28 +58,38 @@ export default function CategoriesPage() {
     return <ConfigSkeleton />;
   }
   if (error) return <ErrorBlock message={error} onRetry={getCategories} />;
+
+  const isFederationAdmin = activeType === "Federation";
+
   return (
     <Box sx={{ p: 1 }}>
-      {/* Bouton Nouvelle Catégorie */}
-      <Button
-        variant="outlined"
-        sx={{
-          mb: 4,
-          px: 4,
-          py: 1.5,
-          color: "#fff",
-          borderColor: "rgba(255,255,255,0.3)",
-          textTransform: "none",
-          borderRadius: 2,
-          fontSize: "1rem",
-          "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" },
-        }}
-        onClick={() =>
-          navigate("/dashboard/league/configCategory", { replace: true })
-        }
-      >
-        + Nouvelle catégorie
-      </Button>
+      {/* Bouton Nouvelle Catégorie — réservé à la Fédération, la Ligue consulte en lecture seule */}
+      {isFederationAdmin && (
+        <Button
+          variant="outlined"
+          sx={{
+            mb: 4,
+            px: 4,
+            py: 1.5,
+            color: "#fff",
+            borderColor: "rgba(255,255,255,0.3)",
+            textTransform: "none",
+            borderRadius: 2,
+            fontSize: "1rem",
+            "&:hover": {
+              borderColor: "#fff",
+              bgcolor: "rgba(255,255,255,0.05)",
+            },
+          }}
+          onClick={() =>
+            navigate("/dashboard/federation/configCategory", {
+              replace: true,
+            })
+          }
+        >
+          + Nouvelle catégorie
+        </Button>
+      )}
 
       {/* Conteneur de la Table */}
       <Paper
@@ -114,7 +122,7 @@ export default function CategoriesPage() {
               >
                 <TableCell>Catégorie</TableCell>
                 <TableCell>Tranche d'âge</TableCell>
-                {/* <TableCell>Disciplines</TableCell> */}
+                <TableCell>Poids</TableCell>
                 <TableCell align="right">Licenciés</TableCell>
               </TableRow>
             </TableHead>
@@ -138,6 +146,15 @@ export default function CategoriesPage() {
                   </TableCell>
                   <TableCell>
                     {row.age_min}-{row.age_max} ans
+                  </TableCell>
+                  <TableCell>
+                    {row.poids_max
+                      ? row.poids_min
+                        ? `${Number(row.poids_min)}-${Number(row.poids_max)}kg`
+                        : `-${Number(row.poids_max)}kg`
+                      : row.poids_min
+                        ? `+${Number(row.poids_min)}kg`
+                        : "—"}
                   </TableCell>
                   <TableCell
                     align="right"

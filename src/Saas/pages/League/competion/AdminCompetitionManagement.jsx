@@ -13,7 +13,6 @@ export default function AdminCompetitionManagement() {
   const [errorInscriptions, setErrorInscriptions] = useState("");
   const [error, setError] = useState({});
   const [loading, setLoading] = useState(true);
-  const { activeId, activeType } = UseAuth();
 
   const fetchInscriptions = async (compId) => {
     if (!compId) return;
@@ -23,14 +22,10 @@ export default function AdminCompetitionManagement() {
       const res = await Instance.get("/api/admin/inscriptions", {
         params: {
           competition_id: compId,
-          organisateur_id: activeId,
-          organisateur_type: activeType,
         },
       });
-      console.log("athletes", res);
       setInscriptions(res.data || []);
     } catch (err) {
-      console.error("Erreur de chargement", err);
       setErrorInscriptions("Erreur lors du chargement des athlètes");
     } finally {
       setLoading(false);
@@ -44,17 +39,14 @@ export default function AdminCompetitionManagement() {
   }, [selectedCompId]);
 
   //valider inscription
-  const handleStatusAction = async (id, action) => {
+  const handleStatusAction = async (id, action, poids_officiel) => {
     setError({});
     try {
       const res = await Instance.post(`/api/inscriptions/${id}/${action}`, {
-        organisateur_id: activeId,
-        organisateur_type: activeType,
+        poids_officiel: poids_officiel || null,
       });
-      console.log("res", res);
       fetchInscriptions(selectedCompId);
     } catch (err) {
-      console.error("Erreur lors de la validation", err);
       ErrorGlobal({ error: err, setError });
     }
   };

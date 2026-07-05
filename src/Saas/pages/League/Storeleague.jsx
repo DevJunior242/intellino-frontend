@@ -47,7 +47,6 @@ function Storeleague() {
       const res = await Instance.get("/api/countries");
       setCountries(res.data || []);
     } catch (error) {
-      console.log(error);
       setErrorCountry(
         "Une erreur est survenue lors de la récupération des pays",
       );
@@ -101,8 +100,7 @@ function Storeleague() {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      console.log(response);
-      if (response?.data?.success) {
+       if (response?.data?.success) {
         const { user, leagues, new_league } = response.data;
 
         const extractedRoles = user.leagues[0].roles.map((r) => r.name);

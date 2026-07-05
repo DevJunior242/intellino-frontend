@@ -14,7 +14,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import echo from "../../../../echo";
 import TableauSuiviJuges from "./TableauSuiviJuges";
-import ChronoCombat from "./ChronoCombat";
+import HansokuButton from "./HansokuButton";
+import CombatEnCours from "./CombatEnCours";
+import VainqueurOverlay from "./VainqueurOverlay";
+import ProchainCombat from "./ProchainCombat";
+import HanteiButton from "./HanteiButton";
+import { getApiErrorMessage } from "../../Utils/handleApiError";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 10 },
@@ -39,6 +44,58 @@ export default function KumiteSupervisor({
   const [nextCombat, setNextCombat] = useState(null);
   const isInitialLoadRef = useRef(true);
 
+  // 1. Récupérer ou créer un token unique propre à CET onglet au chargement du fichier
+  let judgeToken = sessionStorage.getItem("tatami_judge_token");
+  if (!judgeToken) {
+    judgeToken =
+      "judge-" +
+      Math.random().toString(36).substring(2) +
+      Date.now().toString(36);
+    sessionStorage.setItem("tatami_judge_token", judgeToken);
+  }
+
+  // 2. Ta fonction d'initialisation adaptée
+  const initialiserTablette = useCallback(async () => {
+    if (!config?.id) return;
+
+    try {
+      // On passe le judge_token dans le corps de la requête POST (plus propre pour envoyer des données)
+      const res = await Instance.post(
+        `/api/config/${config.id}/get-judge-number`,
+        {
+          judge_token: judgeToken,
+        },
+      );
+
+      const numeroAttribue = res.data.juge_numero;
+
+      // On met à jour le localStorage pour tes autres fonctions (comme envoyerAction)
+      localStorage.setItem("juge_numero", numeroAttribue);
+    } catch (err) {
+      console.error(
+        "Erreur d'attribution ou de rafraîchissement de chaise :",
+        err.response?.data?.message || err.message,
+      );
+    }
+  }, [config?.id]);
+
+  // 3. Gestion du cycle de vie (Premier appel + Heartbeat)
+  useEffect(() => {
+    if (!config?.id) return;
+
+    // Appel immédiat au montage ou quand la config change
+    initialiserTablette();
+
+    // Configuration du Heartbeat (toutes les 15 secondes)
+    const interval = setInterval(() => {
+      initialiserTablette();
+    }, 15000);
+
+    // Nettoyage de l'intervalle si le juge quitte l'écran ou change de config
+    return () => clearInterval(interval);
+  }, [config?.id, initialiserTablette]);
+  ///
+
   const getCombatEnCours = useCallback(async () => {
     if (!config?.id) return;
     try {
@@ -49,8 +106,8 @@ export default function KumiteSupervisor({
       ]);
       setCombat(combatRes.data?.combat || null);
       setNextCombat(nextRes.data?.combat || null);
-      console.log("Combat en cours :", combatRes.data);
-      console.log("Prochain combat :", nextRes.data);
+      console.log("Combat en cours:", combatRes);
+      console.log("Prochain combat:", nextRes);
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,24 +139,24 @@ export default function KumiteSupervisor({
       if (res.data?.message) setSuccess(res.data.message || "seance lancée");
       initSeance();
     } catch (err) {
-      console.error(err);
-      const message =
-        err.response?.data?.message || "Erreur lors du lancement du kumite";
-      setError({ [config.id]: message });
+      setError({ [config.id]: getApiErrorMessage(err) });
     } finally {
       setSubmitting(false);
     }
   };
   const handleSuivant = async () => {
     setSubmitting(true);
+    setError({});
+    setSuccess("");
     try {
-      const { data } = await Instance.post(
+      const res = await Instance.post(
         `/api/configs/${config.id}/combat-suivant`,
       );
+      console.log("Combat suivant:", res);
       initSeance();
-      onAthleteSuivant(data.combat);
+      onAthleteSuivant(res.combat);
     } catch (err) {
-      console.error(err);
+      setError({ [config.id]: getApiErrorMessage(err) });
     } finally {
       setSubmitting(false);
     }
@@ -122,105 +179,14 @@ export default function KumiteSupervisor({
       </Box>
     );
   }
+  if (loading) return <LoadingKumite />;
 
   return (
     <Box>
       <AnimatePresence mode="wait">
         {/* Combat en cours */}
         {combat ? (
-          <motion.div
-            key="combat"
-            initial="hidden"
-            animate="visible"
-            variants={fadeIn}
-          >
-            <Paper
-              sx={{
-                p: 2,
-                mb: 2,
-                borderRadius: 3,
-                border: "1px solid",
-                borderColor: "primary.light",
-              }}
-            >
-              {/* AKA vs AO */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                {/* AKA — Rouge */}
-                <Box sx={{ textAlign: "center", flex: 1 }}>
-                  <Chip
-                    label="AKA"
-                    size="small"
-                    sx={{
-                      bgcolor: "#ef444420",
-                      color: "#ef4444",
-                      fontWeight: 700,
-                      mb: 0.5,
-                    }}
-                  />
-                  <Typography variant="h6" fontWeight="bold">
-                    {combat?.inscription_aka?.athlete?.fullname ?? "—"}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {combat?.inscription_aka?.competition?.category?.nom ?? "—"}
-                  </Typography>
-                </Box>
-
-                {/* VS */}
-                <ChronoCombat combat={combat} canControl={true} />
-
-                {/* AO — Bleu */}
-                <Box sx={{ textAlign: "center", flex: 1 }}>
-                  <Chip
-                    label="AO"
-                    size="small"
-                    sx={{
-                      bgcolor: "#3b82f620",
-                      color: "#3b82f6",
-                      fontWeight: 700,
-                      mb: 0.5,
-                    }}
-                  />
-                  <Typography variant="h6" fontWeight="bold">
-                    {combat?.inscription_ao?.athlete?.fullname ?? "—"}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {combat?.inscription_ao?.competition?.category?.nom ?? "—"}
-                  </Typography>
-                </Box>
-              </Stack>
-
-              {/* Scores */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="center"
-                mt={2}
-                gap={3}
-              >
-                <Typography
-                  variant="h4"
-                  fontWeight="black"
-                  sx={{ color: "#ef4444" }}
-                >
-                  {combat?.score_final_aka ?? 0}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  score
-                </Typography>
-                <Typography
-                  variant="h4"
-                  fontWeight="black"
-                  sx={{ color: "#3b82f6" }}
-                >
-                  {combat?.score_final_ao ?? 0}
-                </Typography>
-              </Stack>
-            </Paper>
-          </motion.div>
+          <CombatEnCours combat={combat} canControl={true} />
         ) : (
           !loading && (
             <motion.div
@@ -237,31 +203,24 @@ export default function KumiteSupervisor({
         )}
 
         {/* Prochain combat */}
-        {nextCombat && (
-          <motion.div
-            key="next"
-            initial="hidden"
-            animate="visible"
-            variants={slideUp}
-          >
-            <Paper sx={{ p: 1.5, mb: 2, borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Prochain combat
-              </Typography>
-              <Stack direction="row" justifyContent="space-between" mt={0.5}>
-                <Typography variant="body2" fontWeight={600}>
-                  {nextCombat?.inscription_aka?.athlete?.fullname ?? "—"}
-                </Typography>
-                <Typography variant="body2" color="text.disabled">
-                  vs
-                </Typography>
-                <Typography variant="body2" fontWeight={600}>
-                  {nextCombat?.inscription_ao?.athlete?.fullname ?? "—"}
-                </Typography>
-              </Stack>
-            </Paper>
-          </motion.div>
-        )}
+        {nextCombat && <ProchainCombat nextCombat={nextCombat} />}
+        <HanteiButton
+          combat={combat}
+          error={error}
+          setError={setError}
+          config={config}
+          success={success}
+          setSuccess={setSuccess}
+        />
+        <HansokuButton
+          combat={combat}
+          error={error}
+          setError={setError}
+          config={config}
+          success={success}
+          setSuccess={setSuccess}
+        />
+
         <TableauSuiviJuges configNotationId={config.id} />
 
         {/* Erreurs / succès */}
@@ -288,7 +247,11 @@ export default function KumiteSupervisor({
           <Button
             fullWidth
             variant="contained"
-            disabled={submitting}
+            disabled={
+              submitting ||
+              (combat?.status === 1 && !combat?.vainqueur_id) ||
+              (combat?.status === 3 && !combat?.vainqueur_id)
+            }
             onClick={() => {
               if (!combat) {
                 lancerKumite();
@@ -309,12 +272,17 @@ export default function KumiteSupervisor({
               <CircularProgress size={24} color="inherit" />
             ) : !combat ? (
               "Lancer la séance"
+            ) : combat?.status === 1 && !combat?.vainqueur_id ? (
+              "En cours..."
+            ) : combat?.status === 3 && !combat?.vainqueur_id ? (
+              "Désigner vainqueur (Hantei)"
             ) : (
               "Combat suivant →"
             )}
           </Button>
         </motion.div>
       </AnimatePresence>
+      <VainqueurOverlay combat={combat} onClose={getCombatEnCours} />
     </Box>
   );
 }

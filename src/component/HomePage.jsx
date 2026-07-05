@@ -15,6 +15,7 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import EastIcon from "@mui/icons-material/East";
 import { grey, indigo } from "@mui/material/colors";
+import { UseAuth } from "../Api/AuthContext";
 /* ─── DATA ─────────────────────────────────────────────────── */
 
 const features = [
@@ -143,6 +144,13 @@ function HomePage() {
   const heroRef = useRef(null);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 120]);
+
+  const { auth, activeRole, logout, activeId, activeType } = UseAuth();
+
+  console.log("active", activeId);
+  console.log("active", activeType);
+  console.log(auth);
+  console.log("activeRole", activeRole);
 
   return (
     <Box

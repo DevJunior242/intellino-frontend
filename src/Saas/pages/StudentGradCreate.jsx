@@ -40,10 +40,9 @@ function StudentGradCreate() {
     setIsLoading(true);
     try {
       const response = await Instance(`/api/grade`);
-      console.log(response);
       setGrade(response.data.grades || []);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      setGrade([]);
     } finally {
       setIsLoading(false);
     }

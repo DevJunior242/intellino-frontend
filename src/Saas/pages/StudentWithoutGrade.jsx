@@ -23,6 +23,7 @@ const StudentWithoutGrade = ({
       const response = await Instance(
         `/api/students/without-grade?club_id=${activeId}`,
       );
+      console.log(response);
       setStudents(response.data.students || []);
     } catch (err) {
       console.error(err);

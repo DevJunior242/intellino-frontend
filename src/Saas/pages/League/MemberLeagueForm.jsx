@@ -44,7 +44,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
   const getRoles = async () => {
     setLoading(true);
     try {
-      const response = await Instance.get(`api/leagues/getRoles`);
+      const response = await Instance.get(`api/roles`);
       setRole(response.data.roles || []);
     } catch (error) {
       console.error(error);
@@ -64,12 +64,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
     setError({});
     setSubmitting(true);
     try {
-      const dataSend = {
-        ...formData,
-        organisateur_id: activeId,
-        organisateur_type: activeType,
-      };
-      const res = await StoreLeagueUser(dataSend);
+      const res = await StoreLeagueUser(formData);
       console.log(res);
       if (res.success) {
         setFormData({
@@ -184,7 +179,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
               ) : roles.length > 0 ? (
                 roles.map((role) => (
                   <MenuItem key={role.id} value={role.id}>
-                    {role.name}
+                    {role.display_name}
                   </MenuItem>
                 ))
               ) : (

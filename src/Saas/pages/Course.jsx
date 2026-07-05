@@ -10,6 +10,7 @@ import {
   IconButton,
   List,
   Autocomplete,
+  Chip,
 } from "@mui/material";
 import { Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,6 +25,12 @@ import ConfigSkeleton from "./ConfigSkeleton";
 const initialCourseState = {
   name: "",
   current_grade_id: null,
+  instructor_id: null,
+};
+
+const INSTRUCTOR_TYPE_LABELS = {
+  instructeur: "Instructeur",
+  eleve_ceinture_noire: "Élève ceinture noire",
 };
 
 const initialSessionState = {
@@ -46,6 +53,8 @@ function Course() {
   const [sessionsList, setSessionsList] = useState([]);
   const [grade, setGrade] = useState([]);
   const [selectCurrentGrade, setSelectCurrentGrade] = useState(null);
+  const [instructorOptions, setInstructorOptions] = useState([]);
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const navigate = useNavigate();
@@ -81,6 +90,27 @@ function Course() {
     getGrade();
   }, [getGrade]);
 
+  const getEligibleInstructors = useCallback(async () => {
+    try {
+      const response = await Instance.get("/api/course/eligible-instructors");
+      setInstructorOptions(response.data.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+  useEffect(() => {
+    getEligibleInstructors();
+  }, [getEligibleInstructors]);
+
+  useEffect(() => {
+    if (selectedInstructor) {
+      setCourseData((prev) => ({
+        ...prev,
+        instructor_id: selectedInstructor.id,
+      }));
+    }
+  }, [selectedInstructor]);
+
   useEffect(() => {
     if (selectCurrentGrade) {
       setCourseData((prev) => ({
@@ -113,6 +143,12 @@ function Course() {
 
     if (!courseData.current_grade_id) {
       currentErrors["current_grade_id"] = ["Le niveau est requis."];
+    }
+
+    if (!courseData.instructor_id) {
+      currentErrors["course.instructor_id"] = [
+        "L'instructeur du cours est requis.",
+      ];
     }
 
     setError(currentErrors);
@@ -192,6 +228,7 @@ function Course() {
       course: {
         name: courseData.name,
         current_grade_id: courseData.current_grade_id || selectCurrentGrade?.id,
+        instructor_id: courseData.instructor_id || selectedInstructor?.id,
         organisateur_id: activeId,
         organisateur_type: activeType,
       },
@@ -212,7 +249,8 @@ function Course() {
         );
         // Reset complet
         setSelectCurrentGrade(null);
-        setCourseData({ name: "" });
+        setSelectedInstructor(null);
+        setCourseData(initialCourseState);
         setSessionsList([]);
         navigate("/dashboard/session/list");
         setTimeout(() => setSuccess(""), 5000);
@@ -308,6 +346,59 @@ function Course() {
                     fullWidth
                     margin="normal"
                     label="choisissez le niveau de grade actuel"
+                    required
+                  />
+                )}
+              />
+              <label htmlFor="instructeur du cours">
+                <Typography
+                  variant="h6"
+                  component={"h1"}
+                  sx={{ fontWeight: "bold" }}
+                >
+                  Instructeur du cours
+                </Typography>
+              </label>
+              <Autocomplete
+                slotProps={{
+                  paper: {
+                    sx: { backgroundColor: "background.default" },
+                  },
+                }}
+                disablePortal
+                options={Array.isArray(instructorOptions) ? instructorOptions : []}
+                groupBy={(option) =>
+                  INSTRUCTOR_TYPE_LABELS[option.type] || option.type
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option.id === value?.id
+                }
+                getOptionLabel={(option) => option.fullname || ""}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    {option.fullname}
+                    {option.type === "eleve_ceinture_noire" && (
+                      <Chip
+                        label="Ceinture noire"
+                        size="small"
+                        sx={{ ml: 1 }}
+                      />
+                    )}
+                  </li>
+                )}
+                value={selectedInstructor}
+                onChange={(e, newValue) => setSelectedInstructor(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    error={hasError("course.instructor_id")}
+                    helperText={
+                      getError("course.instructor_id") ||
+                      "Un instructeur du club, ou un élève ceinture noire"
+                    }
+                    {...params}
+                    fullWidth
+                    margin="normal"
+                    label="Choisissez qui va diriger ce cours"
                     required
                   />
                 )}

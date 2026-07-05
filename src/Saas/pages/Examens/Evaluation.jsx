@@ -19,7 +19,6 @@ import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 
 import Message from "../Message";
-import { UseAuth } from "../../../Api/AuthContext";
 import ConfigSkeleton from "../ConfigSkeleton";
 
 function Evaluation({ student, open, handleClose, examenId }) {
@@ -34,16 +33,12 @@ function Evaluation({ student, open, handleClose, examenId }) {
   const getError = (field) => error?.[field]?.join(", ");
 
   const [scores, setScores] = useState({});
-  //lactiveclubId
-  const { activeId } = UseAuth();
 
   //obtenir les tournois
   const getEnch = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await Instance(
-        `/api/enchainements/${examenId}?organisateur_id=${activeId}`,
-      );
+      const response = await Instance(`/api/enchainements/${examenId}`);
       console.log(response);
       setEnchainement(response.data.enchainements || []);
     } catch (error) {
@@ -51,7 +46,7 @@ function Evaluation({ student, open, handleClose, examenId }) {
     } finally {
       setLoading(false);
     }
-  }, [activeId, examenId]);
+  }, [examenId]);
 
   useEffect(() => {
     getEnch();
@@ -80,7 +75,7 @@ function Evaluation({ student, open, handleClose, examenId }) {
         commentaire: commentaire ?? "",
       };
       const response = await Instance.post(
-        `/api/evaluation/examen/${examenId}/candidat/${student.id}?organisateur_id=${activeId}`,
+        `/api/evaluation/examen/${examenId}/candidat/${student.id}`,
         playload,
       );
       console.log(response);

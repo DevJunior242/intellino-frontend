@@ -18,49 +18,173 @@ import {
   TableRow,
   InputAdornment,
   IconButton,
-  Menu,
-  MenuItem,
   TablePagination,
-  Divider,
-  Select,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { Search } from "@mui/icons-material";
+import { Search, Download, PictureAsPdf } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import ErrorBlock from "../ErrorBlock";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { generateLicenceCardPdf } from "./licenceCardPdf";
 
+// ---------------------------------------------------------------------------
+// Helpers PDF
+// ---------------------------------------------------------------------------
+
+// Convertit une URL image en base64 pour jsPDF
+const toBase64 = (url) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+
+const statusLabels = { 0: "En attente", 1: "Payée", 2: "Validée" };
+
+// ---------------------------------------------------------------------------
+// PDF individuel — carte licence soignée
+// ---------------------------------------------------------------------------
+const exportLicenceIndividuelle = (licence, currentLeague, currentFederation) =>
+  generateLicenceCardPdf({
+    licence,
+    federationName: currentFederation?.name,
+    leagueName: currentLeague?.name,
+    clubName: licence.club?.name,
+    logoUrl: currentFederation?.logo_url || currentLeague?.logo_url,
+  });
+
+// ---------------------------------------------------------------------------
+// PDF export toutes licences — tableau
+// ---------------------------------------------------------------------------
+const exportToutesLicences = async (
+  licences,
+  currentLeague,
+  currentFederation,
+) => {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+  // En-tête
+  doc.setFillColor(22, 26, 35);
+  doc.rect(0, 0, 297, 30, "F");
+
+  const logoUrl = currentFederation?.logo_url || currentLeague?.logo_url;
+  if (logoUrl) {
+    try {
+      const base64 = await toBase64(logoUrl);
+      if (base64) doc.addImage(base64, "PNG", 8, 4, 18, 18);
+    } catch {
+      /* silencieux */
+    }
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(232, 200, 74);
+  doc.text(
+    (currentFederation?.name || "Fédération").toUpperCase(),
+    297 / 2,
+    12,
+    { align: "center" },
+  );
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(180, 190, 220);
+  doc.text(`Ligue : ${currentLeague?.name || "—"}`, 297 / 2, 19, {
+    align: "center",
+  });
+
+  doc.setFontSize(7);
+  doc.setTextColor(139, 144, 160);
+  doc.text(
+    `Exporté le ${new Date().toLocaleDateString("fr-FR")}`,
+    297 / 2,
+    25,
+    { align: "center" },
+  );
+
+  // Tableau
+  autoTable(doc, {
+    startY: 34,
+    head: [
+      ["Licencié", "N° Licence", "Club", "Type", "Grade", "Saison", "Statut"],
+    ],
+    body: licences.map((l) => [
+      l.student?.fullname || "—",
+      l.numero || "—",
+      l.club?.name || "—",
+      l.type || "—",
+      l.grade_au_moment || "—",
+      l.saison?.libele || "—",
+      statusLabels[l.status] || "—",
+    ]),
+    styles: {
+      fontSize: 8,
+      cellPadding: 3,
+      fillColor: [30, 34, 45],
+      textColor: [232, 234, 240],
+      lineColor: [50, 55, 70],
+      lineWidth: 0.2,
+    },
+    headStyles: {
+      fillColor: [57, 73, 171],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8,
+    },
+    alternateRowStyles: {
+      fillColor: [22, 26, 35],
+    },
+    didDrawPage: (data) => {
+      // Footer sur chaque page
+      doc.setFontSize(6);
+      doc.setTextColor(100, 105, 120);
+      doc.text(`Page ${data.pageNumber}`, 297 - 10, 205, { align: "right" });
+    },
+  });
+
+  doc.save(
+    `licences-${currentLeague?.name || "export"}-${new Date().toLocaleDateString("fr-FR")}.pdf`,
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Composant principal
+// ---------------------------------------------------------------------------
 function LicenceTable() {
   const [licences, setLicences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
-  const { auth, activeId } = UseAuth();
+  const [exportingAll, setExportingAll] = useState(false);
+  const { activeId, currentLeague, currentFederation } = UseAuth();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedClub, setSelectedClub] = useState(null);
-  const open = Boolean(anchorEl);
-  const navigate = useNavigate();
-
-  const handleOpenMenu = (event, club) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedClub(club);
+  const statusConfig = {
+    0: { color: "warning", label: "En attente" },
+    1: { color: "info", label: "Payée" },
+    2: { color: "success", label: "Validée" },
   };
 
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
   const getLicences = useCallback(
-    async (searchVal = "", statusVal = "") => {
+    async (searchVal = "", statusVal = "", page = 1) => {
       if (!activeId) return;
       setError("");
       setLoading(true);
       try {
         const response = await Instance.get(
-          `api/licences/licences?organisateur_id=${activeId}&search=${searchVal}&status=${statusVal}`,
+          `api/licences?page=${page}&search=${searchVal}&status=${statusVal}`,
         );
-        console.log(response);
         setPagination({
           total: response.data.total,
           current_page: response.data.current_page,
@@ -68,8 +192,7 @@ function LicenceTable() {
           per_page: response.data.per_page,
         });
         setLicences(response.data.data || []);
-      } catch (error) {
-        console.log(error);
+      } catch {
         setError(
           "Une erreur est survenue lors de la récupération des licences",
         );
@@ -84,28 +207,32 @@ function LicenceTable() {
     getLicences();
   }, [getLicences]);
 
+  const handlePageChange = (event, newPage) => {
+    getLicences(search, status, newPage + 1);
+  };
+
+  // Export toutes licences — récupère TOUTES les pages avant d'exporter
+  const handleExportAll = async () => {
+    setExportingAll(true);
+    try {
+      const response = await Instance.get(
+        `api/licences?page=1&per_page=9999&search=${search}&status=${status}`,
+      );
+      const toutes = response.data.data || [];
+      await exportToutesLicences(toutes, currentLeague, currentFederation);
+    } catch {
+      // silencieux
+    } finally {
+      setExportingAll(false);
+    }
+  };
+
   if (error) return <ErrorBlock message={error} onRetry={getLicences} />;
-
-  const icons = {
-    search: <Search />,
-    add: "➕",
-    export: "📤",
-    filter: "⚙️",
-    more: "⋮",
-  };
-
-  //status
-  const statusConfig = {
-    0: { color: "success", label: "Active" },
-    1: { color: "warning", label: "Expirée" },
-    2: { color: "danger", label: "Suspendue" },
-    3: { color: "error", label: "En attente" },
-  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Stack spacing={3}>
-        {/* 1. BARRE DE RECHERCHE (HAUT) */}
+        {/* Barre de recherche */}
         <Paper
           sx={{
             p: 2,
@@ -116,7 +243,7 @@ function LicenceTable() {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Rechercher une licence par nom, numero de licence..."
+            placeholder="Rechercher une licence par nom, numéro..."
             onChange={(e) => {
               const value = e.target.value;
               setSearch(value);
@@ -138,7 +265,7 @@ function LicenceTable() {
           />
         </Paper>
 
-        {/* 2. FLEX : STATUS, ADD, EXPORT */}
+        {/* Filtres + Export */}
         <Box
           sx={{
             display: "flex",
@@ -148,60 +275,48 @@ function LicenceTable() {
             gap: 2,
           }}
         >
-          {/* Filtres de Status */}
-          <Stack direction="row" spacing={1}>
-            {/* //select status */}
-            <select
-              value={status}
-              onChange={(e) => {
-                const value =
-                  e.target.value === "" ? "" : Number(e.target.value);
+          <select
+            value={status}
+            onChange={(e) => {
+              const value = e.target.value === "" ? "" : Number(e.target.value);
+              setStatus(value);
+              getLicences(search, value);
+            }}
+            style={{
+              background: "#22262f",
+              color: "#e8eaf0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8,
+              padding: "6px 12px",
+              fontSize: "0.85rem",
+            }}
+          >
+            <option value="">Tous les statuts</option>
+            {Object.entries(statusConfig).map(([key, val]) => (
+              <option key={key} value={key}>
+                {val.label}
+              </option>
+            ))}
+          </select>
 
-                setStatus(value);
-
-                getLicences(search, value);
-              }}
-            >
-              <option value="">Tous</option>
-              {Object.entries(statusConfig).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value.label}
-                </option>
-              ))}
-            </select>
-          </Stack>
-
-          {/* Actions : Export et Add */}
-          <Stack direction="row" spacing={2}>
-            <Button
-              variant="outlined"
-              startIcon={<span>{icons.export}</span>}
-              sx={{
-                borderColor: "rgba(255,255,255,0.2)",
-                color: "#e8eaf0",
-                textTransform: "none",
-              }}
-            >
-              Exporter
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<span>{icons.add}</span>}
-              sx={{
-                bgcolor: "#e8c84a",
-                color: "#1a1d23",
-                fontWeight: 700,
-                textTransform: "none",
-                "&:hover": { bgcolor: "#d4b63b" },
-              }}
-              onClick={() => navigate("/dashboard/league/clubs")}
-            >
-              Nouvelle Licence
-            </Button>
-          </Stack>
+          <Button
+            variant="outlined"
+            startIcon={<Download fontSize="small" />}
+            onClick={handleExportAll}
+            disabled={exportingAll || loading}
+            sx={{
+              borderColor: "rgba(255,255,255,0.2)",
+              color: "#e8eaf0",
+              textTransform: "none",
+              borderRadius: 2,
+              "&:hover": { borderColor: "#e8c84a", color: "#e8c84a" },
+            }}
+          >
+            {exportingAll ? "Export en cours..." : "Exporter tout"}
+          </Button>
         </Box>
 
-        {/* 3. TABLE DES licences */}
+        {/* Table */}
         <TableContainer
           component={Paper}
           sx={{
@@ -222,13 +337,13 @@ function LicenceTable() {
                 }}
               >
                 <TableCell>Licencié</TableCell>
-                <TableCell>N ° de licence</TableCell>
+                <TableCell>N° de licence</TableCell>
                 <TableCell>Club</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Grade</TableCell>
+                {/* <TableCell>Type</TableCell>
+                <TableCell>Grade</TableCell> */}
                 <TableCell>Validité</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">ACTIONS</TableCell>
+                <TableCell>Statut</TableCell>
+                <TableCell align="right">PDF</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -236,7 +351,7 @@ function LicenceTable() {
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography sx={{ color: "#8b90a0" }}>
-                      Chargement des licences...
+                      Chargement...
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -255,66 +370,61 @@ function LicenceTable() {
                     <TableCell
                       sx={{ display: "flex", alignItems: "center", gap: 2 }}
                     >
-                      <Stack alignItems="center" spacing={2}>
-                        <Avatar
-                          src={licence.logo}
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            bgcolor: "rgba(232, 200, 74, 0.12)",
-                            color: "#e8c84a",
-                            fontWeight: 700,
-                            fontSize: "0.9rem",
-                            borderRadius: 2,
-                            border: "1px solid rgba(232, 200, 74, 0.2)",
-                          }}
-                        >
-                          {licence.student?.fullname
-                            ? licence.student.fullname
-                                .substring(0, 2)
-                                .toUpperCase()
-                            : "??"}
-                        </Avatar>
-                      </Stack>
-
-                      <Box>
-                        <Typography
-                          sx={{
-                            fontWeight: 600,
-                            color: "#e8eaf0",
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {licence.student?.fullname}
-                        </Typography>
-                      </Box>
+                      <Avatar
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: "rgba(232, 200, 74, 0.12)",
+                          color: "#e8c84a",
+                          fontWeight: 700,
+                          fontSize: "0.9rem",
+                          borderRadius: 2,
+                          border: "1px solid rgba(232, 200, 74, 0.2)",
+                        }}
+                      >
+                        {(licence.student?.fullname || "??")
+                          .substring(0, 2)
+                          .toUpperCase()}
+                      </Avatar>
+                      <Typography
+                        sx={{
+                          fontWeight: 600,
+                          color: "#e8eaf0",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {licence.student?.fullname}
+                      </Typography>
                     </TableCell>
-
                     <TableCell>{licence.numero}</TableCell>
-                    <TableCell>{licence.club.name}</TableCell>
-                    <TableCell>{licence.type}</TableCell>
-                    <TableCell>{licence.grade_au_moment}</TableCell>
-                    <TableCell>{licence.date_expiration}</TableCell>
-
+                    <TableCell>{licence.club?.name}</TableCell>
+                    {/* <TableCell>{licence.type}</TableCell>
+                    <TableCell>{licence.grade_au_moment}</TableCell> */}
+                    <TableCell>{licence.saison?.libele}</TableCell>
                     <TableCell>
                       <Chip
-                        label={statusConfig[licence.status].label}
-                        color={statusConfig[licence.status].color}
+                        label={statusConfig[licence.status]?.label}
+                        color={statusConfig[licence.status]?.color}
                         size="small"
-                        sx={{
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                        }}
+                        sx={{ fontSize: "0.7rem", fontWeight: 700 }}
                       />
                     </TableCell>
-
                     <TableCell align="right">
                       <IconButton
                         size="small"
-                        sx={{ color: "#8b90a0" }}
-                        onClick={(e) => handleOpenMenu(e, licence)}
+                        onClick={() =>
+                          exportLicenceIndividuelle(
+                            licence,
+                            currentLeague,
+                            currentFederation,
+                          )
+                        }
+                        sx={{
+                          color: "#8b90a0",
+                          "&:hover": { color: "#e8c84a" },
+                        }}
                       >
-                        {icons.more}
+                        <PictureAsPdf fontSize="small" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -331,77 +441,19 @@ function LicenceTable() {
             </TableBody>
           </Table>
 
-          {/* Pagination (basée sur ta réponse API) */}
           <TablePagination
             component="div"
-            count={2} // total provenant de data.total
-            page={0} // current_page - 1
-            rowsPerPage={8}
-            onPageChange={() => {}}
-            sx={{
-              color: "#8b90a0",
-              borderTop: "1px solid rgba(255,255,255,0.07)",
-            }}
+            count={pagination.total || 0}
+            page={(pagination.current_page || 1) - 1}
+            rowsPerPage={pagination.per_page || 10}
+            onPageChange={handlePageChange}
+            rowsPerPageOptions={[]}
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} sur ${count}`
+            }
           />
         </TableContainer>
       </Stack>
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleCloseMenu}
-        PaperProps={{
-          sx: {
-            bgcolor: "#22262f",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "#e8eaf0",
-            minWidth: 180,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            "& .MuiMenuItem-root": {
-              fontSize: "0.85rem",
-              py: 1.2,
-              gap: 1.5,
-              "&:hover": { bgcolor: "rgba(232,200,74,0.08)", color: "#e8c84a" },
-            },
-          },
-        }}
-      >
-        {/* Action : Redirection vers une page dédiée */}
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            navigate(`/affiliations/create?club=${selectedClub?.id}`);
-          }}
-        >
-          <span>📝</span> Affilier le club
-        </MenuItem>
-
-        {/* Action : Redirection pour les licences */}
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            navigate(`/licenses/generate?club=${selectedClub?.id}`);
-          }}
-        >
-          <span>🪪</span> Donner licences
-        </MenuItem>
-
-        <Divider sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
-
-        {/* Action : Ouverture d'une Modal pour une action rapide */}
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            // Appeler ici ta fonction pour ouvrir une Modal de confirmation
-            alert(`Suspendre le club : ${selectedClub?.name}`);
-          }}
-          sx={{
-            color: "#f44336",
-            "&:hover": { bgcolor: "rgba(244,67,54,0.08) !important" },
-          }}
-        >
-          <span>🚫</span> Suspendre
-        </MenuItem>
-      </Menu>
     </motion.div>
   );
 }

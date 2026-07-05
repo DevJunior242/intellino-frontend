@@ -12,7 +12,9 @@ function ErrorGlobal({ error, setError, callback = null }) {
       console.warn(arrayErrors);
     } else {
       const message =
-        data && data.message ? data.message : "Something went wrong";
+        data && data.message
+          ? data.message
+          : "une erreur inattendue est survenue";
       setError({ general: message });
       console.warn(data);
     }

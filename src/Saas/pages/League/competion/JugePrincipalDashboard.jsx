@@ -84,7 +84,9 @@ const ConfigCard = ({
   onShowRepartition,
 }) => {
   const isKumite = config.discipline?.toLowerCase() === "kumite";
-  const lienPublic = `${window.location.origin}/public/tatami/${config.id}`;
+  const lienPublic = isKumite
+    ? `${window.location.origin}/public/tatami/${config.id}/kumite`
+    : `${window.location.origin}/public/tatami/${config.id}`;
   const enCours = data?.enCours;
 
   return (
@@ -107,8 +109,10 @@ const ConfigCard = ({
         overflow: "hidden",
       }}
     >
-      {/* ... (le reste du code de ConfigCard) ... */}
-
+      <Typography variant="caption" sx={{ color: "#636b88" }}>
+        {formatDateCourte(config?.date_debut)} ·
+        {formatHeure(config?.heure_debut_prevu)}
+      </Typography>
       <Stack
         direction="row"
         spacing={0.5}
@@ -146,6 +150,7 @@ const ConfigCard = ({
             }}
           />
         )}
+
         {/* Bouton pour voir la répartition */}
         <Chip
           label="Voir répartition"
@@ -164,6 +169,9 @@ const ConfigCard = ({
             "&:hover": { bgcolor: "rgba(108, 99, 255, 0.1)" },
           }}
         />
+        <Typography variant="body2" fontWeight="bold" color="white" noWrap>
+          {config.plateau_nom}
+        </Typography>
       </Stack>
 
       <Link
@@ -292,13 +300,10 @@ const SidebarContent = ({
 );
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function JugePrincipalDashboard({
-  configs,
-  handleValider,
-  success,
-  errors,
-  submitId,
-}) {
+export default function JugePrincipalDashboard({ configs }) {
+  const [error, setError] = useState({});
+  const [success, setSuccess] = useState({});
+  const [submitId, setSubmitId] = useState(null);
   const [tatamiData, setTatamiData] = useState({});
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingActif, setLoadingActif] = useState(false);
@@ -439,17 +444,62 @@ export default function JugePrincipalDashboard({
     };
   }, [configSelectee?.id, fetchTatamiActif]);
 
+  // const handleValider
+  const handleValider = async (configId) => {
+    setSubmitId(configId);
+    setSuccess((prev) => ({ ...prev, [configId]: null }));
+    setError((prev) => ({ ...prev, [configId]: [] }));
+    try {
+      await Instance.post(`/api/seances/configs/${configId}/valider`);
+      setSubmitId(null);
+
+      // Mettre à jour configSelectee localement
+      setConfigSelectee((prev) => ({ ...prev, est_valide: true }));
+      configSelecteeRef.current = {
+        ...configSelecteeRef.current,
+        est_valide: true,
+      };
+
+      // Refresh le tatami actif pour les autres données
+      await fetchTatamiActif(configId, true);
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.problemes ||
+        err.response?.data?.message || ["Une erreur est survenue."];
+      setError((prev) => ({ ...prev, [configId]: msg }));
+      setSubmitId(null);
+    }
+  };
+
   const handleDesignerSuperviseur = async (configId, arbitreCompetitionId) => {
     setLoadingAction({ id: arbitreCompetitionId, type: "chef" });
     try {
-      const res = await Instance.patch(
+      const dataSend = {
+        config_notation_id: configId,
+        arbitre_competition_id: arbitreCompetitionId,
+      };
+      await Instance.patch(
         `/api/rotation-arbitres/${configId}/superviseur`,
-        {
-          config_notation_id: configId,
-          arbitre_competition_id: arbitreCompetitionId,
-        },
+        dataSend,
       );
-      console.log("res superviseur", res);
+      fetchTatamiActif(configId, true);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+  const handleRetirerSuperviseur = async (configId, arbitreCompetitionId) => {
+    setLoadingAction({ id: arbitreCompetitionId, type: "chef" });
+    try {
+      const dataSend = {
+        config_notation_id: configId,
+        arbitre_competition_id: arbitreCompetitionId,
+      };
+      await Instance.patch(
+        `/api/rotation-arbitres/${configId}/superviseur/retirer`,
+        dataSend,
+      );
       fetchTatamiActif(configId, true);
     } catch (e) {
       console.log(e);
@@ -487,11 +537,20 @@ export default function JugePrincipalDashboard({
           data={dataActive}
           handleValider={handleValider}
           handleDesignerSuperviseur={handleDesignerSuperviseur}
+          handleRetirerSuperviseur={handleRetirerSuperviseur}
           success={success}
-          errors={errors}
+          errors={error}
           submitId={submitId}
           onRefresh={() => fetchTatamiActif(configSelectee.id, true)}
-          onShowRepartition={() => setShowRepartition(true)}
+          onValidated={() => {
+            setConfigSelectee((prev) =>
+              prev ? { ...prev, est_valide: true } : prev,
+            );
+            configSelecteeRef.current = configSelecteeRef.current
+              ? { ...configSelecteeRef.current, est_valide: true }
+              : configSelecteeRef.current;
+          }}
+          onShowRepartition={() => setShowRepartition(false)}
         />
       );
     }
@@ -503,13 +562,18 @@ export default function JugePrincipalDashboard({
         handleValider={handleValider}
         handleDesignerSuperviseur={handleDesignerSuperviseur}
         success={success}
-        errors={errors}
+        errors={error}
         submitId={submitId}
         onRefresh={() => fetchTatamiActif(configSelectee.id, true)}
-        onShowRepartition={() => setShowRepartition(true)}
+        onShowRepartition={() => setShowRepartition(false)}
       />
     );
   };
+
+  console.log("Render JugePrincipalDashboard", {
+    configSelectee,
+    data: tatamiData[configSelectee?.id],
+  });
 
   return (
     <Box

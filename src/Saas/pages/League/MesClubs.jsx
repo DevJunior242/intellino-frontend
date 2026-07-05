@@ -47,6 +47,7 @@ function MesClubs() {
   const [selectedClub, setSelectedClub] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  const [pagination, setPagination] = useState({});
 
   const handleOpenMenu = (event, club) => {
     setAnchorEl(event.currentTarget);
@@ -57,7 +58,7 @@ function MesClubs() {
     setAnchorEl(null);
   };
   const getMyClubs = useCallback(
-    async (searchVal = "", statusVal = "") => {
+    async (searchVal = "", statusVal = "", page = 1) => {
       if (!activeId) return;
 
       setLoading(true);
@@ -65,9 +66,14 @@ function MesClubs() {
 
       try {
         const response = await Instance.get(
-          `api/leagues/myClubs?organisateur_id=${activeId}&search=${searchVal}&status=${statusVal}`,
+          `api/leagues/myClubs?page=${page}&search=${searchVal}&status=${statusVal}`,
         );
-        console.log("clubs", response);
+        setPagination({
+          total: response.data.total,
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          per_page: response.data.per_page,
+        });
         setClubs(response.data.data || []);
       } catch (error) {
         setError("Une erreur est survenue lors de la récupération des clubs");
@@ -81,6 +87,10 @@ function MesClubs() {
   useEffect(() => {
     getMyClubs();
   }, [getMyClubs]);
+
+  const handlePageChange = (event, newPage) => {
+    getMyClubs(search, status, newPage + 1);
+  };
 
   if (error) return <ErrorBlock message={error} onRetry={getMyClubs} />;
   const statusList = [
@@ -348,14 +358,13 @@ function MesClubs() {
           {/* Pagination (basée sur ta réponse API) */}
           <TablePagination
             component="div"
-            count={2} // total provenant de data.total
-            page={0} // current_page - 1
-            rowsPerPage={8}
-            onPageChange={() => {}}
-            sx={{
-              color: "#8b90a0",
-              borderTop: "1px solid rgba(255,255,255,0.07)",
-            }}
+            count={pagination.total || 0}
+            page={(pagination.current_page || 1) - 1}
+            rowsPerPage={pagination.per_page || 10}
+            onPageChange={handlePageChange}
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} sur ${count}`
+            }
           />
         </TableContainer>
       </Stack>
@@ -392,7 +401,7 @@ function MesClubs() {
         </MenuItem>
 
         {/* Action : Redirection pour les licences */}
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             handleCloseMenu();
             navigate(
@@ -401,7 +410,7 @@ function MesClubs() {
           }}
         >
           <span>🪪</span> Donner licences
-        </MenuItem>
+        </MenuItem> */}
 
         <Divider sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
 

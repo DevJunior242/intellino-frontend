@@ -22,7 +22,6 @@ import {
 import ConfigNotationCard from "./ConfigNotationCard";
 import SeanceAdminPanel from "./SeanceAdminPanel";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
-import SaisieNotePage from "./SaisieNotePage";
 import JugePrincipalDashboard from "./JugePrincipalDashboard";
 import DesignerSuperviseur from "./DesignerSuperviseur";
 import RepartitionAthletes from "./RepartitionAthletes";
@@ -37,9 +36,9 @@ export default function ConfigNotationCardDetails() {
   const [submitId, setSubmitId] = useState(null);
   const { auth, activeId, activeType, activeRole } = UseAuth();
 
-  const adminJuge = activeRole?.includes("admin_league");
+  const adminJuge = activeRole?.includes("admin");
 
-  const estArbitre = auth?.role?.includes("arbitre_league");
+  const estArbitre = auth?.role?.includes("arbitre");
 
   // UN seul système de vue
   const [vue, setVue] = useState("config");
@@ -62,7 +61,6 @@ export default function ConfigNotationCardDetails() {
       const res = await Instance.get(
         `/api/config-notation/config-notation?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
-      console.log("getConfigs res", res);
       setConfigs(res.data || []);
       return res.data || [];
     } catch (err) {
@@ -76,6 +74,8 @@ export default function ConfigNotationCardDetails() {
     getConfigs();
   }, [getConfigs]);
 
+  //tatami update chanel
+
   // ── Admin — Valider ────────────────────────────────
   const handleValider = async (id) => {
     setSubmitId(id);
@@ -83,13 +83,10 @@ export default function ConfigNotationCardDetails() {
     setError((prev) => ({ ...prev, [id]: [] }));
     try {
       const res = await Instance.post(`/api/seances/configs/${id}/valider`);
-      console.log("valider res", res);
       const freshConfigs = await getConfigs();
 
       const config = freshConfigs?.find((c) => c.id === id);
       if (config) setConfigActive(config);
-
-      setVue("repartition");
     } catch (err) {
       console.error(" erreur valider ", err);
       const msg = err.response?.data?.problemes ||
@@ -444,20 +441,12 @@ export default function ConfigNotationCardDetails() {
       </Box>
     );
   }
-  if (vue === "repartition" && configActive) {
-    return (
-      <RepartitionAthletes
-        competition={configActive.competition_id}
-        configs={configs.filter(
-          (c) => c.competition_id === configActive.competition_id,
-        )}
-      />
-    );
-  }
+
   if (adminJuge) {
     return (
       <JugePrincipalDashboard
         configs={configs}
+        refreshConfigs={getConfigs}
         loading={loading}
         handleValider={handleValider}
         onConnecterJuge={ouvrirPin}

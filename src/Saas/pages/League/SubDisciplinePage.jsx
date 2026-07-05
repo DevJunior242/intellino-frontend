@@ -228,7 +228,7 @@ const RecapRow = ({ label, value }) => (
 );
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-export default function LeagueSetupPage() {
+export default function SubDisciplinePage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const { activeId, activeType } = UseAuth();
@@ -247,7 +247,7 @@ export default function LeagueSetupPage() {
       age_min: 6,
       age_max: 7,
       sexe: "M",
-      disciplines: [1],
+      disciplines: ["Kata"],
     },
     {
       id: 2,
@@ -255,7 +255,9 @@ export default function LeagueSetupPage() {
       age_min: 8,
       age_max: 9,
       sexe: "F",
-      disciplines: [1, 2],
+      disciplines: ["Kata", "Kumite"],
+      poids_min: "",
+      poids_max: 30,
     },
     {
       id: 3,
@@ -263,7 +265,9 @@ export default function LeagueSetupPage() {
       age_min: 18,
       age_max: 34,
       sexe: "M",
-      disciplines: [1, 2],
+      disciplines: ["Kata", "Kumite"],
+      poids_min: 60,
+      poids_max: 67,
     },
   ]);
   const [catErrors, setCatErrors] = useState({});
@@ -273,7 +277,13 @@ export default function LeagueSetupPage() {
     age_max: "",
     sexe: "",
     disciplines: [],
+    poids_min: "",
+    poids_max: "",
   });
+
+  // Une catégorie rattachée au Kumite doit avoir des bornes de poids
+  const needsPoids = (discNoms) =>
+    discNoms.some((nom) => nom.toLowerCase().includes("kumite"));
 
   // — Submitted state
   const [submitted, setSubmitted] = useState(false);
@@ -307,10 +317,20 @@ export default function LeagueSetupPage() {
     if (newCat.disciplines.length === 0)
       errs.disciplines = "Choisir au moins une discipline";
     if (!newCat.sexe) errs.sexe = "Choisir un sexe";
+    if (needsPoids(newCat.disciplines) && !newCat.poids_min && !newCat.poids_max)
+      errs.poids = "Kumite : indiquer au moins un poids min ou max";
     setCatErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setCategories((cs) => [...cs, { ...newCat, id: Date.now() }]);
-    setNewCat({ nom: "", age_min: "", age_max: "", sexe: "", disciplines: [] });
+    setNewCat({
+      nom: "",
+      age_min: "",
+      age_max: "",
+      sexe: "",
+      disciplines: [],
+      poids_min: "",
+      poids_max: "",
+    });
     setCatErrors({});
   };
 
@@ -360,8 +380,6 @@ export default function LeagueSetupPage() {
     }
   };
 
-  const discName = (id) => disciplines.find((d) => d.id === id)?.nom ?? "—";
-
   return (
     <div
       style={{
@@ -402,10 +420,10 @@ export default function LeagueSetupPage() {
             ★
           </div>
           <span style={{ fontWeight: 700, fontSize: 15, color: C.text }}>
-            KaratéLigue
+            KaratéCatégories
           </span>
           <span style={{ color: C.textFaint, fontSize: 13, marginLeft: 6 }}>
-            / Configuration ligue
+            / Configuration catégories
           </span>
         </div>
         <div
@@ -598,6 +616,24 @@ export default function LeagueSetupPage() {
                     >
                       {cat.age_min}–{cat.age_max} ans
                     </span>
+                    {(cat.poids_min || cat.poids_max) && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          fontSize: 12,
+                          color: C.teal,
+                          background: C.tealDim,
+                          padding: "2px 8px",
+                          borderRadius: 20,
+                        }}
+                      >
+                        {cat.poids_min && cat.poids_max
+                          ? `${Number(cat.poids_min)}–${Number(cat.poids_max)}kg`
+                          : cat.poids_max
+                            ? `-${Number(cat.poids_max)}kg`
+                            : `+${Number(cat.poids_min)}kg`}
+                      </span>
+                    )}
                     <div
                       style={{
                         marginTop: 4,
@@ -605,8 +641,7 @@ export default function LeagueSetupPage() {
                         color: C.textMuted,
                       }}
                     >
-                      {cat.disciplines.map((id) => discName(id)).join(", ") ||
-                        "—"}
+                      {cat.disciplines.join(", ") || "—"}
                     </div>
                   </div>
                   <button
@@ -628,6 +663,7 @@ export default function LeagueSetupPage() {
                   <Err msg={error[`categories.${idx}.sexe`]?.[0]} />
                   <Err msg={error[`categories.${idx}.age_min`]?.[0]} />
                   <Err msg={error[`categories.${idx}.age_max`]?.[0]} />
+                  <Err msg={error[`categories.${idx}.poids_max`]?.[0]} />
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -729,14 +765,50 @@ export default function LeagueSetupPage() {
                       <Chip
                         key={d.id}
                         label={d.nom}
-                        selected={newCat.disciplines.includes(d.id)}
-                        onClick={() => toggleNewCatDisc(d.id)}
+                        selected={newCat.disciplines.includes(d.nom)}
+                        onClick={() => toggleNewCatDisc(d.nom)}
                       />
                     ))
                   )}
                 </div>
                 <Err msg={catErrors.disciplines} />
               </div>
+
+              {needsPoids(newCat.disciplines) && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <Label>Poids min (kg)</Label>
+                    <Input
+                      type="number"
+                      placeholder="ex: 60"
+                      value={newCat.poids_min}
+                      onChange={(e) =>
+                        setNewCat((c) => ({ ...c, poids_min: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Poids max (kg)</Label>
+                    <Input
+                      type="number"
+                      placeholder="ex: 67"
+                      value={newCat.poids_max}
+                      onChange={(e) =>
+                        setNewCat((c) => ({ ...c, poids_max: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <Err msg={catErrors.poids} />
+                </div>
+              )}
+
               <motion.button
                 type="button"
                 onClick={addCategory}
@@ -836,7 +908,7 @@ export default function LeagueSetupPage() {
                       Configuration enregistrée !
                     </div>
                     <div style={{ color: C.textMuted, fontSize: 13 }}>
-                      Voici le récapitulatif de ta ligue
+                      Voici le récapitulatif de ta configuration
                     </div>
                   </div>
                 </div>
@@ -872,16 +944,22 @@ export default function LeagueSetupPage() {
                   >
                     Catégories ({categories.length})
                   </div>
-                  {categories.map((cat) => (
-                    <RecapRow
-                      key={cat.id}
-                      label={`${cat.nom} (${cat.age_min}–${cat.age_max} ans)`}
-                      value={
-                        cat.disciplines.map((id) => discName(id)).join(", ") ||
-                        "—"
-                      }
-                    />
-                  ))}
+                  {categories.map((cat) => {
+                    const poidsLabel = cat.poids_max
+                      ? cat.poids_min
+                        ? ` · ${Number(cat.poids_min)}-${Number(cat.poids_max)}kg`
+                        : ` · -${Number(cat.poids_max)}kg`
+                      : cat.poids_min
+                        ? ` · +${Number(cat.poids_min)}kg`
+                        : "";
+                    return (
+                      <RecapRow
+                        key={cat.id}
+                        label={`${cat.nom} (${cat.age_min}–${cat.age_max} ans)${poidsLabel}`}
+                        value={cat.disciplines.join(", ") || "—"}
+                      />
+                    );
+                  })}
 
                   <motion.button
                     onClick={() => setSubmitted(false)}

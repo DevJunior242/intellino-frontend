@@ -9,25 +9,58 @@ import SecretaireDashboard from "./SecretaireDashboard";
 import { Box } from "@mui/material";
 import AdminLeagueDashboard from "../League/AdminLeagueDashboard";
 import ArbitreDashboard from "./ArbitreDashboard";
-function GlobalRole() {
-  const { auth, activeRole } = UseAuth();
+import AdminFederationDashboard from "../../Saas/pages/Fede/AdminFederationDashboard";
 
-  const isSuperAdmin = auth.roleSuperAdmin?.includes("super_admin");
+function GlobalRole() {
+  const { auth, activeRole, activeType } = UseAuth();
+
+  // 1. Mode Dieu : Sécurisation du Super Admin
+  const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
+
+  // 2. Sécurisation de la casse (toLowerCase et trim pour éviter les espaces vides)
+  const contextType = activeType ? activeType.trim().toLowerCase() : "";
+  const roleName = activeRole ? activeRole.trim().toLowerCase() : "";
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      {/* --- 1. SUPER ADMIN --- */}
       {isSuperAdmin && <SuperAdminDashboard />}
-      {!isSuperAdmin && activeRole === "admin_club" && <ClubAdminDashboard />}
-      {!isSuperAdmin && activeRole === "instructeur" && <InstructorDashboard />}
-      {!isSuperAdmin && activeRole === "secretaire" && <SecretaireDashboard />}
-      {!isSuperAdmin && activeRole === "parent" && <ParentDashboard />}
-      {!isSuperAdmin && activeRole === "karateka" && <StudentDashboard />}
-      {/* ligue */}
-      {!isSuperAdmin && activeRole === "admin_league" && (
-        <AdminLeagueDashboard />
+
+      {/* --- 2. CONTEXTE : CLUB --- */}
+      {!isSuperAdmin && contextType === "club" && (
+        <>
+          {roleName === "admin" && <ClubAdminDashboard />}
+          {roleName === "instructeur" && <InstructorDashboard />}
+          {roleName === "secretaire" && <SecretaireDashboard />}
+          {roleName === "karateka" && <StudentDashboard />}
+        </>
       )}
-      {!isSuperAdmin && activeRole === "arbitre_league" && <ArbitreDashboard />}
+
+      {/* --- 3. CONTEXTE : LIGUE / LEAGUE --- */}
+      {!isSuperAdmin &&
+        (contextType === "ligue" || contextType === "league") && (
+          <>
+            {roleName === "admin" && <AdminLeagueDashboard />}
+            {roleName === "secretaire" && <SecretaireDashboard />}
+            {roleName === "arbitre" && <ArbitreDashboard />}
+          </>
+        )}
+
+      {/* --- 4. CONTEXTE : FÉDÉRATION ---
+          Le rôle "dtn" (directeur technique national) réutilise le même
+          dashboard que "admin" : aucune vue distincte n'existe pour ce rôle. */}
+      {!isSuperAdmin && contextType === "federation" && (
+        <>
+          {(roleName === "admin" || roleName === "dtn") && (
+            <AdminFederationDashboard />
+          )}
+          {roleName === "arbitre" && <ArbitreDashboard />}
+        </>
+      )}
+
+      {/* --- 5. CAS PARTICULIER (HORS STRUCTURE) --- */}
+      {!isSuperAdmin && roleName === "parent" && <ParentDashboard />}
     </Box>
   );
 }
-
 export default GlobalRole;

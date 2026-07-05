@@ -13,30 +13,41 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import BusinessIcon from "@mui/icons-material/Business";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import PublicIcon from "@mui/icons-material/Public";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { UseAuth } from "../../Api/AuthContext";
+
+// Centralise la résolution icône/couleur par type d'organisation,
+// pour ne jamais avoir à dupliquer la condition à plusieurs endroits du JSX.
+const SPACE_VISUALS = {
+  Federation: { Icon: PublicIcon, color: "warning.main" },
+  Ligue: { Icon: AccountBalanceIcon, color: "secondary.main" },
+  Club: { Icon: BusinessIcon, color: "primary.main" },
+};
+
+function getSpaceVisual(type) {
+  return SPACE_VISUALS[type] || SPACE_VISUALS.Club;
+}
 
 const ContextSwitcher = ({ isCollapsed = false }) => {
   const { auth, activeId, switchPortal } = UseAuth();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Fusionner les clubs et ligues avec un type
+  // Fusionner les clubs, ligues et fédérations avec un type
   const clubs = (auth.clubs || []).map((c) => ({ ...c, type: "Club" }));
   const leagues = (auth.leagues || []).map((l) => ({ ...l, type: "Ligue" }));
-  const allSpaces = [...clubs, ...leagues];
+  const federations = (auth.federations || []).map((f) => ({
+    ...f,
+    type: "Federation",
+  }));
+  const allSpaces = [...federations, ...leagues, ...clubs];
 
   if (allSpaces.length === 0) return null;
 
   // Trouver l'espace actuellement sélectionné
   const currentSpace = allSpaces.find((s) => s.id === activeId) || allSpaces[0];
-
-  // Formater le rôle (ex: "admin_league" → "Admin League")
-  const formatRole = (roleData) => {
-    if (!roleData) return "";
-    let roleText = Array.isArray(roleData) ? roleData[0] || "" : roleData;
-    if (!roleText) return "";
-    return roleText.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-  };
+  const currentVisual = getSpaceVisual(currentSpace?.type);
+  const CurrentIcon = currentVisual.Icon;
 
   return (
     <Box sx={{ p: isCollapsed ? 1 : 2, position: "relative" }}>
@@ -74,19 +85,12 @@ const ContextSwitcher = ({ isCollapsed = false }) => {
           >
             <Avatar
               sx={{
-                bgcolor:
-                  currentSpace?.type === "Ligue"
-                    ? "secondary.main"
-                    : "primary.main",
+                bgcolor: currentVisual.color,
                 width: isCollapsed ? 32 : 32,
                 height: isCollapsed ? 32 : 32,
               }}
             >
-              {currentSpace?.type === "Ligue" ? (
-                <AccountBalanceIcon fontSize="small" />
-              ) : (
-                <BusinessIcon fontSize="small" />
-              )}
+              <CurrentIcon fontSize="small" />
             </Avatar>
 
             {!isCollapsed && (
@@ -98,7 +102,7 @@ const ContextSwitcher = ({ isCollapsed = false }) => {
                   variant="caption"
                   sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                 >
-                  {currentSpace?.type} : {formatRole(currentSpace?.role)}
+                  {currentSpace?.type} : {currentSpace?.role}
                 </Typography>
               </Box>
             )}
@@ -145,36 +149,36 @@ const ContextSwitcher = ({ isCollapsed = false }) => {
                 Changer d'espace
               </Typography>
               <List sx={{ p: 0, maxHeight: 300, overflowY: "auto" }}>
-                {allSpaces.map((space) => (
-                  <ListItem key={space.id} disablePadding>
-                    <ListItemButton
-                      selected={space.id === activeId}
-                      onClick={() => {
-                        switchPortal(space.id, space.type, space.role);
-                        setIsOpen(false);
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        {space.type === "Ligue" ? (
-                          <AccountBalanceIcon
-                            color="secondary"
+                {allSpaces.map((space) => {
+                  const visual = getSpaceVisual(space.type);
+                  const SpaceIcon = visual.Icon;
+                  return (
+                    <ListItem key={space.id} disablePadding>
+                      <ListItemButton
+                        selected={space.id === activeId}
+                        onClick={() => {
+                          switchPortal(space.id, space.type, space.role);
+                          setIsOpen(false);
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <SpaceIcon
+                            sx={{ color: visual.color }}
                             fontSize="small"
                           />
-                        ) : (
-                          <BusinessIcon color="primary" fontSize="small" />
-                        )}
-                      </ListItemIcon>
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {space.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {space.type} — {formatRole(space.role)}
-                        </Typography>
-                      </Box>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                        </ListItemIcon>
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {space.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {space.type} — {space.role}
+                          </Typography>
+                        </Box>
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             </Paper>
           </motion.div>

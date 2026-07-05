@@ -11,7 +11,11 @@ import {
   TableRow,
   Typography,
   Chip,
+  Tooltip,
+  Button,
+  TextField,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { Instance } from "../../Api/Axios";
 import { UseAuth } from "../../Api/AuthContext";
 import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
@@ -20,7 +24,11 @@ import AlertCard from "./Alerts";
 import Alerts from "./Alerts";
 import QuickActions from "../../Saas/pages/QuickActions";
 import ActivityFeed from "../../Saas/pages/ActivityFeed";
-
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+import LeagueFederationAffiliation from "../../Saas/pages/Fede/LeagueFederationAffiliation";
+import VitalityGauge from "../../Saas/pages/League/VitalityGauge";
+import StageRevenueChart from "../../Saas/pages/League/StageRevenueChart";
 // ─── Icons (inline SVG via MUI SvgIcon approach, using emoji fallback) ───────
 const icons = {
   dashboard: "⊞",
@@ -38,43 +46,6 @@ const icons = {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const activities = [
-  {
-    date: "16 mars 2025",
-    action: "Licence émise…",
-    user: "Club Tigre FC",
-    status: "Validée",
-    color: "#4caf50",
-  },
-  {
-    date: "15 mars 2025",
-    action: "Inscription co…",
-    user: "Dragon Noir",
-    status: "En attente",
-    color: "#ff9800",
-  },
-  {
-    date: "14 mars 2025",
-    action: "Paiement coti…",
-    user: "Bushido Abidj…",
-    status: "Reçu",
-    color: "#2196f3",
-  },
-  {
-    date: "13 mars 2025",
-    action: "Grade 1er Da…",
-    user: "Ligue (examen)",
-    status: "Admise",
-    color: "#4caf50",
-  },
-  {
-    date: "12 mars 2025",
-    action: "Nouveau club…",
-    user: "Secrétariat",
-    status: "En cours",
-    color: "#9c27b0",
-  },
-];
 // ─── Animation variants ───────────────────────────────────────────────────────
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -138,32 +109,93 @@ function AdminLeagueDashboard() {
     total_competitions: 0,
   });
 
-  const { activeId } = UseAuth();
+  const { activeId, invitationCode } = UseAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [finance, setFinance] = useState({
+    total_encaisse: 0,
+    total_en_attente: 0,
+  });
+  const [aVerifierCount, setAVerifierCount] = useState(0);
+  const [examStats, setExamStats] = useState({
+    grades_decernes: 0,
+    taux_reussite: 0,
+  });
+
+  const handleCopy = async () => {
+    if (!navigator.clipboard) {
+      alert(
+        "La copie automatique n'est pas disponible sur cette version du site. Elle sera disponible lorsque le site utilisera HTTPS.",
+      );
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(invitationCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      alert("Impossible de copier le code. Veuillez réessayer.");
+    }
+  };
   const fetchStats = useCallback(async () => {
     if (!activeId) return;
     setLoading(true);
     setError("");
     try {
-      const response = await Instance.get(
-        `/api/dashboard/league/stats?organisateur_id=${activeId}`,
-      );
-      console.log(response);
+      const response = await Instance.get(`/api/dashboard/league/stats`);
       setStats(response.data);
     } catch (error) {
-      console.error("Erreur lors de la récupération des statistiques :", error);
       setError("Erreur lors de la récupération des statistiques");
     } finally {
       setLoading(false);
     }
   }, [activeId]);
 
+  const fetchFinance = useCallback(async () => {
+    if (!activeId) return;
+    // Promise.allSettled : chaque section est indépendante, l'échec de l'une
+    // ne doit pas empêcher l'affichage des deux autres.
+    const [statsRes, aVerifierRes, examRes] = await Promise.allSettled([
+      Instance.get("/api/stage-payments/statistiques"),
+      Instance.get("/api/stage-payments/a-verifier"),
+      Instance.get("/api/dashboard/league/exmenstates"),
+    ]);
+
+    if (statsRes.status === "fulfilled") {
+      setFinance(
+        statsRes.value.data?.data || {
+          total_encaisse: 0,
+          total_en_attente: 0,
+        },
+      );
+    } else {
+      console.error("Erreur stats paiements stages:", statsRes.reason);
+    }
+
+    if (aVerifierRes.status === "fulfilled") {
+      setAVerifierCount((aVerifierRes.value.data?.data || []).length);
+    } else {
+      console.error("Erreur paiements à vérifier:", aVerifierRes.reason);
+    }
+
+    if (examRes.status === "fulfilled") {
+      setExamStats(
+        examRes.value.data || { grades_decernes: 0, taux_reussite: 0 },
+      );
+    } else {
+      console.error("Erreur stats examens:", examRes.reason);
+    }
+  }, [activeId]);
+
   useEffect(() => {
     if (activeId) {
       fetchStats();
+      fetchFinance();
     }
-  }, [activeId, fetchStats]);
+  }, [activeId, fetchStats, fetchFinance]);
 
   if (loading) {
     return <ConfigSkeleton />;
@@ -171,18 +203,55 @@ function AdminLeagueDashboard() {
   if (error) return <ErrorBlock message={error} onRetry={fetchStats} />;
   return (
     <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 4,
+          borderBottom: "1px solid #e0e0e0",
+          pb: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Gérez vos clubs, vos compétitions et vos arbitres régionaux.
+          </Typography>
+        </Box>
+
+        {/* LE BADGE DE COPIE SECURISÉ */}
+        <Box display="flex" gap={1}>
+          <TextField
+            label="Code d'invitation"
+            value={invitationCode}
+            InputProps={{
+              readOnly: true,
+            }}
+            size="small"
+          />
+
+          <Button
+            onClick={handleCopy}
+            startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
+          >
+            {copied ? "Copié" : "Copier"}
+          </Button>
+        </Box>
+      </Box>
       {/* Stat Cards */}
       <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
         <StatCard
           label="Licenciés actifs"
-          value={stats.total_students}
+          value={stats.total_students || 1000}
           // sub="+12% vs saison préc."
           subColor="#4caf50"
           index={0}
         />
         <StatCard
           label="Clubs affiliés"
-          value={stats.total_afiliation}
+          value={stats.total_afiliation || 30}
           // sub="+3 nouveaux"
           subColor="#4caf50"
           index={1}
@@ -194,21 +263,69 @@ function AdminLeagueDashboard() {
           subColor="#8b90a0"
           index={2}
         />
-        {/* <StatCard
-          label="Recettes (FCFA)"
-          value="18,4M"
-          // sub="-4% objectif"
-          subColor="#f44336"
+        <StatCard
+          label="Recettes stages (encaissées)"
+          value={`${Number(finance.total_encaisse || 1500000).toLocaleString("fr-FR")} F`}
+          sub={`${Number(finance.total_en_attente || 500000).toLocaleString("fr-FR")} F en attente`}
+          subColor="#ff9800"
           index={3}
-        /> */}
+        />
+        <Box
+          sx={{ flex: 1, cursor: "pointer" }}
+          onClick={() => navigate("/dashboard/league/stage")}
+        >
+          <StatCard
+            label="Paiements à vérifier"
+            value={aVerifierCount}
+            sub={
+              aVerifierCount > 0
+                ? "En attente de confirmation"
+                : "Tout est à jour"
+            }
+            subColor={aVerifierCount > 0 ? "#ff9800" : "#4caf50"}
+            index={4}
+          />
+        </Box>
       </Box>
       {/* Middle Row */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         {/* Alerts */}
-        <Alerts />
+        <Box sx={{ flex: 2, minWidth: 320 }}>
+          <Alerts />
+        </Box>
 
-        {/* Categories */}
-        {/* <LicenceProgress /> */}
+        {/* Vitalité examens */}
+        <Box sx={{ flex: 1, minWidth: 260 }}>
+          <VitalityGauge />
+        </Box>
+      </Box>
+
+      {/* Recettes stages par mois + examens */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <Box sx={{ flex: 1, minWidth: 320 }}>
+          <StageRevenueChart />
+        </Box>
+        <Box
+          sx={{ flex: 1, minWidth: 260, cursor: "pointer" }}
+          onClick={() => navigate("/dashboard/league/grades")}
+        >
+          <Box sx={{ display: "flex", gap: 2, height: "100%" }}>
+            <StatCard
+              label="Grades décernés cette saison"
+              value={examStats.grades_decernes || 200}
+              sub="Voir le détail →"
+              subColor="#8b90a0"
+              index={5}
+            />
+            <StatCard
+              label="Taux de réussite"
+              value={`${examStats.taux_reussite || 50}%`}
+              sub="Voir le détail →"
+              subColor="#8b90a0"
+              index={6}
+            />
+          </Box>
+        </Box>
       </Box>
       {/* Activity Table */}
       <motion.div

@@ -87,7 +87,7 @@ const TableauSuiviJuges = ({ configNotationId }) => {
   };
 
   // Générer l'état des 4 chaises
-  const chaises = [1, 2, 3, 4].map((numero) => {
+  const chaises = [1, 2, 3, 4, 5, 6].map((numero) => {
     const infosJuge = jugesConnectes.find((j) => j.juge_numero === numero);
     return {
       numero,
@@ -104,6 +104,7 @@ const TableauSuiviJuges = ({ configNotationId }) => {
       elevation={3}
       sx={{
         p: 3,
+        mt: 2,
         borderRadius: 3,
         border: "1px solid",
         borderColor: "grey.200",

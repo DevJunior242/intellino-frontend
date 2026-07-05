@@ -43,8 +43,7 @@ function ActivityFeed() {
       const response = await Instance.get(
         `/api/dashboard/activity?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
-      console.log("actitivites", response);
-      setActivities(response.data);
+      setActivities(response.data || []);
     } catch (error) {
       console.error("Erreur lors de la récupération des activités :", error);
     } finally {

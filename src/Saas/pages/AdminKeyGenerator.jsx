@@ -54,7 +54,8 @@ export default function AdminKeyGenerator() {
           onChange={(e) => setType(e.target.value)}
           fullWidth
         >
-          <MenuItem value="league">Ligue / Fédération</MenuItem>
+          <MenuItem value="federation">Fédération</MenuItem>
+          <MenuItem value="league">Ligue</MenuItem>
           <MenuItem value="club">Club local</MenuItem>
         </TextField>
 

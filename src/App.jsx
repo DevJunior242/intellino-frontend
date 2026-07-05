@@ -10,121 +10,208 @@ import LayoutAuth from "./component/layouts/LayoutAuth";
 import ScrollToTop from "./component/ScrollToTop";
 
 import AuthContext, { AuthProvider, UseAuth } from "./Api/AuthContext";
-import { useEffect, useMemo } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import Aos from "aos";
 import "aos/dist/aos.css";
 import LayoutMain from "./component/layouts/LayoutMain";
-
-import Plan from "./Saas/pages/Plan";
-import StoreStudent from "./Saas/pages/StoreStudent";
-import Instructor from "./Saas/pages/Instructor";
-import Course from "./Saas/pages/Course";
-import Medal from "./Saas/pages/Medal";
-import ClubStore from "./Saas/pages/ClubStore";
-import Dashboard from "./Saas/pages/Dashboard";
-
-import HomePage from "./component/HomePage";
-import Contact from "./component/Contact";
-import Login from "./Saas/pages/Login";
-import Register from "./Saas/pages/Register";
-import { AxiosInterceptor } from "./Api/AxiosInterceptor";
-
-import Forbidden from "./Saas/pages/Forbidden";
-import StoreGrade from "./Saas/pages/StoreGrade";
-import StudentGradCreate from "./Saas/pages/StudentGradCreate";
-import AttendanceCreate from "./Saas/pages/AttendanceReate";
-import AttendanceIndex from "./Saas/pages/AttendanceIndex";
-import About from "./component/About";
-import FAQSection from "./component/Dashboard/FAQSection";
-
-import NotFound from "./Saas/pages/NotFound";
-import StoreExamen from "./Saas/pages/Examens/StoreExamen";
-import StoreEnchainement from "./Saas/pages/Examens/StoreEnchainement";
-import ExamenDetails from "./Saas/pages/Examens/ExamenDetails";
-import ExamenIndex from "./Saas/pages/Examens/ExamenIndex";
-import ForgotPassword from "./Saas/pages/ForgotPassword";
-import ResetPassword from "./Saas/pages/ResetPassword";
 import DashboardLayout from "./component/layouts/DashboardLayout";
-import SubscriptionsList from "./component/Dashboard/Admin/SubscriptionsList";
-import AddMemberForm from "./Saas/pages/AddMemberForm";
-import SessionList from "./Saas/pages/Sessions/SessionList";
-import StudentDetails from "./Saas/pages/Students/StudentDetails";
-import StudentForm from "./Saas/pages/Students/StudentForm";
-import StoreDisp from "./Saas/pages/StoreDisp";
-import SessionDetails from "./Saas/pages/Sessions/SessionDetails";
-import PaymentForm from "./Saas/pages/PaymentForm";
-import PricingSettings from "./Saas/pages/PricingSettings";
-import PaymentIndex from "./Saas/pages/PaymentIndex";
-import EquipmentManager from "./Saas/pages/EquipmentManager";
-import InventoryPage from "./Saas/pages/InventoryPage";
-import MemberTable from "./Saas/pages/member/MemberTable";
-import EquipmentLoan from "./Saas/pages/EquipmentLoan";
-import AccountSettings from "./component/settings/AccountSetting";
-import StudentsGradesOverview from "./Saas/pages/StudentsGradesOverview";
-import PaymentStat from "./Saas/pages/PaymentStat";
-import SessionStats from "./Saas/pages/Sessions/SessionStats";
-import StudentStatsDashboard from "./Saas/pages/StudentStatsDashboard";
-import ExamenStats from "./Saas/pages/Examens/ExamenStats";
-import ClubSlider from "./Saas/pages/ClubSlider";
-import Storeleague from "./Saas/pages/League/Storeleague";
-import StoreExamenLeague from "./Saas/pages/League/StoreExamenLeague";
-import LeagueExams from "./Saas/pages/League/LeagueExams";
-import LeagueClub from "./Saas/pages/League/LeagueClub";
-import MesClubs from "./Saas/pages/League/MesClubs";
-import DashboardLeagueLayout from "./component/layouts/DashboardLeagueLayout";
-import DashboardLeague from "./component/League/DashboardLeague";
-import StoreAffiliation from "./Saas/pages/League/StoreAffiliation";
-import LicenceForm from "./Saas/pages/League/LicenceForm";
-import CategoriesPage from "./Saas/pages/League/CategoriesPage";
-import LeagueSetupPage from "./Saas/pages/League/LeagueSetupPage";
-import ProgrammeActivites from "./Saas/pages/League/ProgrammeActivites";
-import CompetitionManager from "./Saas/pages/League/CompetitionManager";
-import GradesExamens from "./Saas/pages/League/GradesExamens";
-import BureauRoles from "./Saas/pages/League/BureauRoles";
-import FicheNotationGrade from "./Saas/pages/League/FicheNotationGrade";
-import CombatDemo from "./Saas/pages/CombaDemo";
-import KataDemo from "./Saas/pages/KataDemo";
-import InscriptionPage from "./Saas/pages/League/competion/InscriptionPage";
-import AdminCompetitionManagement from "./Saas/pages/League/competion/AdminCompetitionManagement";
-import GovernanceSettings from "./Saas/pages/GovernanceSettings";
-import BureauNomination from "./Saas/pages/League/competion/BureauNomination";
-import CandidaturePage from "./component/CandidaturePage";
-import JurySelfRegistration from "./component/JurySelfRegistration";
-import ConfigNotationPage from "./Saas/pages/League/competion/ConfigNotationPage";
-import ConfigNotationCard from "./Saas/pages/League/competion/ConfigNotationCard";
-import ConfigNotationCardDetails from "./Saas/pages/League/competion/ConfigNotationCardDetails";
-import SaisieNotePage from "./Saas/pages/League/competion/SaisieNotePage";
-import KumiteScoreboard from "./Saas/pages/League/competion/KumiteScoreboard";
-import VuePubliqueKata from "./Saas/pages/League/competion/VuePubliqueKata";
-import ParentDet from "./Saas/pages/ParentDet";
-import DebtPage from "./Saas/pages/DebtPage";
-import Program from "./Saas/pages/Program";
-import StudentList from "./Saas/pages/Students/StudentList";
-import Users from "./Saas/pages/Users";
-import ClubAdmin from "./Saas/pages/ClubAdmin.jsx";
-import MentionsLegales from "./Saas/pages/legal/MentionsLegales.jsx";
-import TermsOfService from "./Saas/pages/legal/TermsOfService.jsx";
-import PrivacyPolicy from "./Saas/pages/legal/PrivacyPolicy.jsx";
+import DashboardGeneralLayout from "./component/layouts/DashboardGeneralLayout";
+import { AxiosInterceptor } from "./Api/AxiosInterceptor";
 import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
-import LicenceTable from "./Saas/pages/League/LicenceTable.jsx";
-import Arbitres from "./Saas/pages/League/Arbitres.jsx";
-import Config from "./Saas/pages/League/competion/Config.jsx";
-import AdminKeyGenerator from "./Saas/pages/AdminKeyGenerator.jsx";
 
-const ProtectedRoute = ({ allowedRoles = [] }) => {
+// Pages chargées à la demande (un chunk séparé par page, téléchargé au moment de la navigation)
+const Plan = lazy(() => import("./Saas/pages/Plan"));
+const StoreStudent = lazy(() => import("./Saas/pages/StoreStudent"));
+const Instructor = lazy(() => import("./Saas/pages/Instructor"));
+const Course = lazy(() => import("./Saas/pages/Course"));
+const Medal = lazy(() => import("./Saas/pages/Medal"));
+const ClubStore = lazy(() => import("./Saas/pages/ClubStore"));
+const Dashboard = lazy(() => import("./Saas/pages/Dashboard"));
+
+const HomePage = lazy(() => import("./component/HomePage"));
+const Contact = lazy(() => import("./component/Contact"));
+const Login = lazy(() => import("./Saas/pages/Login"));
+const Register = lazy(() => import("./Saas/pages/Register"));
+
+const Forbidden = lazy(() => import("./Saas/pages/Forbidden"));
+const StoreGrade = lazy(() => import("./Saas/pages/StoreGrade"));
+const StudentGradCreate = lazy(() => import("./Saas/pages/StudentGradCreate"));
+const AttendanceCreate = lazy(() => import("./Saas/pages/AttendanceReate"));
+const AttendanceIndex = lazy(() => import("./Saas/pages/AttendanceIndex"));
+const About = lazy(() => import("./component/About"));
+const FAQSection = lazy(() => import("./component/Dashboard/FAQSection"));
+
+const NotFound = lazy(() => import("./Saas/pages/NotFound"));
+const StoreExamen = lazy(() => import("./Saas/pages/Examens/StoreExamen"));
+const StoreEnchainement = lazy(
+  () => import("./Saas/pages/Examens/StoreEnchainement"),
+);
+const ExamenDetails = lazy(() => import("./Saas/pages/Examens/ExamenDetails"));
+const ExamenIndex = lazy(() => import("./Saas/pages/Examens/ExamenIndex"));
+const ForgotPassword = lazy(() => import("./Saas/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./Saas/pages/ResetPassword"));
+const SubscriptionsList = lazy(
+  () => import("./component/Dashboard/Admin/SubscriptionsList"),
+);
+const AddMemberForm = lazy(() => import("./Saas/pages/AddMemberForm"));
+const SessionList = lazy(() => import("./Saas/pages/Sessions/SessionList"));
+const StudentDetails = lazy(
+  () => import("./Saas/pages/Students/StudentDetails"),
+);
+const StudentForm = lazy(() => import("./Saas/pages/Students/StudentForm"));
+const StoreDisp = lazy(() => import("./Saas/pages/StoreDisp"));
+const SessionDetails = lazy(
+  () => import("./Saas/pages/Sessions/SessionDetails"),
+);
+const PaymentForm = lazy(() => import("./Saas/pages/PaymentForm"));
+const PricingSettings = lazy(() => import("./Saas/pages/PricingSettings"));
+const PaymentIndex = lazy(() => import("./Saas/pages/PaymentIndex"));
+const EquipmentManager = lazy(() => import("./Saas/pages/EquipmentManager"));
+const InventoryPage = lazy(() => import("./Saas/pages/InventoryPage"));
+const MemberTable = lazy(() => import("./Saas/pages/member/MemberTable"));
+const EquipmentLoan = lazy(() => import("./Saas/pages/EquipmentLoan"));
+const AccountSettings = lazy(
+  () => import("./component/settings/AccountSetting"),
+);
+const StudentsGradesOverview = lazy(
+  () => import("./Saas/pages/StudentsGradesOverview"),
+);
+const PaymentStat = lazy(() => import("./Saas/pages/PaymentStat"));
+const SessionStats = lazy(() => import("./Saas/pages/Sessions/SessionStats"));
+const StudentStatsDashboard = lazy(
+  () => import("./Saas/pages/StudentStatsDashboard"),
+);
+const ExamenStats = lazy(() => import("./Saas/pages/Examens/ExamenStats"));
+const ClubSlider = lazy(() => import("./Saas/pages/ClubSlider"));
+const Storeleague = lazy(() => import("./Saas/pages/League/Storeleague"));
+const StoreExamenLeague = lazy(
+  () => import("./Saas/pages/League/StoreExamenLeague"),
+);
+const LeagueExams = lazy(() => import("./Saas/pages/League/LeagueExams"));
+const LeagueClub = lazy(() => import("./Saas/pages/League/LeagueClub"));
+const MesClubs = lazy(() => import("./Saas/pages/League/MesClubs"));
+const DashboardLeague = lazy(
+  () => import("./component/League/DashboardLeague"),
+);
+const StoreAffiliation = lazy(
+  () => import("./Saas/pages/League/StoreAffiliation"),
+);
+const LicenceForm = lazy(() => import("./Saas/pages/League/LicenceForm"));
+const CategoriesPage = lazy(() => import("./Saas/pages/League/CategoriesPage"));
+const SubDisciplinePage = lazy(
+  () => import("./Saas/pages/League/SubDisciplinePage"),
+);
+const ProgrammeActivites = lazy(
+  () => import("./Saas/pages/League/ProgrammeActivites"),
+);
+const CompetitionManager = lazy(
+  () => import("./Saas/pages/League/CompetitionManager"),
+);
+const GradesExamens = lazy(() => import("./Saas/pages/League/GradesExamens"));
+const BureauRoles = lazy(() => import("./Saas/pages/League/BureauRoles"));
+const BureauRolesFederation = lazy(
+  () => import("./Saas/pages/Fede/BureauRolesFederation"),
+);
+const FicheNotationGrade = lazy(
+  () => import("./Saas/pages/League/FicheNotationGrade"),
+);
+
+const InscriptionPage = lazy(
+  () => import("./Saas/pages/League/competion/InscriptionPage"),
+);
+const CandidaturePage = lazy(() => import("./component/CandidaturePage"));
+const JurySelfRegistration = lazy(
+  () => import("./component/JurySelfRegistration"),
+);
+const ConfigNotationPage = lazy(
+  () => import("./Saas/pages/League/competion/ConfigNotationPage"),
+);
+const ConfigNotationCard = lazy(
+  () => import("./Saas/pages/League/competion/ConfigNotationCard"),
+);
+const ConfigNotationCardDetails = lazy(
+  () => import("./Saas/pages/League/competion/ConfigNotationCardDetails"),
+);
+const SaisieNotePage = lazy(
+  () => import("./Saas/pages/League/competion/SaisieNotePage"),
+);
+const KumiteScoreboard = lazy(
+  () => import("./Saas/pages/League/competion/KumiteScoreboard"),
+);
+const VuePubliqueKata = lazy(
+  () => import("./Saas/pages/League/competion/VuePubliqueKata"),
+);
+const ParentDet = lazy(() => import("./Saas/pages/ParentDet"));
+const DebtPage = lazy(() => import("./Saas/pages/DebtPage"));
+const Program = lazy(() => import("./Saas/pages/Program"));
+const StudentList = lazy(() => import("./Saas/pages/Students/StudentList"));
+const Users = lazy(() => import("./Saas/pages/Users"));
+const ClubAdmin = lazy(() => import("./Saas/pages/ClubAdmin.jsx"));
+const MentionsLegales = lazy(
+  () => import("./Saas/pages/legal/MentionsLegales.jsx"),
+);
+const TermsOfService = lazy(
+  () => import("./Saas/pages/legal/TermsOfService.jsx"),
+);
+const PrivacyPolicy = lazy(
+  () => import("./Saas/pages/legal/PrivacyPolicy.jsx"),
+);
+const LicenceTable = lazy(() => import("./Saas/pages/League/LicenceTable.jsx"));
+const Arbitres = lazy(() => import("./Saas/pages/League/Arbitres.jsx"));
+const Config = lazy(() => import("./Saas/pages/League/competion/Config.jsx"));
+const AdminKeyGenerator = lazy(
+  () => import("./Saas/pages/AdminKeyGenerator.jsx"),
+);
+const VuePubliqueKumite = lazy(
+  () => import("./Saas/pages/League/competion/VuePubliqueKumite.jsx"),
+);
+const TakeoverLeagueForm = lazy(
+  () => import("./Saas/pages/League/Mandat/TakeoverLeagueForm.jsx"),
+);
+const TakeoverKeyGenerator = lazy(
+  () => import("./Saas/pages/TakeoverKeyGenerator.jsx"),
+);
+const StageIndex = lazy(() => import("./Saas/pages/StageIndex.jsx"));
+const StageSubscribeIndex = lazy(
+  () => import("./Saas/pages/StageSubscribeIndex.jsx"),
+);
+const CreateFederationForm = lazy(
+  () => import("./Saas/pages/Fede/CreateFederationForm.jsx"),
+);
+const FederationStructure = lazy(
+  () => import("./Saas/pages/Fede/Federationstructure.jsx"),
+);
+const LicenceTypeIndex = lazy(
+  () => import("./Saas/pages/Fede/Licencetypeindex.jsx"),
+);
+const LicenceIndex = lazy(() => import("./Saas/pages/LicenceIndex.jsx"));
+const LeagueFederationAffiliation = lazy(
+  () => import("./Saas/pages/Fede/LeagueFederationAffiliation.jsx"),
+);
+const AdminFederationDashboard = lazy(
+  () => import("./Saas/pages/Fede/AdminFederationDashboard.jsx"),
+);
+const AffiliationTarifIndex = lazy(
+  () => import("./Saas/pages/Fede/AffiliationTarifIndex.jsx"),
+);
+const PaymentMethodIndex = lazy(
+  () => import("./Saas/pages/Paiement/Paymentmethodindex.jsx"),
+);
+
+const ProtectedRoute = ({ allowedRoles }) => {
   const { auth, activeRole, loading } = UseAuth();
 
   if (loading) return <ConfigSkeleton />;
   if (!auth?.isLogin) return <Navigate to="/login" />;
 
+  // Si aucun rôle n'est requis
+  if (!allowedRoles) {
+    return <Outlet />;
+  }
+
   const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
 
-  const hasAnyRole = auth?.role?.length > 0 || auth?.roleSuperAdmin?.length > 0;
-
-  const isAllowed =
-    isSuperAdmin || allowedRoles === "ANY"
-      ? hasAnyRole
-      : allowedRoles.includes(activeRole);
+  const isAllowed = isSuperAdmin || allowedRoles.includes(activeRole);
 
   return isAllowed ? <Outlet /> : <Navigate to="/403" />;
 };
@@ -135,19 +222,22 @@ const GuestRoute = () => {
   if (auth?.isLogin) return <Navigate to="/" />;
   return <Outlet />;
 };
-const STAFF_LEAGUE_ROLES = ["super_admin", "admin_league", "arbitre_league"];
+const STAFF_LEAGUE_ROLES = ["super_admin", "admin", "arbitre"];
 const STAFF_CLUB_ROLES = [
   "super_admin",
-  "admin_club",
+  "admin",
   "instructeur",
   "secretaire",
-  "admin_league",
+  "admin",
 ];
 
-const CAN_CREATE = ["super_admin", "admin_league", "admin_club", "instructeur"];
+const CAN_CREATE = ["super_admin", "admin", "admin", "instructeur"];
 
 const SUPER_ADMIN = ["super_admin"];
 const ALL_CLUB_ROLES = [...STAFF_CLUB_ROLES, "parent", "karateka"];
+
+const STAFF_FEDERATION_ROLES = ["admin", "arbitre", "secretaire", "admin"];
+const ALL_FEDERATION_ROLES = [...STAFF_FEDERATION_ROLES];
 
 const AppRoutes = () => {
   return (
@@ -184,10 +274,14 @@ const AppRoutes = () => {
             path="student/examen/enchainement/store"
             element={<StoreEnchainement />}
           />
+          <Route path="licences" element={<LicenceIndex />} />
+
           <Route path="payment/settings" element={<PricingSettings />} />
           <Route path="payment/store" element={<PaymentForm />} />
           <Route path="catalogue" element={<InventoryPage />} />
           <Route path="inventory/prets" element={<EquipmentLoan />} />
+          <Route path="stages/ma-ligue" element={<StageSubscribeIndex />} />
+          <Route path="payment-methods" element={<PaymentMethodIndex />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
           <Route index element={<Dashboard />} />
@@ -209,6 +303,11 @@ const AppRoutes = () => {
         {/* ROUTES STRICTEMENT SUPER ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={SUPER_ADMIN} />}>
           <Route path="activation-keys" element={<AdminKeyGenerator />} />
+          <Route
+            path="activation-keys/takeover"
+            element={<TakeoverKeyGenerator />}
+          />
+
           <Route path="clubs" element={<ClubAdmin />} />
           <Route path="users" element={<Users />} />
           <Route path="karateka/list" element={<StudentList />} />
@@ -216,18 +315,36 @@ const AppRoutes = () => {
           <Route path="discipline/store" element={<StoreDisp />} />
         </Route>
       </Route>
+      {/* federation */}
+      <Route path="/dashboard/federation" element={<DashboardGeneralLayout />}>
+        <Route
+          element={<ProtectedRoute allowedRoles={STAFF_FEDERATION_ROLES} />}
+        >
+          <Route path="stats" element={<AdminFederationDashboard />} />
+          <Route path="licences" element={<LicenceTypeIndex />} />
+          <Route path="affiliations" element={<AffiliationTarifIndex />} />
+          <Route path="invitation" element={<LeagueFederationAffiliation />} />
+          <Route path="structure" element={<FederationStructure />} />
+          <Route path="payment-methods" element={<PaymentMethodIndex />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="configCategory" element={<SubDisciplinePage />} />
+          <Route path="activity" element={<ProgrammeActivites />} />
+          <Route path="bureau" element={<BureauRolesFederation />} />
+        </Route>
+      </Route>
 
-      {/* ROUTES LIGUE (Accessibles si activeRole est admin_league ou super_admin) */}
-      <Route path="/dashboard/league" element={<DashboardLeagueLayout />}>
-        {" "}
-        <Route element={<ProtectedRoute allowedRoles={["admin_league"]} />}>
+      {/* ROUTES LIGUE (Accessibles si activeRole est admin ou super_admin) */}
+      <Route path="/dashboard/league" element={<DashboardGeneralLayout />}>
+        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="examen" element={<ExamenIndex />} />
-
+          {/* stages */}
+          <Route path="stage" element={<StageIndex />} />
+          {/* programme d'activités */}
+          {/* <Route path="activity" element={<ProgrammeActivites />} /> */}
           <Route path=":examenId/show" element={<ExamenDetails />} />
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
           <Route path="categories" element={<CategoriesPage />} />
-          <Route path="configCategory" element={<LeagueSetupPage />} />
 
           <Route path="clubs" element={<MesClubs />} />
           <Route path="affiliations/create" element={<StoreAffiliation />} />
@@ -236,11 +353,10 @@ const AppRoutes = () => {
           <Route path="notation" element={<FicheNotationGrade />} />
           <Route path="confignotation" element={<ConfigNotationPage />} />
           <Route path="bureau" element={<BureauRoles />} />
-          <Route path="arbitres" element={<Arbitres />} />
 
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
-          <Route path="athletes" element={<AdminCompetitionManagement />} />
+          <Route path="payment-methods" element={<PaymentMethodIndex />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
           <Route path="stats" element={<DashboardLeague />} />
@@ -248,7 +364,8 @@ const AppRoutes = () => {
             path="ConfigNotationCardDetails"
             element={<ConfigNotationCardDetails />}
           />
-          <Route path="programme-activites" element={<ProgrammeActivites />} />
+          <Route path="activity" element={<ProgrammeActivites />} />
+
           <Route path="competitions" element={<Config />} />
         </Route>
       </Route>
@@ -256,16 +373,22 @@ const AppRoutes = () => {
       {/* ROUTES PUBLIQUES ET GÉNÉRALES */}
       <Route element={<LayoutMain />}>
         {/* Accès si connecté (n'importe quel rôle) */}
-        <Route element={<ProtectedRoute allowedRoles="ANY" />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/settings" element={<AccountSettings />} />
+          <Route
+            path="/activation/takeover/:leagueId"
+            element={<TakeoverLeagueForm />}
+          />
         </Route>
-        {/* <Route element={<ProtectedRoute allowedRoles={CAN_CREATE} />}>
-          <Route path="/examen/store" element={<StoreExamen />} />
-        </Route> */}
+
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
         <Route path="/public/tatami/:configId" element={<VuePubliqueKata />} />
+        <Route
+          path="/public/tatami/:configId/kumite"
+          element={<VuePubliqueKumite />}
+        />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQSection />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
@@ -274,6 +397,7 @@ const AppRoutes = () => {
         <Route path="/club/store" element={<ClubStore />} />
         <Route path="/league/store" element={<Storeleague />} />
         <Route path="/club/store" element={<ClubStore />} />
+        <Route path="/federation/create" element={<CreateFederationForm />} />
         {/* <Route path="/examen-league" element={<LeagueExams />} /> */}
         <Route path="/403" element={<Forbidden />} />
         <Route path="*" element={<NotFound />} />
@@ -303,7 +427,9 @@ function App() {
               flexDirection: "column",
             }}
           >
-            <AppRoutes />
+            <Suspense fallback={<ConfigSkeleton />}>
+              <AppRoutes />
+            </Suspense>
             <ScrollToTop />
           </Box>
         </AuthProvider>

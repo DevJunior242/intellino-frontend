@@ -31,8 +31,9 @@ function MemberTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [openEditModel, setOpenEditModel] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const { auth, activeRole, activeId } = UseAuth();
-  const allowAccess = ["admin_club"].includes(activeRole);
+  const { auth, activeRole, activeId, activeType } = UseAuth();
+
+  const allowAccess = ["admin"].includes(activeRole);
 
   const [openModal, setOpenModal] = useState(false);
   //erreur & ssuccess
@@ -131,7 +132,7 @@ function MemberTable() {
           <Chip
             label={params.value || "non défini"}
             size="small"
-            color={params.value === "admin_club" ? "primary" : "default"}
+            color={params.value === "admin" ? "primary" : "default"}
           />
         </Box>
       ),

@@ -74,7 +74,6 @@ export default function EditStudent({
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      console.log(response);
 
       const updatedStudent = response?.data?.student || [];
 

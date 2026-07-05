@@ -19,6 +19,7 @@ import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function StoreAffiliation() {
   const { activeId } = UseAuth();
@@ -27,12 +28,11 @@ function StoreAffiliation() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     club_id: "",
     cotisation: "",
-    date_debut: "",
-    date_fin: "",
   });
 
   const handleChange = (e) => {
@@ -55,8 +55,6 @@ function StoreAffiliation() {
     try {
       const dataSend = {
         ...formData,
-        organisateur_id: activeId,
-        organisateur_type: "Club",
       };
       if (clubId) {
         dataSend.club_id = clubId;
@@ -65,7 +63,6 @@ function StoreAffiliation() {
         `/api/affiliations/affiliations`,
         dataSend,
       );
-      console.log("RESPONSE", response);
       if (response.data.success) {
         setSuccess(response.data.message);
 
@@ -104,6 +101,26 @@ function StoreAffiliation() {
           p: 4,
         }}
       >
+        <Button
+          variant="outlined"
+          sx={{
+            mb: 4,
+            px: 4,
+            py: 1.5,
+            color: "#fff",
+            borderColor: "rgba(255,255,255,0.3)",
+            textTransform: "none",
+            borderRadius: 2,
+            fontSize: "1rem",
+            "&:hover": {
+              borderColor: "#fff",
+              bgcolor: "rgba(255,255,255,0.05)",
+            },
+          }}
+          onClick={() => navigate("/dashboard/league/clubs")}
+        >
+          Retour à la liste des clubs
+        </Button>
         <Typography>affiliation d'un club</Typography>
         {success && <Message text={success} type="success" />}
         {error?.general && <Message text={error.general} type="error" />}
@@ -111,7 +128,8 @@ function StoreAffiliation() {
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="club_id" value={formData.clubId} />
 
-          {/* <TextField
+          <TextField
+            label="Cotisation:prix de l'affiliation"
             error={hasError("cotisation")}
             helperText={getError("cotisation")}
             type="number"
@@ -121,41 +139,14 @@ function StoreAffiliation() {
             margin="normal"
             value={formData.cotisation}
             onChange={handleChange}
-            required
-          /> */}
+          />
           <Box
             sx={{
               display: "flex",
               gap: 2,
               flexDirection: { xs: "column", md: "row" },
             }}
-          >
-            <TextField
-              error={hasError("date_debut")}
-              helperText={getError("date_debut")}
-              type="date"
-              name="date_debut"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={formData.date_debut}
-              onChange={handleChange}
-              required
-            />
-            <TextField
-              label="Date de fin"
-              error={hasError("date_fin")}
-              helperText={getError("date_fin")}
-              type="date"
-              name="date_fin"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={formData.date_fin}
-              onChange={handleChange}
-              required
-            />
-          </Box>
+          ></Box>
 
           <Button
             disabled={submitting}

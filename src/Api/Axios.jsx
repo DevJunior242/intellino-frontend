@@ -1,5 +1,8 @@
 import axios from "axios";
-const BASE_URL = import.meta.env.VITE_API_URL || "http://178.105.189.230";
+
+//const BASE_URL = import.meta.env.VITE_API_URL || "http://178.105.189.230";
+
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 export const Instance = axios.create({
   baseURL: BASE_URL,
   timeout: 60000,
@@ -12,12 +15,44 @@ export const Instance = axios.create({
 Instance.interceptors.request.use(
   function (config) {
     const token = localStorage.getItem("token");
+    const activeId = localStorage.getItem("activeId");
+    const activeType = localStorage.getItem("activeType");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.params = {
+      ...config.params,
+      organisateur_id: activeId,
+      organisateur_type: activeType,
+    };
     return config;
   },
   function (error) {
     return Promise.reject(error);
   },
 );
+
+//////////////////////////////////////////////////////////////////////////////////
+// 2. INTERCEPTEUR DE RÉPONSE (Sécurité Anti-Fraude / Expulsion de l'ancien Admin)
+//////////////////////////////////////////////////////////////////////////////////
+// Instance.interceptors.response.use(
+//   function (response) {
+//     // Si la requête réussit, on laisse passer normalement
+//     return response;
+//   },
+//   function (error) {
+//     // Si l'API renvoie 401 (Non autorisé) ou 403 (Interdit - Mandat expiré)
+//     if (
+//       error.response &&
+//       (error.response.status === 401 || error.response.status === 403)
+//     ) {
+//       // 1. On nettoie TOUT le localStorage pour détruire sa fausse session
+//       localStorage.clear();
+
+//       // 2. On le redirige de force vers la page de login
+//       window.location.href = "/login";
+//     }
+
+//     return Promise.reject(error);
+//   },
+// );

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 
 import Barcharts from "./Admin/Barcharts";
 import { UseAuth } from "../../Api/AuthContext";
@@ -6,6 +6,8 @@ import Program from "../../Saas/pages/Program";
 import LatestStudents from "../../Saas/pages/LatestStudents";
 import QuickActions from "../../Saas/pages/QuickActions";
 import PaymentStat from "../../Saas/pages/PaymentStat";
+import PendingPaymentsWidget from "./PendingPaymentsWidget";
+import DebtorsWidget from "./DebtorsWidget";
 function SecretaireDashboard() {
   const { activeId } = UseAuth();
 
@@ -22,6 +24,16 @@ function SecretaireDashboard() {
       }}
     >
       <PaymentStat activeId={activeId} />
+
+      <Grid container spacing={3} sx={{ px: { xs: 1.5, sm: 3 }, mb: 3 }}>
+        <Grid item xs={12} md={6}>
+          <DebtorsWidget />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <PendingPaymentsWidget />
+        </Grid>
+      </Grid>
+
       <Box
         sx={{
           gap: 3,
@@ -31,11 +43,13 @@ function SecretaireDashboard() {
           alignItems: "center",
         }}
       >
-        <Program activeId={activeId} role="instructeur" />
+        <Program activeId={activeId} role="secretaire" />
         <LatestStudents />
       </Box>
 
-      {/* <QuickActions role="secretaire" /> */}
+      <Box sx={{ px: { xs: 1.5, sm: 3 }, py: 3 }}>
+        <QuickActions />
+      </Box>
     </Box>
   );
 }

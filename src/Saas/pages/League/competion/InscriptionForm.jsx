@@ -6,95 +6,148 @@ import {
   FormHelperText,
   TextField,
   Typography,
-  Autocomplete,
   Stack,
-  Select,
-  FormControl,
-  MenuItem,
-  InputLabel,
+  Checkbox,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Chip,
 } from "@mui/material";
 import { motion } from "motion/react";
-import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
 import Message from "../../Message";
 import PulseLoader from "react-spinners/PulseLoader";
 import ConfigSkeleton from "../../ConfigSkeleton";
+import ErrorBlock from "../../ErrorBlock";
 
-function InscriptionForm({ competitionId, discipline, onSuccess }) {
+function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
   const [error, setError] = useState({});
+  const [errorData, setErrorData] = useState("");
+
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [students, setStudents] = useState([]);
-  const [selectStudent, setSelectStudent] = useState(null);
-  const { activeId, activeType } = UseAuth();
+  const [category, setCategory] = useState(null);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState({});
+  const [expanded, setExpanded] = useState(false);
+  const VISIBLE_COUNT = 8;
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const [formData, setFormData] = useState({
-    athlete_id: "",
-    competition_id: "",
-    kata: "",
-    poids_declare: "",
-    poids_officiel: "",
-  });
 
-  useEffect(() => {
-    if (selectStudent) {
-      setFormData((prev) => ({ ...prev, athlete_id: selectStudent.id }));
-    }
-  }, [selectStudent]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const toggleStudent = (student) => {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (next[student.id]) {
+        delete next[student.id];
+      } else {
+        next[student.id] = { poids_declare: "", kata: "" };
+      }
+      return next;
+    });
   };
+
+  const updateChampAthlete = (studentId, field, value) => {
+    setSelected((prev) => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], [field]: value },
+    }));
+  };
+
+  const selectedCount = Object.keys(selected).length;
+
+  const poidsLabel =
+    category?.poids_min && category?.poids_max
+      ? `${Number(category.poids_min)}-${Number(category.poids_max)}kg`
+      : category?.poids_max
+        ? `-${Number(category.poids_max)}kg`
+        : category?.poids_min
+          ? `+${Number(category.poids_min)}kg`
+          : null;
+
+  const isPoidsHorsBornes = (poids) => {
+    const val = Number(poids);
+    if (!val || !category) return false;
+    if (category.poids_min && val < category.poids_min) return true;
+    if (category.poids_max && val > category.poids_max) return true;
+    return false;
+  };
+
+  const hasPoidsHorsBornes = Object.values(selected).some((champs) =>
+    isPoidsHorsBornes(champs.poids_declare),
+  );
+
+  const filteredStudents = (Array.isArray(students) ? students : []).filter(
+    (s) => (s.fullname || "").toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const visibleStudents = expanded
+    ? filteredStudents
+    : filteredStudents.slice(0, VISIBLE_COUNT);
+  const remaining = filteredStudents.length - visibleStudents.length;
+
+  // Élèves du club éligibles à CETTE épreuve : bonne catégorie (âge/sexe)
+  // et pas déjà inscrits, filtrés côté backend.
   const getInitialData = useCallback(async () => {
+    if (!competitionId) return;
     setLoading(true);
+    setErrorData("");
     try {
-      const res = await Instance.get(`/api/students?club_id=${activeId}`);
-      console.log(res);
+      const res = await Instance.get(
+        `/api/inscriptions/epreuve/${competitionId}/disponibles`,
+      );
       setStudents(res.data.students || []);
+      setCategory(res.data.category || null);
     } catch (error) {
-      console.error(error);
+      setErrorData("erreur de chargement");
     } finally {
       setLoading(false);
     }
-  }, [activeId]);
+  }, [competitionId]);
 
   useEffect(() => {
-    if (!activeId) return;
     getInitialData();
-  }, [activeId, getInitialData]);
+  }, [getInitialData]);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
     setSuccess("");
-    if (!competitionId) return;
+    if (!competitionId || selectedCount === 0) return;
+    if (hasPoidsHorsBornes) {
+      setError({
+        general: `Un ou plusieurs poids déclarés sont hors de la catégorie (${poidsLabel}). Corrigez-les avant d'inscrire.`,
+      });
+      return;
+    }
     setSubmitting(true);
     try {
-      const dataSend = {
-        ...formData,
-        organisateur_id: activeId,
-        organisateur_type: activeType,
-        competition_id: competitionId,
-      };
-      const response = await Instance.post(
-        "/api/inscriptions/inscriptions",
-        dataSend,
+      const inscriptions = Object.entries(selected).map(
+        ([athlete_id, champs]) => ({
+          athlete_id,
+          poids_declare: champs.poids_declare || null,
+          kata: champs.kata || null,
+        }),
       );
+
+      const response = await Instance.post("/api/inscriptions/inscriptions", {
+        competition_id: competitionId,
+        inscriptions,
+      });
       onSuccess();
-      console.log(response);
       if (response.data.success) {
         setSuccess(response.data.message);
-        setSelectStudent(null);
-
-        setFormData({
-          statut_pesee: 0,
-          poids_declare: "",
-          poids_officiel: "",
-        });
+        setSelected({});
+        setSearch("");
         setError({});
+        getInitialData();
         setTimeout(() => {
           setSuccess("");
         }, 3000);
@@ -112,6 +165,9 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
   if (loading) {
     return <ConfigSkeleton />;
   }
+  if (errorData) {
+    return <ErrorBlock message={errorData} onRetry={getInitialData} />;
+  }
   return (
     <Container maxWidth="md">
       <Box
@@ -126,85 +182,168 @@ function InscriptionForm({ competitionId, discipline, onSuccess }) {
           variant="h4"
           component="h1"
           textAlign="center"
-          sx={{ fontWeight: "bold", fontSize: { xs: "1.4rem", md: "2rem" } }} // ✅ unités rem
+          sx={{ fontWeight: "bold", fontSize: { xs: "1.4rem", md: "2rem" } }}
         >
-          Inscription à l'épreuve de {discipline}
+          Inscription à l'épreuve de {subdiscipline}
+          {poidsLabel && ` (${poidsLabel})`}
         </Typography>
 
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
 
         <form onSubmit={handleSubmit}>
-          <Autocomplete
-            slotProps={{
-              paper: {
-                sx: { backgroundColor: "background.default" },
-              },
-            }}
-            disablePortal
-            options={Array.isArray(students) ? students : []}
-            getOptionLabel={(student) =>
-              `${student.fullname || ""} - ${student.birthdate || ""}`
-            }
-            value={selectStudent}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            onChange={(e, newValue) => setSelectStudent(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={!!error.student_id}
-                fullWidth
-                margin="normal"
-                label="Choisir un athlète à compétir"
-                required
-              />
-            )}
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Rechercher un athlète"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
           {hasError("student_id") && (
             <FormHelperText error>{getError("student_id")}</FormHelperText>
           )}
-
-          {/* Kumite — champ poids */}
-          {discipline === "Kumite" && (
-            <TextField
-              error={!!error.poids_declare}
-              helperText={getError("poids_declare")}
-              label="Veuillez saisir le poids de votre athlète (kg)"
-              name="poids_declare"
-              value={formData.poids_declare}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              onChange={handleChange}
-            />
+          {hasError("inscriptions") && (
+            <FormHelperText error>{getError("inscriptions")}</FormHelperText>
           )}
 
-          {/* Kata — sélection du kata */}
-          {discipline === "Kata" && (
-            <TextField
-              error={!!error.kata}
-              helperText={getError("kata")}
-              label="Veuillez saisir le kata exécuté"
-              name="kata"
-              value={formData.kata}
-              variant="outlined"
+          <Box
+            sx={{
+              maxHeight: 340,
+              overflowY: "auto",
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              mt: 1,
+            }}
+          >
+            <List dense disablePadding>
+              {filteredStudents.length === 0 ? (
+                <ListItem>
+                  <ListItemText primary="Aucun athlète disponible pour cette épreuve" />
+                </ListItem>
+              ) : (
+                visibleStudents.map((student) => {
+                  const isChecked = !!selected[student.id];
+                  return (
+                    <ListItem
+                      key={student.id}
+                      sx={{
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        gap: 1,
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                        "&:last-of-type": { borderBottom: "none" },
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Checkbox
+                          edge="start"
+                          checked={isChecked}
+                          onChange={() => toggleStudent(student)}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={student.fullname}
+                        secondary={student.birthdate}
+                        sx={{ flex: 1 }}
+                      />
+                      {isChecked && subdiscipline === "Kumite" && (
+                        <TextField
+                          size="small"
+                          label="Poids (kg)"
+                          type="number"
+                          value={selected[student.id]?.poids_declare || ""}
+                          onChange={(e) =>
+                            updateChampAthlete(
+                              student.id,
+                              "poids_declare",
+                              e.target.value,
+                            )
+                          }
+                          error={isPoidsHorsBornes(
+                            selected[student.id]?.poids_declare,
+                          )}
+                          helperText={
+                            isPoidsHorsBornes(
+                              selected[student.id]?.poids_declare,
+                            )
+                              ? `Hors catégorie (${poidsLabel})`
+                              : ""
+                          }
+                          sx={{ width: { xs: "100%", sm: 140 } }}
+                          required
+                        />
+                      )}
+                      {isChecked && subdiscipline === "Kata" && (
+                        <TextField
+                          size="small"
+                          label="Kata"
+                          value={selected[student.id]?.kata || ""}
+                          onChange={(e) =>
+                            updateChampAthlete(
+                              student.id,
+                              "kata",
+                              e.target.value,
+                            )
+                          }
+                          sx={{ width: { xs: "100%", sm: 180 } }}
+                        />
+                      )}
+                    </ListItem>
+                  );
+                })
+              )}
+            </List>
+          </Box>
+
+          {remaining > 0 && (
+            <Button
               fullWidth
-              margin="normal"
-              onChange={handleChange}
-            />
+              size="small"
+              onClick={() => setExpanded(true)}
+              sx={{ mt: 0.5, textTransform: "none" }}
+            >
+              Afficher {remaining} athlète{remaining > 1 ? "s" : ""} de plus
+            </Button>
           )}
+          {expanded && filteredStudents.length > VISIBLE_COUNT && (
+            <Button
+              fullWidth
+              size="small"
+              onClick={() => setExpanded(false)}
+              sx={{ mt: 0.5, textTransform: "none" }}
+            >
+              Réduire la liste
+            </Button>
+          )}
+
+          <Stack direction="row" spacing={1} sx={{ mt: 1.5, mb: 1 }}>
+            <Chip
+              label={`${selectedCount} athlète${selectedCount > 1 ? "s" : ""} sélectionné${selectedCount > 1 ? "s" : ""}`}
+              color={selectedCount > 0 ? "primary" : "default"}
+              size="small"
+            />
+          </Stack>
 
           <Button
             type="submit"
             variant="contained"
             fullWidth
+            disabled={selectedCount === 0 || submitting || hasPoidsHorsBornes}
             sx={{
               mt: 2,
               textTransform: "none",
               fontSize: { xs: "0.9rem", md: "1rem" },
             }}
           >
-            {submitting ? "Enregistrement en cours..." : "S'inscrire"}
+            {submitting
+              ? "Enregistrement en cours..."
+              : hasPoidsHorsBornes
+                ? `Poids hors catégorie (${poidsLabel})`
+                : selectedCount > 0
+                  ? `Inscrire ${selectedCount} athlète${selectedCount > 1 ? "s" : ""}`
+                  : "Sélectionnez au moins un athlète"}
           </Button>
         </form>
       </Box>

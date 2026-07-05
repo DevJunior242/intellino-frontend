@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -10,8 +10,10 @@ import {
   Avatar,
   IconButton,
 } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { Instance } from "../../../Api/Axios";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 // --- COULEURS DU THÈME EXACT (Dark Mode de l'image) ---
 const theme = {
@@ -25,6 +27,32 @@ const theme = {
   info: "#2196f3", // Bleu
   warning: "#f44336", // Rouge
 };
+
+const CATEGORY_COLUMN = {
+  realisee: { title: "RÉALISÉES", color: theme.success },
+  en_cours: { title: "EN COURS", color: theme.accent },
+  planifiee: { title: "PLANIFIÉES", color: theme.info },
+};
+
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+// Progression temporelle (jours écoulés / durée totale) — utilisée
+// uniquement pour les activités "en cours", faute de % de complétion réel.
+function computeProgress(activite) {
+  if (!activite.date_debut || !activite.date_fin) return undefined;
+  const start = new Date(activite.date_debut).getTime();
+  const end = new Date(activite.date_fin).getTime();
+  if (!(end > start)) return undefined;
+  const pct = ((Date.now() - start) / (end - start)) * 100;
+  return Math.min(100, Math.max(0, Math.round(pct)));
+}
 
 // --- COMPOSANT : Carte d'Activité (Kanban Card) ---
 const ActivityCard = ({ title, date, category, progress, isLate }) => (
@@ -106,7 +134,7 @@ const ActivityCard = ({ title, date, category, progress, isLate }) => (
 );
 
 // --- COMPOSANT : Colonne Kanban ---
-const KanbanColumn = ({ title, count, color, children }) => (
+const KanbanColumn = ({ title, count, color, children, isEmpty }) => (
   <Grid item xs={12} md={4}>
     <Stack
       direction="row"
@@ -146,13 +174,67 @@ const KanbanColumn = ({ title, count, color, children }) => (
         border: "1px solid rgba(255,255,255,0.05)",
       }}
     >
-      {children}
+      {isEmpty ? (
+        <Typography
+          variant="body2"
+          sx={{ color: theme.textSecondary, textAlign: "center", py: 4 }}
+        >
+          Aucune activité
+        </Typography>
+      ) : (
+        children
+      )}
     </Box>
   </Grid>
 );
 
 // --- COMPOSANT PRINCIPAL : Page Programme d'activités ---
 export default function ProgrammeActivites() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchActivites = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await Instance.get("/api/programmes/activites");
+      setData(response.data);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Impossible de charger le programme d'activités.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchActivites();
+  }, [fetchActivites]);
+
+  if (loading) {
+    return <ConfigSkeleton />;
+  }
+  if (error) {
+    return <ErrorBlock message={error} onRetry={fetchActivites} />;
+  }
+
+  const stats = data?.stats || {
+    total: 0,
+    realisees: 0,
+    en_cours: 0,
+    planifiees: 0,
+    taux_realisation: 0,
+    en_retard: 0,
+  };
+  const activites = data?.activites || {
+    realisees: [],
+    en_cours: [],
+    planifiees: [],
+  };
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.bg, minHeight: "100vh" }}>
       {/* --- HEADER --- */}
@@ -170,7 +252,7 @@ export default function ProgrammeActivites() {
         </Typography>
         <Stack direction="row" spacing={2} alignItems="center">
           <Chip
-            label="Saison 2024–2025"
+            label={data?.saison?.libele || "Saison"}
             sx={{
               bgcolor: theme.card,
               color: theme.success,
@@ -182,32 +264,26 @@ export default function ProgrammeActivites() {
           <IconButton sx={{ color: theme.textSecondary }}>
             <NotificationsNoneIcon />
           </IconButton>
-          <Avatar
-            sx={{
-              bgcolor: theme.accent,
-              color: "#1a1d21",
-              fontWeight: 700,
-              fontSize: "0.8rem",
-            }}
-          >
-            AD
-          </Avatar>
         </Stack>
       </Stack>
 
       {/* --- 1. TOP STATS CARDS --- */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: "Activités totales", val: "34", color: theme.textMain },
+          {
+            label: "Activités totales",
+            val: String(stats.total),
+            color: theme.textMain,
+          },
           {
             label: "Taux de réalisation",
-            val: "71%",
-            detail: "24 / 34 réalisées",
+            val: `${stats.taux_realisation}%`,
+            detail: `${stats.realisees} / ${stats.total} réalisées`,
             color: theme.success,
           },
           {
             label: "En retard",
-            val: "4",
+            val: String(stats.en_retard),
             detail: "Échéance dépassée",
             color: theme.warning,
           },
@@ -254,68 +330,58 @@ export default function ProgrammeActivites() {
 
       {/* --- 2. KANBAN COLUMNS --- */}
       <Grid container spacing={3}>
-        {/* COLONNE RÉALISÉES */}
-        <KanbanColumn title="RÉALISÉES" count="24" color={theme.success}>
-          <ActivityCard
-            title="Assemblée générale ordinaire"
-            date="15 janv. 2025"
-            category="Bureau"
-          />
-          <ActivityCard
-            title="Stage national Kata"
-            date="3 fév. 2025"
-            category="Technique"
-          />
-          <ActivityCard
-            title="Formation arbitres régionaux"
-            date="22 fév. 2025"
-            category="Arbitrage"
-          />
-          <ActivityCard
-            title="Coupe de la Ligue"
-            date="1 fév. 2025"
-            category="Compétition"
-          />
+        <KanbanColumn
+          title={CATEGORY_COLUMN.realisee.title}
+          count={activites.realisees.length}
+          color={CATEGORY_COLUMN.realisee.color}
+          isEmpty={activites.realisees.length === 0}
+        >
+          {activites.realisees.map((a) => (
+            <ActivityCard
+              key={a.id}
+              title={a.title}
+              date={formatDate(a.date_debut)}
+              category={a.category}
+            />
+          ))}
         </KanbanColumn>
 
-        {/* COLONNE EN COURS */}
-        <KanbanColumn title="EN COURS" count="6" color={theme.accent}>
-          <ActivityCard
-            title="Championnat national"
-            date="12 avr. 2025"
-            category="Compétitions"
-            progress={40}
-          />
-          <ActivityCard
-            title="Mise à jour registre grades"
-            date="Responsable technique"
-          />
-          <ActivityCard
-            title="Examen de grades — mars"
-            date="21 mars 2025"
-            category="Grades"
-            progress={65}
-          />
+        <KanbanColumn
+          title={CATEGORY_COLUMN.en_cours.title}
+          count={activites.en_cours.length}
+          color={CATEGORY_COLUMN.en_cours.color}
+          isEmpty={activites.en_cours.length === 0}
+        >
+          {activites.en_cours.map((a) => (
+            <ActivityCard
+              key={a.id}
+              title={a.title}
+              date={formatDate(a.date_debut)}
+              category={a.category}
+              progress={computeProgress(a)}
+            />
+          ))}
         </KanbanColumn>
 
-        {/* COLONNE PLANIFIÉES */}
-        <KanbanColumn title="PLANIFIÉES" count="4" color={theme.info}>
-          <ActivityCard
-            title="Stage international Kumite"
-            date="Juin 2025"
-            category="Formation"
-          />
-          <ActivityCard
-            title="Rapport bilan saison"
-            date="En retard • Échéance mars"
-            category=""
-            isLate={true}
-          />
-          <ActivityCard
-            title="Séminaire entraîneurs"
-            date="Sept. 2025"
-            category="Formation"
-          />
+        <KanbanColumn
+          title={CATEGORY_COLUMN.planifiee.title}
+          count={activites.planifiees.length}
+          color={CATEGORY_COLUMN.planifiee.color}
+          isEmpty={activites.planifiees.length === 0}
+        >
+          {activites.planifiees.map((a) => (
+            <ActivityCard
+              key={a.id}
+              title={a.title}
+              date={
+                a.is_late
+                  ? `En retard • Échéance ${formatDate(a.date_fin)}`
+                  : formatDate(a.date_debut)
+              }
+              category={a.category}
+              isLate={a.is_late}
+            />
+          ))}
         </KanbanColumn>
       </Grid>
     </Box>

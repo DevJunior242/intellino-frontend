@@ -45,35 +45,27 @@ function ExamenIndex() {
 
   const { allowAccess } = useAllowAccess();
   const navigate = useNavigate();
-  const GetExamens = useCallback(
-    async (page = 1) => {
-      if (!activeId) return;
-      setLoading(true);
-      setError("");
-      try {
-        const response = await Instance(
-          `/api/examens?page=${page}&organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        );
-        console.log(response);
-        const examen = response.data.examens || [];
+  const GetExamens = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await Instance(`/api/examens?page=${page}`);
+      const examen = response.data.examens || [];
 
-        const examenArray = examen.data ? examen.data : examen;
-        setExamens(examenArray);
-        setPagination({
-          currentPage: examen.current_page,
-          lastPage: examen.last_page,
-          perPage: examen.per_page,
-          total: examen.total,
-        });
-      } catch (error) {
-        console.error(error);
-        setError("Erreur lors de la récupération des examens");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [activeId, activeType],
-  );
+      const examenArray = examen.data ? examen.data : examen;
+      setExamens(examenArray);
+      setPagination({
+        currentPage: examen.current_page,
+        lastPage: examen.last_page,
+        perPage: examen.per_page,
+        total: examen.total,
+      });
+    } catch (error) {
+      setError("Erreur lors de la récupération des examens");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     GetExamens();

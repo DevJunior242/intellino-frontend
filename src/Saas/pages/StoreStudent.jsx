@@ -47,8 +47,7 @@ function StoreStudent() {
     setIsLoading(true);
     try {
       const response = await Instance("/api/parents-users");
-      console.log(response);
-      setStudentParent(response.data.parentUsers || []);
+       setStudentParent(response.data.parentUsers || []);
     } catch (error) {
       console.error(error);
     } finally {

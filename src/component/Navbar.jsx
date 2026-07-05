@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import {
@@ -24,16 +24,12 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { UseAuth } from "../Api/AuthContext";
-import { tokenTheme } from "../theme";
 import ThemeToggle from "../ThemeToggle";
 import NotificationCenter from "./NotificationCenter";
 
 const items = [
   { title: "Accueil", href: "/" },
   { title: "A Propos", href: "/about" },
-  // { title: "Competitions", href: "/competition" },
-
-  // { title: "Examens", href: "/examen" },
 
   { title: "Contact", href: "/contact" },
   { title: "Inscription", href: "/register" },
@@ -43,10 +39,11 @@ const items = [
 
 function Navbar() {
   const { auth, logout, user } = UseAuth();
-
+  useEffect(() => {
+    console.log("AUTH CHANGED", auth);
+  }, [auth]);
   console.log("auth", auth);
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const [openMenu, setOpenMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -143,15 +140,24 @@ function Navbar() {
                     fontSize: 15,
                     bgcolor: isActive
                       ? "rgba(25, 118, 210, 0.08)"
-                      : "transparent",
+                      : ["Inscription", "Connexion"].includes(item.title) &&
+                          !isLogged
+                        ? "rgba(25, 118, 210, 0.1)"
+                        : "transparent",
                     border: isActive
                       ? "1px solid rgba(25, 118, 210, 0.2)"
-                      : "1px solid transparent",
-                    // ---------------------------
+                      : ["Inscription", "Connexion"].includes(item.title) &&
+                          !isLogged
+                        ? "1px solid rgba(25, 118, 210, 0.3)"
+                        : "1px solid transparent",
                     transition: "all 0.3s ease",
                     "&:hover": {
                       color: "#1976d2",
-                      bgcolor: "rgba(0, 0, 0, 0.04)",
+                      bgcolor:
+                        ["Inscription", "Connexion"].includes(item.title) &&
+                        !isLogged
+                          ? "rgba(25, 118, 210, 0.2)"
+                          : "rgba(0, 0, 0, 0.04)",
                     },
                   }}
                 >
@@ -341,15 +347,24 @@ function Navbar() {
                       fontSize: 15,
                       bgcolor: isActive
                         ? "rgba(25, 118, 210, 0.08)"
-                        : "transparent",
+                        : ["Inscription", "Connexion"].includes(item.title) &&
+                            !isLogged
+                          ? "rgba(25, 118, 210, 0.1)"
+                          : "transparent",
                       border: isActive
                         ? "1px solid rgba(25, 118, 210, 0.2)"
-                        : "1px solid transparent",
-                      // ---------------------------
+                        : ["Inscription", "Connexion"].includes(item.title) &&
+                            !isLogged
+                          ? "1px solid rgba(25, 118, 210, 0.3)"
+                          : "1px solid transparent",
                       transition: "all 0.3s ease",
                       "&:hover": {
                         color: "#1976d2",
-                        bgcolor: "rgba(0, 0, 0, 0.04)",
+                        bgcolor:
+                          ["Inscription", "Connexion"].includes(item.title) &&
+                          !isLogged
+                            ? "rgba(25, 118, 210, 0.2)"
+                            : "rgba(0, 0, 0, 0.04)",
                       },
                     }}
                   >

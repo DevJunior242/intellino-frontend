@@ -44,17 +44,14 @@ function StoreEnchainement() {
   const getEnch = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await Instance(
-        `/api/enchainements/${examenId}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      );
-      console.log(response);
+      const response = await Instance(`/api/enchainements/${examenId}`);
       setEnchainement(response.data.enchainements || []);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [activeId, examenId]);
+  }, [examenId]);
 
   useEffect(() => {
     getEnch();
@@ -76,16 +73,10 @@ function StoreEnchainement() {
     setSuccess("");
     setSubmitting(true);
     try {
-      const dataToSend = {
-        ...formData,
-        organisateur_id: activeId,
-        organisateur_type: activeType,
-      };
       const response = await Instance.post(
         `/api/enchainements/${examenId}`,
-        dataToSend,
+        formData,
       );
-      console.log(response);
       if (response.data.success) {
         setSuccess(response.data.message);
 

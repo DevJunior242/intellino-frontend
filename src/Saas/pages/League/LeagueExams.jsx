@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
+import ErrorBlock from "../ErrorBlock";
 
 const MotionPaper = motion(Paper);
 
@@ -20,19 +21,19 @@ export default function LeagueExams() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const { auth } = UseAuth();
+  const [error, setError] = useState("");
 
   const leagueId = auth?.user?.current_league_id;
-  console.log("LEAGUE ID", leagueId);
   const fetchExams = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await Instance.get(
         `/api/examen-leagues/examen-leagues?league_id=${leagueId}`,
       );
-      console.log("RES", res);
       setExams(res.data || []);
     } catch (err) {
-      console.error(err);
+      setError("erreur de chargement de la page veuillez reesayer plutard.");
     } finally {
       setLoading(false);
     }
@@ -44,6 +45,9 @@ export default function LeagueExams() {
     fetchExams();
   }, [fetchExams, leagueId]);
 
+  if (error) {
+    return <ErrorBlock message={error} onRetry={fetchExams} />;
+  }
   return (
     <TableContainer
       component={MotionPaper}

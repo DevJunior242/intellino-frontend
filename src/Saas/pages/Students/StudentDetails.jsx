@@ -20,7 +20,7 @@ function StudentDetails() {
   const { activeRole } = UseAuth();
 
   const allowAccess = [
-    "admin_club",
+    "admin",
     "instructeur",
     "secretaire",
     "super_admin",

@@ -15,6 +15,7 @@ import { Instance } from "../../../../Api/Axios";
 import { motion, AnimatePresence } from "framer-motion";
 import ErrorBlock from "../../ErrorBlock";
 import echo from "../../../../echo";
+import LoadingKumite from "./LoadingKumite";
 
 // --- Animations Framer Motion ---
 const fadeIn = {
@@ -220,33 +221,7 @@ export default function VuePubliqueKata() {
 
   const medailles = ["🥇", "🥈", "🥉"];
 
-  // Affichage du loading
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          ...loadingContainer,
-          bgcolor: "#1a1a2e",
-        }}
-      >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{
-            duration: 0.5,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        >
-          <EmojiEvents sx={loadingIcon} />
-        </motion.div>
-        <Typography variant="h6" color="#f0a500" fontWeight="bold">
-          Chargement en cours...
-        </Typography>
-        <CircularProgress color="inherit" size={24} />
-      </Box>
-    );
-  }
+  if (loading) return <LoadingKumite />;
 
   // Affichage en cas d'erreur
   if (error) {

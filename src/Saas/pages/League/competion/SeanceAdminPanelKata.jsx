@@ -444,7 +444,7 @@ export default function SeanceAdminPanelKata({
     setLoadingArbitres(true);
     try {
       const res = await Instance.get(
-        `/api/arbitres/disponibles/${config.evenement_id}/${config.id}`,
+        `/api/arbitres/disponibles/${config.evenement_id}`,
       );
       console.log("arbitres dispononibles", res.data);
       setArbitresDispos(res.data);

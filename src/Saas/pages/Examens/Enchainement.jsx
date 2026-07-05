@@ -22,7 +22,6 @@ function EnchainementList({ enchainements, examenId, getEnch, loading }) {
       const res = await Instance.delete(
         `/api/enchainements/${examenId}/${id}?club_id=${activeId}`,
       );
-      console.log(res);
       if (res.data.success) {
         setSuccess(res.data.message);
         setTimeout(() => {
@@ -31,7 +30,6 @@ function EnchainementList({ enchainements, examenId, getEnch, loading }) {
       }
       getEnch();
     } catch (err) {
-      console.error(err);
       ErrorGlobal({ error: err, setError });
     }
   };

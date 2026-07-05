@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -15,11 +15,15 @@ import {
   Paper,
   IconButton,
   Collapse,
-  Tooltip,
   Avatar,
-  Divider,
   Button,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Slide,
+  TablePagination,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -28,9 +32,28 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import GroupIcon from "@mui/icons-material/Group";
-import { UseAuth } from "../../../../Api/AuthContext";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import Message from "../../Message";
 import ConfigSkeleton from "../../ConfigSkeleton";
+
+const theme = {
+  bg: "#1a1d21",
+  paper: "#212529",
+  card: "#2c3035",
+  textMain: "#ffffff",
+  textSecondary: "#8b90a0",
+  accent: "#e8c84a",
+  success: "#4caf50",
+  warning: "#f44336",
+};
+
+const SlideUpTransition = React.forwardRef(
+  function SlideUpTransition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  },
+);
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const formatDate = (d) =>
@@ -75,7 +98,7 @@ const EpreuveRow = ({
   submittingCompId,
   allAccess,
 }) => {
-  const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
+  const discNom = epreuve.sub_discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
   const status = getStatut(epreuve.status);
   const isSubmitting = submittingCompId === epreuve.id;
@@ -106,7 +129,7 @@ const EpreuveRow = ({
 
       <TableCell>
         <Chip
-          label={epreuve.discipline?.nom ?? "—"}
+          label={epreuve.sub_discipline?.nom ?? "—"}
           size="small"
           color={discColor}
           variant="outlined"
@@ -159,6 +182,7 @@ const EpreuveRow = ({
           variant="filled"
         />
       </TableCell>
+
       {allAccess && (
         <TableCell>
           <Stack direction="row" gap={1}>
@@ -226,19 +250,24 @@ const EpreuveRow = ({
 const EvenementRow = ({
   evenement,
   handleStatusChange,
+  handleEpreuveStatusChange,
+  handleDelete,
+  handleEdit,
   arbitre,
   auth,
   submittingId,
   submittingCompId,
-  handleEpreuveStatusChange,
+  deletingId,
   allAccess,
 }) => {
   const [open, setOpen] = useState(false);
   const epreuves = evenement.competitions ?? [];
   const status = getStatut(evenement.status);
   const isSubmitting = submittingId === evenement.id;
+  const isDeleting = deletingId === evenement.id;
 
   if (!auth) return null;
+
   return (
     <>
       <TableRow
@@ -315,7 +344,7 @@ const EvenementRow = ({
           <Stack direction="row" gap={0.5} flexWrap="wrap">
             {[
               ...new Set(
-                epreuves.map((e) => e.discipline?.nom).filter(Boolean),
+                epreuves.map((e) => e.sub_discipline?.nom).filter(Boolean),
               ),
             ].map((disc) => (
               <Chip
@@ -334,9 +363,9 @@ const EvenementRow = ({
           <Chip label={status.label} size="small" color={status.color} />
         </TableCell>
 
-        {/* Actions ouvrir / cloturer */}
+        {/* Actions ouvrir / cloturer / editer / supprimer */}
         <TableCell>
-          <Stack direction="row" gap={1}>
+          <Stack direction="row" gap={1} alignItems="center">
             {allAccess && (
               <>
                 {evenement.status === 0 && (
@@ -393,29 +422,60 @@ const EvenementRow = ({
                     {isSubmitting ? "Ouverture..." : "Ouvrir"}
                   </Button>
                 )}
+
+                <IconButton
+                  size="small"
+                  color="primary"
+                  disabled={isDeleting || isSubmitting}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(evenement);
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+
+                <IconButton
+                  size="small"
+                  color="error"
+                  disabled={isDeleting || isSubmitting}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(evenement);
+                  }}
+                >
+                  {isDeleting ? (
+                    <CircularProgress size={18} color="error" />
+                  ) : (
+                    <DeleteIcon fontSize="small" />
+                  )}
+                </IconButton>
               </>
             )}
 
-            {arbitre && (
-              <Button
-                disabled={isSubmitting}
-                variant="contained"
-                color="success"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusChange(evenement.id, "arbitrer");
-                }}
-              >
-                {isSubmitting ? "Arbitrage..." : "S'inscrire"}
-              </Button>
-            )}
+            {arbitre &&
+              (evenement.arbitre_inscrit_count > 0 ? (
+                <Chip label="Déjà inscrit" size="small" color="success" />
+              ) : (
+                <Button
+                  disabled={isSubmitting}
+                  variant="contained"
+                  color="success"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStatusChange(evenement.id, "arbitrer");
+                  }}
+                >
+                  {isSubmitting ? "process..." : "S'inscrire"}
+                </Button>
+              ))}
           </Stack>
         </TableCell>
       </TableRow>
 
       {/* ── Épreuves expandées ── */}
       <TableRow>
-        <TableCell colSpan={6} sx={{ p: 0, border: 0 }}>
+        <TableCell colSpan={7} sx={{ p: 0, border: 0 }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box
               sx={{
@@ -503,20 +563,130 @@ const EvenementRow = ({
   );
 };
 
+// ─── Dialog de confirmation suppression ──────────────────────────────────────
+const DeleteConfirmDialog = ({
+  open,
+  evenement,
+  deleting,
+  onClose,
+  onConfirm,
+}) => (
+  <Dialog
+    open={open}
+    onClose={deleting ? undefined : onClose}
+    TransitionComponent={SlideUpTransition}
+    keepMounted
+    maxWidth="xs"
+    fullWidth
+    PaperProps={{
+      sx: {
+        bgcolor: theme.paper,
+        borderRadius: 3,
+        border: "1px solid rgba(255,255,255,0.06)",
+        p: 0.5,
+      },
+    }}
+  >
+    <DialogTitle sx={{ pb: 1 }}>
+      <Stack direction="row" alignItems="center" gap={1.5}>
+        <Avatar
+          sx={{
+            bgcolor: "rgba(244,67,54,0.12)",
+            color: theme.warning,
+            width: 40,
+            height: 40,
+          }}
+        >
+          <WarningAmberRoundedIcon />
+        </Avatar>
+        <Typography
+          variant="subtitle1"
+          fontWeight={700}
+          sx={{ color: theme.textMain }}
+        >
+          Supprimer cet événement ?
+        </Typography>
+      </Stack>
+    </DialogTitle>
+
+    <DialogContent sx={{ pt: 0.5 }}>
+      <Typography variant="body2" sx={{ color: theme.textSecondary }}>
+        Vous êtes sur le point de supprimer{" "}
+        <Box component="span" sx={{ color: theme.textMain, fontWeight: 600 }}>
+          {evenement?.nom ?? "cet événement"}
+        </Box>
+        {evenement?.lieu ? ` (${evenement.lieu})` : ""}. Cette action est
+        définitive et entraînera la suppression de toutes les épreuves et
+        inscriptions associées.
+      </Typography>
+    </DialogContent>
+
+    <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+      <Button
+        onClick={onClose}
+        disabled={deleting}
+        sx={{
+          color: theme.textSecondary,
+          textTransform: "none",
+          borderRadius: 2,
+        }}
+      >
+        Annuler
+      </Button>
+      <Button
+        onClick={onConfirm}
+        disabled={deleting}
+        variant="contained"
+        color="error"
+        startIcon={
+          deleting ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : (
+            <DeleteIcon />
+          )
+        }
+        sx={{ textTransform: "none", borderRadius: 2, px: 2.5 }}
+      >
+        {deleting ? "Suppression..." : "Supprimer"}
+      </Button>
+    </DialogActions>
+  </Dialog>
+);
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function EvenementsTable({
   evenements = [],
   loading,
   submittingId,
+  submittingCompId,
+  deletingId,
   handleStatusChange,
   handleEpreuveStatusChange,
-  submittingCompId,
+  handleDelete,
+  handleEdit,
   auth,
   arbitre,
   success,
   errors,
   allAccess,
+  pagination,
+  handlePageChange,
 }) {
+  // L'événement actuellement visé par une demande de suppression (ouvre le dialog).
+  // handleDelete (reçu en prop) n'est appelé qu'à la confirmation explicite.
+  const [eventToDelete, setEventToDelete] = useState(null);
+
+  const requestDelete = (evenement) => setEventToDelete(evenement);
+  const cancelDelete = () => setEventToDelete(null);
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+    await handleDelete(eventToDelete.id);
+    setEventToDelete(null);
+  };
+
+  const isDeletingTarget = eventToDelete && deletingId === eventToDelete.id;
+
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
       <TableContainer component={Paper} elevation={0}>
@@ -549,12 +719,15 @@ export default function EvenementsTable({
                   key={ev.id}
                   evenement={ev}
                   handleStatusChange={handleStatusChange}
-                  submittingCompId={submittingCompId}
                   handleEpreuveStatusChange={handleEpreuveStatusChange}
+                  handleDelete={requestDelete}
+                  handleEdit={handleEdit}
                   auth={auth}
                   arbitre={arbitre}
                   allAccess={allAccess}
                   submittingId={submittingId}
+                  submittingCompId={submittingCompId}
+                  deletingId={deletingId}
                 />
               ))
             ) : (
@@ -573,9 +746,28 @@ export default function EvenementsTable({
             )}
           </TableBody>
         </Table>
+        {/* Pagination (basée sur ta réponse API) */}
+        <TablePagination
+          component="div"
+          count={pagination.total || 0}
+          page={(pagination.current_page || 1) - 1}
+          rowsPerPage={pagination.per_page || 10}
+          onPageChange={handlePageChange}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} sur ${count}`
+          }
+        />
       </TableContainer>
       {success && <Message text={success} type="success" />}
-      {errors.general && <Message text={errors.general} type="error" />}
+      {errors?.general && <Message text={errors.general} type="error" />}
+
+      <DeleteConfirmDialog
+        open={Boolean(eventToDelete)}
+        evenement={eventToDelete}
+        deleting={Boolean(isDeletingTarget)}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </Card>
   );
 }

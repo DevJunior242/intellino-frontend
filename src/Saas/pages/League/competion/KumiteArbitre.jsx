@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Instance } from "../../../../Api/Axios";
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -14,6 +15,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import echo from "../../../../echo";
 import ChronoCombat from "./ChronoCombat";
 import PenaliteDisplay from "./PenaliteDisplay";
+import VainqueurOverlay from "./VainqueurOverlay";
+import LoadingKumite from "./LoadingKumite";
+import ProchainCombat from "./ProchainCombat";
+import { getApiErrorMessage } from "../../Utils/handleApiError";
 
 const C = {
   aka: "#ef4444",
@@ -40,20 +45,12 @@ const ACTIONS = {
     },
     { type: "ippon", label: "Ippon", valeur: 3, desc: "Coup de pied tête" },
   ],
-  penalites: [
-    { type: "chukoku", label: "Chukoku", valeur: 0, desc: "Avertissement" },
-    { type: "keikoku", label: "Keikoku", valeur: 1, desc: "+1pt adversaire" },
-    {
-      type: "hansoku_chui",
-      label: "Hansoku-chui",
-      valeur: 2,
-      desc: "+2pts adversaire",
-    },
-    { type: "hansoku", label: "Hansoku", valeur: 0, desc: "Disqualification" },
-  ],
+  penalites: [{ type: "penalite", label: "Pénalité", valeur: 0 }],
 };
 
 export default function KumiteArbitre({ config }) {
+  const [error, setError] = useState({});
+  const [success, setSuccess] = useState("");
   const [combat, setCombat] = useState(null);
   const [nextCombat, setNextCombat] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -102,12 +99,13 @@ export default function KumiteArbitre({ config }) {
     if (!combat?.id) return;
     const key = `${combattant}-${type}`;
     setSending(key);
+    setError({});
+    setSuccess("");
 
     try {
       const jugeNumero = parseInt(localStorage.getItem("juge_numero")) || 1;
 
       const clientTimestamp = new Date().toISOString();
-      console.log("clientTimestamp", clientTimestamp);
 
       const res = await Instance.post("/api/combat-actions", {
         combat_id: combat.id,
@@ -118,15 +116,14 @@ export default function KumiteArbitre({ config }) {
         client_timestamp: clientTimestamp,
       });
 
-      console.log("donnees", res);
-
       setLastAction({
         combattant,
         type,
         label: ACTIONS.points.find((a) => a.type === type)?.label || type,
       });
+      if (res.data?.message) setSuccess(res.data.message || "action envoyée");
     } catch (err) {
-      console.error(err);
+      setError({ [config.id]: getApiErrorMessage(err) });
     } finally {
       setSending(null);
     }
@@ -185,16 +182,7 @@ export default function KumiteArbitre({ config }) {
   }, [config?.id, initialiserTablette]);
 
   if (loading) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Skeleton
-          variant="rectangular"
-          height={120}
-          sx={{ mb: 2, borderRadius: 3 }}
-        />
-        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 3 }} />
-      </Box>
-    );
+    return <LoadingKumite />;
   }
 
   if (!combat) {
@@ -204,87 +192,21 @@ export default function KumiteArbitre({ config }) {
       </Box>
     );
   }
-
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: C.bg, pb: 4, px: 2, pt: 2 }}>
-      {/* Combat en cours */}
-      <Paper
-        sx={{
-          p: 2,
-          mb: 2,
-          borderRadius: 3,
-          bgcolor: C.card,
-          border: `1px solid ${C.border}`,
-        }}
-      >
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          {/* AKA */}
-          <Box sx={{ textAlign: "center", flex: 1 }}>
-            <Chip
-              label="AKA"
-              size="small"
-              sx={{
-                bgcolor: C.akaLight,
-                color: C.aka,
-                fontWeight: 700,
-                mb: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontWeight: 800, color: C.text, fontSize: "0.95rem" }}
-              noWrap
-            >
-              {combat?.inscription_aka?.athlete?.fullname ?? "—"}
-            </Typography>
-            <Typography
-              sx={{ fontSize: "2rem", fontWeight: 900, color: C.aka }}
-            >
-              {combat?.score_final_aka ?? 0}
-            </Typography>
-          </Box>
-          <ChronoCombat combat={combat} canControl={true} />
-
-          {/* <Typography
-            sx={{ color: C.muted, fontWeight: 700, fontSize: "1.2rem" }}
-          >
-            VS
-          </Typography> */}
-          {/* AO */}
-          <Box sx={{ textAlign: "center", flex: 1 }}>
-            <Chip
-              label="AO"
-              size="small"
-              sx={{ bgcolor: C.aoLight, color: C.ao, fontWeight: 700, mb: 0.5 }}
-            />
-            <Typography
-              sx={{ fontWeight: 800, color: C.text, fontSize: "0.95rem" }}
-              noWrap
-            >
-              {combat?.inscription_ao?.athlete?.fullname ?? "—"}
-            </Typography>
-            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: C.ao }}>
-              {combat?.score_final_ao ?? 0}
-            </Typography>
-          </Box>
-        </Stack>
-        <PenaliteDisplay combat={combat} />
-
-        {/* Senshu */}
-        {combat?.senshu_id && (
-          <Box sx={{ textAlign: "center", mt: 1 }}>
-            <Chip
-              label={`Senshu → ${combat.senshu_id === combat.inscription_aka_id ? "AKA" : "AO"}`}
-              size="small"
-              sx={{ bgcolor: "#f59e0b20", color: "#f59e0b", fontWeight: 700 }}
-            />
-          </Box>
+      {/* Erreurs / succès */}
+      <AnimatePresence>
+        {success[config.id] && (
+          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+            {success[config.id]}
+          </Alert>
         )}
-      </Paper>
-
+        {error[config.id] && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+            {error[config.id]}
+          </Alert>
+        )}
+      </AnimatePresence>
       {/* Dernière action envoyée */}
       <AnimatePresence>
         {lastAction && (
@@ -318,194 +240,274 @@ export default function KumiteArbitre({ config }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <VainqueurOverlay combat={combat} />
 
-      {/* Boutons AKA */}
-      <Typography
-        sx={{
-          color: C.aka,
-          fontWeight: 700,
-          mb: 1,
-          fontSize: "0.8rem",
-          letterSpacing: 1,
-        }}
+      {/* Conteneur principal */}
+      <Box
+        sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
       >
-        POINTS AKA
-      </Typography>
-      <Stack direction="row" gap={1} mb={2} flexWrap="wrap">
-        {ACTIONS.points.map((action) => {
-          const key = `aka-${action.type}`;
-          return (
-            <Button
-              key={key}
-              variant="contained"
-              disabled={!!sending}
-              onClick={() => envoyerAction("aka", action.type, action.valeur)}
+        {/* Ligne des boutons de points (AKA et AO côte à côte) */}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            justifyContent: "center",
+          }}
+        >
+          {/* Boutons AKA */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              flex: 1,
+              minWidth: "150px",
+            }}
+          >
+            <Typography
               sx={{
-                flex: 1,
-                minWidth: 80,
-                bgcolor: C.aka,
-                color: "#fff",
+                color: C.aka,
                 fontWeight: 700,
-                borderRadius: 2,
-                "&:hover": { bgcolor: "#dc2626" },
-                "&.Mui-disabled": { bgcolor: `${C.aka}50` },
+                fontSize: "0.8rem",
+                letterSpacing: 1,
+                textAlign: "center",
+                width: "100%",
+                mb: 1,
               }}
             >
-              {sending === key ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : (
-                <Box>
-                  <Typography sx={{ fontWeight: 800, fontSize: "0.85rem" }}>
-                    {action.label}
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.6rem", opacity: 0.8 }}>
-                    {action.valeur}pt
-                  </Typography>
-                </Box>
-              )}
-            </Button>
-          );
-        })}
-      </Stack>
+              POINTS AKA
+            </Typography>
+            <Stack
+              direction="row"
+              gap={1}
+              flexWrap="wrap"
+              justifyContent="center"
+            >
+              {ACTIONS.points.map((action) => {
+                const key = `aka-${action.type}`;
+                return (
+                  <Button
+                    key={key}
+                    variant="contained"
+                    disabled={!!sending || combat?.vainqueur_id}
+                    onClick={() =>
+                      envoyerAction("aka", action.type, action.valeur)
+                    }
+                    sx={{
+                      minWidth: "70px",
+                      height: "50px",
+                      bgcolor: C.aka,
+                      color: "#fff",
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      "&:hover": { bgcolor: "#dc2626" },
+                      "&.Mui-disabled": { bgcolor: `${C.aka}50` },
+                    }}
+                  >
+                    {sending === key ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          sx={{ fontWeight: 800, fontSize: "0.75rem" }}
+                        >
+                          {action.label}
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.65rem", opacity: 0.8 }}>
+                          {action.valeur}pt
+                        </Typography>
+                      </Box>
+                    )}
+                  </Button>
+                );
+              })}
+            </Stack>
+          </Box>
 
-      {/* Boutons AO */}
-      <Typography
-        sx={{
-          color: C.ao,
-          fontWeight: 700,
-          mb: 1,
-          fontSize: "0.8rem",
-          letterSpacing: 1,
-        }}
-      >
-        POINTS AO
-      </Typography>
-      <Stack direction="row" gap={1} mb={2} flexWrap="wrap">
-        {ACTIONS.points.map((action) => {
-          const key = `ao-${action.type}`;
-          return (
-            <Button
-              key={key}
-              variant="contained"
-              disabled={!!sending}
-              onClick={() => envoyerAction("ao", action.type, action.valeur)}
+          {/* Boutons AO */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              flex: 1,
+              minWidth: "150px",
+            }}
+          >
+            <Typography
               sx={{
-                flex: 1,
-                minWidth: 80,
-                bgcolor: C.ao,
-                color: "#fff",
+                color: C.ao,
                 fontWeight: 700,
-                borderRadius: 2,
-                "&:hover": { bgcolor: "#2563eb" },
-                "&.Mui-disabled": { bgcolor: `${C.ao}50` },
+                fontSize: "0.8rem",
+                letterSpacing: 1,
+                textAlign: "center",
+                width: "100%",
+                mb: 1,
               }}
             >
-              {sending === key ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : (
-                <Box>
-                  <Typography sx={{ fontWeight: 800, fontSize: "0.85rem" }}>
-                    {action.label}
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.6rem", opacity: 0.8 }}>
-                    {action.valeur}pt
-                  </Typography>
-                </Box>
-              )}
-            </Button>
-          );
-        })}
-      </Stack>
+              POINTS AO
+            </Typography>
+            <Stack
+              direction="row"
+              gap={1}
+              flexWrap="wrap"
+              justifyContent="center"
+            >
+              {ACTIONS.points.map((action) => {
+                const key = `ao-${action.type}`;
+                return (
+                  <Button
+                    key={key}
+                    variant="contained"
+                    disabled={!!sending || combat?.vainqueur_id}
+                    onClick={() =>
+                      envoyerAction("ao", action.type, action.valeur)
+                    }
+                    sx={{
+                      minWidth: "70px",
+                      height: "50px",
+                      bgcolor: C.ao,
+                      color: "#fff",
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      "&:hover": { bgcolor: "#2563eb" },
+                      "&.Mui-disabled": { bgcolor: `${C.ao}50` },
+                    }}
+                  >
+                    {sending === key ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          sx={{ fontWeight: 800, fontSize: "0.75rem" }}
+                        >
+                          {action.label}
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.65rem", opacity: 0.8 }}>
+                          {action.valeur}pt
+                        </Typography>
+                      </Box>
+                    )}
+                  </Button>
+                );
+              })}
+            </Stack>
+          </Box>
+        </Box>
 
-      {/* Pénalités */}
-      <Typography
-        sx={{
-          color: C.penalty,
-          fontWeight: 700,
-          mb: 1,
-          fontSize: "0.8rem",
-          letterSpacing: 1,
-        }}
-      >
-        PÉNALITÉS
-      </Typography>
-      <Stack direction="column" gap={1} mb={2}>
-        {ACTIONS.penalites.map((action) => (
-          <Stack key={action.type} direction="row" gap={1}>
-            {/* Pénalité AKA */}
+        {/* Ligne des boutons de fautes (AKA et AO côte à côte) */}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            justifyContent: "center",
+          }}
+        >
+          {/* Bouton de faute AKA */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              flex: 1,
+              minWidth: "150px",
+            }}
+          >
+            <Typography
+              sx={{
+                color: C.penalty,
+                fontWeight: 700,
+                fontSize: "0.8rem",
+                letterSpacing: 1,
+                textAlign: "center",
+                width: "100%",
+                mb: 1,
+              }}
+            >
+              FAUTE AKA
+            </Typography>
             <Button
               variant="outlined"
-              disabled={!!sending}
-              onClick={() => envoyerAction("aka", action.type, action.valeur)}
+              disabled={!!sending || combat?.vainqueur_id}
+              onClick={() => envoyerAction("aka", "penalite", 0)}
               sx={{
-                flex: 1,
+                width: "100%",
+                height: "50px",
                 borderColor: C.aka,
                 color: C.aka,
                 fontWeight: 700,
                 borderRadius: 2,
-                fontSize: "0.7rem",
+                fontSize: "0.8rem",
               }}
             >
-              {sending === `aka-${action.type}` ? (
-                <CircularProgress size={14} color="inherit" />
+              {sending === "aka-penalite" ? (
+                <CircularProgress size={16} color="inherit" />
               ) : (
-                `AKA — ${action.label}`
+                "Faute AKA"
               )}
             </Button>
-            {/* Pénalité AO */}
+          </Box>
+
+          {/* Bouton de faute AO */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              flex: 1,
+              minWidth: "150px",
+            }}
+          >
+            <Typography
+              sx={{
+                color: C.penalty,
+                fontWeight: 700,
+                fontSize: "0.8rem",
+                letterSpacing: 1,
+                textAlign: "center",
+                width: "100%",
+                mb: 1,
+              }}
+            >
+              FAUTE AO
+            </Typography>
             <Button
               variant="outlined"
-              disabled={!!sending}
-              onClick={() => envoyerAction("ao", action.type, action.valeur)}
+              disabled={!!sending || combat?.vainqueur_id}
+              onClick={() => envoyerAction("ao", "penalite", 0)}
               sx={{
-                flex: 1,
+                width: "100%",
+                height: "50px",
                 borderColor: C.ao,
                 color: C.ao,
                 fontWeight: 700,
                 borderRadius: 2,
-                fontSize: "0.7rem",
+                fontSize: "0.8rem",
               }}
             >
-              {sending === `ao-${action.type}` ? (
-                <CircularProgress size={14} color="inherit" />
+              {sending === "ao-penalite" ? (
+                <CircularProgress size={16} color="inherit" />
               ) : (
-                `AO — ${action.label}`
+                "Faute AO"
               )}
             </Button>
-          </Stack>
-        ))}
-      </Stack>
-
-      {/* Prochain combat */}
-      {nextCombat && (
-        <Paper
-          sx={{
-            p: 1.5,
-            borderRadius: 2,
-            bgcolor: C.card,
-            border: `1px solid ${C.border}`,
-          }}
-        >
-          <Typography sx={{ color: C.muted, fontSize: "0.65rem", mb: 0.5 }}>
-            PROCHAIN COMBAT
-          </Typography>
-          <Stack direction="row" justifyContent="space-between">
-            <Typography
-              sx={{ color: C.aka, fontWeight: 600, fontSize: "0.85rem" }}
-            >
-              {nextCombat?.insc?.athlete?.fullname ?? "—"}
-            </Typography>
-            <Typography sx={{ color: C.muted, fontSize: "0.8rem" }}>
-              vs
-            </Typography>
-            <Typography
-              sx={{ color: C.ao, fontWeight: 600, fontSize: "0.85rem" }}
-            >
-              {nextCombat?.inscri?.athlete?.fullname ?? "—"}
-            </Typography>
-          </Stack>
-        </Paper>
-      )}
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }

@@ -16,10 +16,19 @@ import MeClub from "./MeClub";
 import UpdatePassword from "./UpdatePassword";
 import DeleAccount from "./DeleAccount";
 import StoreSaison from "./StoreSaison";
+import TransferMandateForm from "../../Saas/pages/League/Mandat/TransferMandateForm";
+import { UseAuth } from "../../Api/AuthContext";
 
 const AccountSettings = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
+  const { activeRole, activeType } = UseAuth();
+
+  //seul type Federation peut accéder à la gestion des saisons
+  const authorized = activeRole?.toLowerCase() === "admin";
+  const isFederation = activeType?.toLowerCase() === "federation";
+
+  const authorizedToAccessSaisons = authorized && isFederation;
   // 1. Gestion des onglets
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -63,8 +72,8 @@ const AccountSettings = () => {
         >
           <Tab label="Profil Public" />
           <Tab label="Sécurité & Réglages" />
-          <Tab label="Mes Clubs" />
-          <Tab label="Saisons" />
+          {authorizedToAccessSaisons && <Tab label="Saisons" />}
+          {/* {authorizedToAccessSaisons && <Tab label="Transfert Mandat" />} */}
         </Tabs>
       </Box>
 
@@ -101,17 +110,21 @@ const AccountSettings = () => {
         </Container>
       )}
 
-      {/* --- ONGLET 3 : CLUBS (APPARTENANCE) --- */}
-      {tabIndex === 2 && (
-        <Box sx={{ p: 2 }}>
-          <MeClub />
-        </Box>
-      )}
-      {/* --- ONGLET 4 : SAISONS (APPARTENANCE) --- */}
-      {tabIndex === 3 && (
-        <Box sx={{ p: 2 }}>
-          <StoreSaison />
-        </Box>
+      {authorizedToAccessSaisons && (
+        <>
+          {/* --- ONGLET 4 : SAISONS (APPARTENANCE) --- */}
+          {tabIndex === 2 && (
+            <Box sx={{ p: 2 }}>
+              <StoreSaison />
+            </Box>
+          )}
+          {/* --- ONGLET 5 : MANDAT (APPARTENANCE) --- */}
+          {/* {tabIndex === 3 && (
+            <Box>
+              <TransferMandateForm />
+            </Box>
+          )} */}
+        </>
       )}
     </Box>
   );

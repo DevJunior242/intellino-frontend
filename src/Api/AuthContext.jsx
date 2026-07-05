@@ -36,6 +36,7 @@ const initializeAuth = () => ({
   roleSuperAdmin: safeParseJSON("roleSuperAdmin", []),
   clubs: safeParseJSON("clubs", []),
   leagues: safeParseJSON("leagues", []),
+  federations: safeParseJSON("federations", []),
   isLogin: !!localStorage.getItem("token"),
 });
 
@@ -86,6 +87,9 @@ export const AuthProvider = ({ children }) => {
       } else if (auth.user?.current_club_id) {
         targetId = auth.user.current_club_id;
         targetType = "Club";
+      } else if (auth.user?.current_federation_id) {
+        targetId = auth.user.current_federation_id;
+        targetType = "Federation";
       }
 
       if (targetId) {
@@ -101,25 +105,31 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, [auth]);
+  }, [auth.isLogin, auth.clubs, auth.leagues, activeId, activeRole]);
 
-  const switchPortal = useCallback((id, type, roleName) => {
-    const normalizedRole = Array.isArray(roleName)
-      ? (roleName[0] ?? null)
-      : roleName;
-    setActiveId(id);
-    setActiveType(type);
-    setActiveRole(normalizedRole);
-    localStorage.setItem("activeId", id);
-    localStorage.setItem("activeType", type);
-    localStorage.setItem("activeRole", normalizedRole);
+  const switchPortal = useCallback(
+    (id, type, roleName) => {
+      const normalizedRole = Array.isArray(roleName)
+        ? (roleName[0] ?? null)
+        : roleName;
 
-    if (type === "Ligue") {
-      navigate("/dashboard/league/stats");
-    } else {
-      navigate("/dashboard");
-    }
-  }, []);
+      setActiveId(id);
+      setActiveType(type);
+      setActiveRole(normalizedRole);
+
+      localStorage.setItem("activeId", id);
+      localStorage.setItem("activeType", type);
+      localStorage.setItem("activeRole", normalizedRole);
+
+      if (type === "Ligue") {
+        navigate("/dashboard/league/stats");
+      } else {
+        navigate("/dashboard");
+      }
+    },
+    [navigate],
+  );
+
   //////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO SYNC AUTH STATE WITH LOCALSTORAGE
   //////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +173,11 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("leagues");
     }
+    if (Array.isArray(auth.federations) && auth.federations.length > 0) {
+      localStorage.setItem("federations", JSON.stringify(auth.federations));
+    } else {
+      localStorage.removeItem("federations");
+    }
   }, [auth]);
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +185,15 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
 
   const setAuthData = useCallback(
-    (token, user, role = [], clubs = [], leagues = [], roleSuperAdmin = []) => {
+    (
+      token,
+      user,
+      role = [],
+      clubs = [],
+      leagues = [],
+      federations = [],
+      roleSuperAdmin = [],
+    ) => {
       setAuth({
         token,
         user,
@@ -178,6 +201,7 @@ export const AuthProvider = ({ children }) => {
         roleSuperAdmin,
         clubs,
         leagues,
+        federations,
         isLogin: true,
       });
     },
@@ -197,34 +221,51 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        // appel sécurisé
+        // Appel à ton contrôleur propre
         const res = await Instance.get("/api/user");
+        const { user, role, clubs, leagues, federations } = res.data;
 
+        // On distribue proprement au lieu de tout écraser dans "user" !
         setAuth((prev) => ({
           ...prev,
-          user: res.data,
+          user: user,
+          role: Array.isArray(role) ? role : prev.role,
+          clubs: Array.isArray(clubs) ? clubs : prev.clubs,
+          leagues: Array.isArray(leagues) ? leagues : prev.leagues,
+          federations: Array.isArray(federations)
+            ? federations
+            : prev.federations,
           isLogin: true,
         }));
+        console.log("VERIFY USER", res.data);
       } catch (error) {
-        // token mort
-        localStorage.clear();
-
-        setAuth({
-          token: null,
-          user: null,
-          role: [],
-          roleSuperAdmin: [],
-          clubs: [],
-          leagues: [],
-          isLogin: false,
-        });
+        console.error("Token expiré ou invalide au démarrage :", error);
+        // On ne clear TOUT le localStorage que si c'est une vraie erreur 401/403
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 403)
+        ) {
+          localStorage.clear();
+          setAuth({
+            token: null,
+            user: null,
+            role: [],
+            roleSuperAdmin: [],
+            clubs: [],
+            leagues: [],
+            federations: [],
+            isLogin: false,
+          });
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     verifyToken();
-  }, []);
+  }, [navigate]);
+
   const clearAuthData = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -234,6 +275,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("activeId");
     localStorage.removeItem("clubs");
     localStorage.removeItem("leagues");
+    localStorage.removeItem("federations");
     setAuth({
       token: null,
       user: null,
@@ -241,6 +283,7 @@ export const AuthProvider = ({ children }) => {
       isLogin: false,
       clubs: [],
       leagues: [],
+      federations: [],
       roleSuperAdmin: [],
     });
     setActiveRole(null);
@@ -300,15 +343,29 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const StoreFederationUser = useCallback(async (userData) => {
+    try {
+      const res = await Instance.post("api/membres/federation", userData);
+      return {
+        success: res.data.success,
+        message: res.data.message,
+        user: res.data.user,
+      };
+    } catch (error) {
+      console.error("erreur l'ors de enregistrement des membres:", error);
+      throw error;
+    }
+  }, []);
+
   //////////////////////////////////////////////////////////////////////////////////
   //   FUNCTIONS TO LOGIN USER
   //////////////////////////////////////////////////////////////////////////////////
   const login = useCallback(
     async (credentials) => {
       const res = await Instance.post("api/login", credentials);
-      console.log(res);
 
-      const { token, user, role, clubs, leagues, roleSuperAdmin } = res.data;
+      const { token, user, role, clubs, leagues, federations, roleSuperAdmin } =
+        res.data;
 
       if (!token) {
         throw {
@@ -325,6 +382,7 @@ export const AuthProvider = ({ children }) => {
       const saveRole = Array.isArray(role) ? role : [];
       const saveClubs = Array.isArray(clubs) ? clubs : [];
       const saveLeagues = Array.isArray(leagues) ? leagues : [];
+      const saveFederations = Array.isArray(federations) ? federations : [];
 
       setAuthData(
         token,
@@ -332,6 +390,7 @@ export const AuthProvider = ({ children }) => {
         saveRole,
         saveClubs,
         saveLeagues,
+        saveFederations,
         saveRoleSuperAdmin,
       );
 
@@ -367,18 +426,44 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = useCallback(async () => {
     try {
       const res = await Instance.get("api/user");
-      const { role, user } = res.data;
-      console.log(res.data);
+      const { role, user, clubs, leagues, federations } = res.data;
+      console.log("me", res.data);
+
+      // On synchronise le localStorage IMMÉDIATEMENT avec les nouvelles données du serveur
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role", JSON.stringify(role));
+      if (clubs) localStorage.setItem("clubs", JSON.stringify(clubs));
+      if (leagues) localStorage.setItem("leagues", JSON.stringify(leagues));
+      if (federations)
+        localStorage.setItem("federations", JSON.stringify(federations));
+
       setAuth((prev) => ({
         ...prev,
-        role: Array.isArray(role) ? role : [],
         user: user,
+        role: Array.isArray(role) ? role : [],
+        clubs: Array.isArray(clubs) ? clubs : prev.clubs,
+        leagues: Array.isArray(leagues) ? leagues : prev.leagues,
+        federations: Array.isArray(federations)
+          ? federations
+          : prev.federations,
         isLogin: true,
       }));
     } catch (error) {
-      console.error("refreshUser error:", error);
+      // Si l'authentification a expiré, on nettoie tout proprement
+      localStorage.clear();
+      setAuth({
+        token: null,
+        user: null,
+        role: [],
+        roleSuperAdmin: [],
+        clubs: [],
+        leagues: [],
+        federations: [],
+        isLogin: false,
+      });
+      navigate("/login");
     }
-  }, [setAuth]);
+  }, [setAuth, navigate]);
 
   //////////////////////////////////////////////////////////////////////////////////
   //   FUNCTION TO UPDATE AUTH STATE
@@ -395,15 +480,23 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("clubs", JSON.stringify(newData.clubs));
       if (newData.role)
         localStorage.setItem("role", JSON.stringify(newData.role));
-
+      if (newData.leagues)
+        localStorage.setItem("leagues", JSON.stringify(newData.leagues));
+      if (newData.federations)
+        localStorage.setItem(
+          "federations",
+          JSON.stringify(newData.federations),
+        );
       return updated;
     });
 
-    // on Gére le club actif immédiatement
-    if (newData.user?.current_club_id) {
-      const clubId = newData.user.current_club_id;
-      setActiveId(clubId);
-      localStorage.setItem("activeId", clubId);
+    // on Gère le contexte actif (club / ligue / fédération) de façon explicite et atomique
+    if (newData.activeContext) {
+      const { type, id } = newData.activeContext;
+      setActiveId(id);
+      setActiveType(type);
+      localStorage.setItem("activeId", id);
+      localStorage.setItem("activeType", type);
     }
 
     if (newData.activeRole) {
@@ -412,6 +505,37 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const currentClub = useMemo(() => {
+    if (activeType === "Club" && activeId) {
+      return auth.clubs.find((c) => c.id === activeId) || null;
+    }
+    return null;
+  }, [activeType, activeId, auth.clubs]);
+
+  // Si le type actif est "Ligue", on cherche l'objet complet dans le tableau auth.leagues
+  const currentLeague = useMemo(() => {
+    if (activeType === "Ligue" && activeId) {
+      return auth.leagues.find((l) => l.id === activeId) || null;
+    }
+    return null;
+  }, [activeType, activeId, auth.leagues]);
+
+  // Futur : Prêt pour les fédérations le moment venu !
+  const currentFederation = useMemo(() => {
+    if (activeType === "Federation" && activeId) {
+      return auth.federations?.find((f) => f.id === activeId) || null;
+    }
+    return null;
+  }, [activeType, activeId, auth.federations]);
+
+  const invitationCode = useMemo(() => {
+    if (currentLeague) {
+      return currentLeague.invitation_code;
+    } else if (currentFederation) {
+      return currentFederation.invitation_code;
+    }
+    return "";
+  }, [currentLeague, currentFederation]);
   //////////////////////////////////////////////////////////////////////////////////
   //   USE MEMO TO RETURN AUTH CONTEXT
   //////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +545,7 @@ export const AuthProvider = ({ children }) => {
       register,
       StoreClubMember,
       StoreLeagueUser,
+      StoreFederationUser,
       login,
       logout,
       loading,
@@ -430,12 +555,17 @@ export const AuthProvider = ({ children }) => {
       activeId,
       activeType,
       updateAuth,
+      currentClub,
+      currentLeague,
+      currentFederation,
+      invitationCode,
     }),
     [
       auth,
       register,
       StoreClubMember,
       StoreLeagueUser,
+      StoreFederationUser,
       login,
       logout,
       loading,
@@ -445,10 +575,18 @@ export const AuthProvider = ({ children }) => {
       activeId,
       activeType,
       updateAuth,
+      currentClub,
+      currentLeague,
+      currentFederation,
+      invitationCode,
     ],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

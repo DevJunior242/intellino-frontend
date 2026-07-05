@@ -1,22 +1,26 @@
 import React, { useState } from "react";
 import { Box, Tabs, Tab, useMediaQuery, useTheme, Paper } from "@mui/material";
-import { useParams } from "react-router-dom";
 
 // Icônes pour les onglets (optionnel)
 import {
   Assessment as CriteriaIcon,
   BarChart as ScaleIcon,
   Settings as AdvancedIcon,
+  Assessment,
+  People,
 } from "@mui/icons-material";
 import CompetitionManager from "../CompetitionManager";
-import ConfigNotationCardDetails from "./ConfigNotationCardDetails";
 import ConfigNotationPage from "./ConfigNotationPage";
 import { UseAuth } from "../../../../Api/AuthContext";
+import ConfigNotationCardDetails from "./ConfigNotationCardDetails";
+import Arbitres from "../Arbitres";
+import AdminCompetitionManagement from "./AdminCompetitionManagement";
 
 export default function Config() {
   const theme = useTheme();
   const { activeRole } = UseAuth();
-  const isAdmin = activeRole === "admin_league";
+  const Role = activeRole?.toLowerCase();
+  const isAdmin = Role === "admin";
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeTab, setActiveTab] = useState("competitions");
 
@@ -71,19 +75,35 @@ export default function Config() {
               iconPosition="start"
               label={isMobile ? "Competitions" : "Compétitions"}
             />
-            {isAdmin && (
+            {isAdmin ? (
+              <Tab
+                value="arbitrages"
+                icon={<People />}
+                iconPosition="start"
+                label="Arbitres"
+              />
+            ) : null}
+            {isAdmin ? (
+              <Tab
+                value="athletes"
+                icon={<Assessment />}
+                iconPosition="start"
+                label="Athlètes"
+              />
+            ) : null}
+            {isAdmin ? (
               <Tab
                 value="notation"
                 icon={<ScaleIcon />}
                 iconPosition="start"
-                label={isMobile ? "tatamis" : "Échelle de notation"}
+                label="Tatamis"
               />
-            )}
+            ) : null}
             <Tab
               value="advanced"
               icon={<AdvancedIcon />}
               iconPosition="start"
-              label={isMobile ? "Param." : "Paramètres avancés"}
+              label={isMobile ? "Jury" : "Jury"}
             />
           </Tabs>
         </Box>
@@ -91,9 +111,11 @@ export default function Config() {
         {/* Contenu des onglets */}
         <Box sx={{ mt: 2 }}>
           {activeTab === "competitions" && <CompetitionManager />}
-
+          {activeTab === "arbitrages" && isAdmin && <Arbitres />}
+          {activeTab === "athletes" && isAdmin && (
+            <AdminCompetitionManagement />
+          )}
           {activeTab === "notation" && isAdmin && <ConfigNotationPage />}
-
           {activeTab === "advanced" && <ConfigNotationCardDetails />}
         </Box>
       </Paper>

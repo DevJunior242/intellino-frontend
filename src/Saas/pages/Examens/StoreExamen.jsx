@@ -20,6 +20,7 @@ import Message from "../Message";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../Api/AuthContext";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 function StoreExamen({ open, handleClose }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -29,22 +30,24 @@ function StoreExamen({ open, handleClose }) {
   const [selectCurrentGrade, setSelectCurrentGrade] = useState(null);
   const [selectNextGrade, setSelectNextGrade] = useState(null);
   const [error, setError] = useState({});
+  const [errorGrade, setErrorGrade] = useState({});
+
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const navigate = useNavigate();
-  const { activeId, activeType } = UseAuth();
+  const { activeType } = UseAuth();
   const isLigueUser = activeType === "Ligue";
 
   //obtenir les medals
   const getGrade = useCallback(async () => {
     setIsLoading(true);
+    setErrorGrade("");
     try {
       const response = await Instance(`/api/grade`);
-      console.log(response);
       setGrade(response.data.grades || []);
     } catch (error) {
-      console.error(error);
+      setErrorGrade("erreur de chargement");
     } finally {
       setIsLoading(false);
     }
@@ -84,14 +87,7 @@ function StoreExamen({ open, handleClose }) {
     setSuccess("");
     setSubmitting(true);
     try {
-      const dataSend = {
-        ...formData,
-        organisateur_id: activeId,
-        organisateur_type: activeType,
-      };
-      console.log("dataSend", dataSend);
-      const response = await Instance.post("/api/examens", dataSend);
-      console.log(response);
+      const response = await Instance.post("/api/examens", formData);
       if (response.data.success) {
         const routePrefix = isLigueUser
           ? "/dashboard/league"
@@ -120,6 +116,10 @@ function StoreExamen({ open, handleClose }) {
 
   if (isLoading) {
     return <ConfigSkeleton />;
+  }
+
+  if (errorGrade) {
+    return <ErrorBlock message={errorGrade} onRetry={getGrade} />;
   }
   return (
     <Dialog

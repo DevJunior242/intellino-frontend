@@ -65,7 +65,6 @@ function EditNote({
 
     const studentData = Array.isArray(student) ? student[0] : student;
     if (!examenId || examenId === "undefined" || !studentData) {
-      console.error("Erreur : examenId est manquant !");
       alert("Impossible d'enregistrer : ID de l'examen introuvable.");
       return;
     }
@@ -92,7 +91,6 @@ function EditNote({
         `/api/evaluation/examen/${examenId}/candidat/${studentData.id}`,
         dataSend,
       );
-      console.log("response", response);
       if (response.data.success) {
         getNotes();
         alert(`données mises à jour avec succès`);

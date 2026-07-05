@@ -6,45 +6,57 @@ import dayjs from "dayjs";
 export default function ChronoCombat({ combat, canControl = false }) {
   const duree = (combat?.config_notation?.duration ?? 3) * 60; // en secondes
   const [tempsRestant, setTempsRestant] = useState(duree);
-  const [actif, setActif] = useState(false);
+  const [actif, setActif] = useState(!!combat?.hajime_at && !combat?.yame_at);
   const intervalRef = useRef(null);
+  const [error, setError] = useState({});
+  const [success, setSuccess] = useState("");
 
   // Calculer le temps restant depuis les données du combat
   useEffect(() => {
     if (!combat) return;
-
     const ecoule = combat.temps_ecoule ?? 0;
-    setTempsRestant(duree - ecoule);
 
-    // Si hajime_at et pas de yame_at → chrono tourne
     if (combat.hajime_at && !combat.yame_at) {
+      // Temps écoulé depuis le dernier HAJIME seulement
       const depuisHajime = dayjs().diff(dayjs(combat.hajime_at), "second");
-      const restant = duree - ecoule - depuisHajime;
-      setTempsRestant(Math.max(0, restant));
-      setActif(true);
+      // ecoule = temps avant ce HAJIME
+      // depuisHajime = temps depuis ce HAJIME
+      const totalEcoule = ecoule + depuisHajime;
+      setTempsRestant(Math.max(0, duree - totalEcoule));
     } else {
-      setActif(false);
+      // Chrono arrêté  affiche duree - ecoule
+      setTempsRestant(Math.max(0, duree - ecoule));
     }
-  }, [combat]);
+  }, [combat?.hajime_at, combat?.yame_at, combat?.temps_ecoule]);
 
   // Ticker
+
   useEffect(() => {
-    if (actif) {
-      intervalRef.current = setInterval(() => {
-        setTempsRestant((prev) => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current);
-            setActif(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
+    setActif(!!combat?.hajime_at && !combat?.yame_at);
+  }, [combat?.hajime_at, combat?.yame_at]);
+
+  const estActif = actif;
+  useEffect(() => {
+    if (!estActif) {
       clearInterval(intervalRef.current);
+      return;
     }
+
+    intervalRef.current = setInterval(() => {
+      setTempsRestant((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current);
+          Instance.post(`/api/combats/${combat.id}/stop-chrono`).catch(
+            console.error,
+          );
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
     return () => clearInterval(intervalRef.current);
-  }, [actif]);
+  }, [estActif]);
 
   const formatTemps = (sec) => {
     const m = Math.floor(sec / 60)
@@ -55,11 +67,33 @@ export default function ChronoCombat({ combat, canControl = false }) {
   };
 
   const handleStart = async () => {
-    await Instance.post(`/api/combats/${combat.id}/start-chrono`);
+    setActif(true); // optimistic update
+    clearInterval(intervalRef.current);
+    setError({});
+    setSuccess("");
+    try {
+      await Instance.post(`/api/combats/${combat.id}/start-chrono`);
+    } catch (err) {
+      console.error(err);
+      setActif(false); //  rollback si erreur
+      setError(
+        err.response.data.message || "Erreur lors du démarrage du chrono",
+      );
+    }
   };
 
   const handleStop = async () => {
-    await Instance.post(`/api/combats/${combat.id}/stop-chrono`);
+    setActif(false); // stop immédiat
+    clearInterval(intervalRef.current);
+    setError({});
+    setSuccess("");
+    try {
+      await Instance.post(`/api/combats/${combat.id}/stop-chrono`);
+    } catch (err) {
+      console.error(err);
+      setActif(true); //  rollback si erreur
+      setError(err.response.data.message || "Erreur lors de l'arrêt du chrono");
+    }
   };
 
   return (
@@ -80,16 +114,17 @@ export default function ChronoCombat({ combat, canControl = false }) {
       {canControl && (
         <Stack direction="row" justifyContent="center" gap={2} mt={1}>
           <Button
+            disabled={tempsRestant <= 0}
             variant="contained"
-            onClick={actif ? handleStop : handleStart}
+            onClick={estActif ? handleStop : handleStart}
             sx={{
-              bgcolor: actif ? "#ef4444" : "#22c55e",
-              "&:hover": { bgcolor: actif ? "#dc2626" : "#16a34a" },
+              bgcolor: estActif ? "#ef4444" : "#22c55e",
+              "&:hover": { bgcolor: estActif ? "#dc2626" : "#16a34a" },
               fontWeight: 700,
               px: 4,
             }}
           >
-            {actif ? "YAME" : "HAJIME"}
+            {estActif ? "YAME" : "HAJIME"}
           </Button>
         </Stack>
       )}

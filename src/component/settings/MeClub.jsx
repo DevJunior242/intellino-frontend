@@ -19,7 +19,6 @@ import { deepPurple } from "@mui/material/colors";
 
 const MeClub = () => {
   const { auth } = UseAuth();
-  console.log("auth in profile:", auth);
 
   return (
     <Container

@@ -29,7 +29,7 @@ import { Instance } from "../../../../Api/Axios";
 // ─── épreuve vide ────────────────────────────────────────────────────────────
 const EPREUVE_VIDE = {
   category_id: "",
-  disciplineleague_id: "",
+  sub_discipline_id: "",
   niveau_id: "",
   heure_debut_prevu: "",
   heure_fin_prevue: "",
@@ -38,10 +38,44 @@ const EPREUVE_VIDE = {
 // ─── couleur discipline ───────────────────────────────────────────────────────
 const DISC_COLOR = { kata: "success", kumite: "error" };
 
+const CHAMP_VERS_SUFFIXE = {
+  category_id: "cat",
+  sub_discipline_id: "disc",
+  niveau_id: "niv",
+  heure_debut_prevu: "deb",
+  heure_fin_prevue: "fin",
+};
+
+const mapLaravelErrors = (laravelErrors) => {
+  const mapped = {};
+
+  Object.entries(laravelErrors).forEach(([key, msgs]) => {
+    const message = Array.isArray(msgs) ? msgs[0] : msgs;
+
+    // ex: "epreuves.0.heure_fin_prevue" -> index "0", champ "heure_fin_prevue"
+    const match = key.match(/^epreuves\.(\d+)\.(\w+)/);
+
+    if (match) {
+      const [, index, champ] = match;
+      const suffixe = CHAMP_VERS_SUFFIXE[champ];
+      if (suffixe) {
+        const formKey = `ep_${index}_${suffixe}`;
+        mapped[formKey] = message;
+        // gardé aussi sous la clé Laravel d'origine, utile si besoin d'affichage détaillé
+        mapped[key] = message;
+      }
+      return;
+    }
+
+    // champs de l'événement lui-même (nom, lieu, date_debut, date_fin, epreuves)
+    mapped[key] = message;
+  });
+
+  return mapped;
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function CreateEvenement({ open, handleClose, getEvenements }) {
-  const { activeId, activeType } = UseAuth();
-
   // ── données API ─────────────────────────────────────────────────────────────
   const [niveaux, setNiveaux] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -68,17 +102,14 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
     setLoadingInit(true);
     try {
       const [discRes, catRes, nivRes] = await Promise.all([
-        Instance.get(
-          `/api/disciplineLeague?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        ),
-        Instance.get(
-          `/api/getCategories?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        ),
+        Instance.get(`/api/disciplineLeague`),
+        Instance.get(`/api/getCategories`),
         Instance.get("/api/niveaux-competitions/niveaux-competitions"),
       ]);
-      console.log(discRes);
-      console.log(catRes);
-      console.log(nivRes);
+      console.log("discRes", discRes);
+      console.log("catRes", catRes);
+      console.log("nivRes", nivRes);
+
       setDisciplines(discRes.data || []);
       setCategories(catRes.data || []);
       setNiveaux(nivRes.data || []);
@@ -139,7 +170,7 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
 
     epreuves.forEach((ep, i) => {
       if (!ep.category_id) errs[`ep_${i}_cat`] = true;
-      if (!ep.disciplineleague_id) errs[`ep_${i}_disc`] = true;
+      if (!ep.sub_discipline_id) errs[`ep_${i}_disc`] = true;
       if (!ep.niveau_id) errs[`ep_${i}_niv`] = true;
       if (!ep.heure_debut_prevu) errs[`ep_${i}_deb`] = true;
       if (!ep.heure_fin_prevue) errs[`ep_${i}_fin`] = true;
@@ -155,23 +186,15 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
       const payload = {
         ...formData,
         epreuves,
-        organisateur_id: activeId,
-        organisateur_type: activeType,
       };
-      const res = await Instance.post("/api/evenements/evenements", payload);
+      await Instance.post("/api/evenements/evenements", payload);
       setSuccess("Événement créé avec succès !");
       setTimeout(handleCloseClean, 1500);
       getEvenements();
     } catch (err) {
       // Erreurs Laravel 422
       if (err.response?.status === 422) {
-        const laravelErrors = {};
-        Object.entries(err.response.data.errors ?? {}).forEach(
-          ([key, msgs]) => {
-            laravelErrors[key] = msgs[0];
-          },
-        );
-        setErrors(laravelErrors);
+        setErrors(mapLaravelErrors(err.response.data.errors ?? {}));
       } else {
         setErrors({
           global: err.response?.data?.message ?? "Erreur serveur inattendue.",
@@ -349,7 +372,7 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
 
             <Stack spacing={2}>
               {epreuves.map((epreuve, index) => {
-                const discNom = getDisciplineNom(epreuve.disciplineleague_id);
+                const discNom = getDisciplineNom(epreuve.sub_discipline_id);
                 const discColor =
                   DISC_COLOR[discNom?.toLowerCase()] ?? "default";
                 const hasError = Object.keys(errors).some((k) =>
@@ -419,15 +442,30 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                               )
                             }
                             error={!!errors[`ep_${index}_cat`]}
+                            helperText={
+                              typeof errors[`ep_${index}_cat`] === "string"
+                                ? errors[`ep_${index}_cat`]
+                                : undefined
+                            }
                           >
                             {categories.length === 0 ? (
                               <MenuItem disabled>Aucune catégorie</MenuItem>
                             ) : (
-                              categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>
-                                  {cat.nom} — {cat.sexe}
-                                </MenuItem>
-                              ))
+                              categories.map((cat) => {
+                                const poidsLabel = cat.poids_max
+                                  ? cat.poids_min
+                                    ? `${Number(cat.poids_min)}-${Number(cat.poids_max)}kg`
+                                    : `-${Number(cat.poids_max)}kg`
+                                  : cat.poids_min
+                                    ? `+${Number(cat.poids_min)}kg`
+                                    : null;
+                                return (
+                                  <MenuItem key={cat.id} value={cat.id}>
+                                    {cat.nom} — {cat.sexe}
+                                    {poidsLabel && ` — ${poidsLabel}`}
+                                  </MenuItem>
+                                );
+                              })
                             )}
                           </TextField>
                         </Grid>
@@ -439,15 +477,20 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                             fullWidth
                             required
                             label="Discipline"
-                            value={epreuve.disciplineleague_id}
+                            value={epreuve.sub_discipline_id}
                             onChange={(e) =>
                               handleEpreuveChange(
                                 index,
-                                "disciplineleague_id",
+                                "sub_discipline_id",
                                 e.target.value,
                               )
                             }
                             error={!!errors[`ep_${index}_disc`]}
+                            helperText={
+                              typeof errors[`ep_${index}_disc`] === "string"
+                                ? errors[`ep_${index}_disc`]
+                                : undefined
+                            }
                           >
                             {disciplines.length === 0 ? (
                               <MenuItem disabled>Aucune discipline</MenuItem>
@@ -477,6 +520,11 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                               )
                             }
                             error={!!errors[`ep_${index}_niv`]}
+                            helperText={
+                              typeof errors[`ep_${index}_niv`] === "string"
+                                ? errors[`ep_${index}_niv`]
+                                : undefined
+                            }
                           >
                             {niveaux.length === 0 ? (
                               <MenuItem disabled>Aucun niveau</MenuItem>
@@ -512,6 +560,11 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                               )
                             }
                             error={!!errors[`ep_${index}_deb`]}
+                            helperText={
+                              typeof errors[`ep_${index}_deb`] === "string"
+                                ? errors[`ep_${index}_deb`]
+                                : undefined
+                            }
                           />
                         </Grid>
 
@@ -534,6 +587,11 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                               )
                             }
                             error={!!errors[`ep_${index}_fin`]}
+                            helperText={
+                              typeof errors[`ep_${index}_fin`] === "string"
+                                ? errors[`ep_${index}_fin`]
+                                : undefined
+                            }
                           />
                         </Grid>
 

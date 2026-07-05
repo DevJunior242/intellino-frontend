@@ -35,7 +35,6 @@ function LicenceForm() {
   const getError = (field) => error?.[field]?.join(", ");
   const searchParams = new URLSearchParams(window.location.search);
   const clubId = searchParams.get("club");
-  console.log("clubid", clubId);
   const { activeId } = UseAuth();
 
   const getStudents = useCallback(async () => {
@@ -43,10 +42,8 @@ function LicenceForm() {
     setErrorStudent("");
     try {
       const response = await Instance(`/api/league/students?club_id=${clubId}`);
-      console.log(response);
       setData(response.data || []);
-    } catch (error) {
-      console.error(error);
+    } catch {
       setErrorStudent(
         "une erreur est survenue lors de la récupération des élèves",
       );
@@ -98,11 +95,8 @@ function LicenceForm() {
         ...formData,
         club_id: clubId,
         league_id: activeId,
-        organisateur_id: activeId,
-      };
-      console.log(dataSend);
+       };
       const response = await Instance.post("/api/licences/licences", dataSend);
-      console.log("RESPONSE", response);
       if (response.data.success) {
         setSuccess(response.data.message);
 
@@ -115,7 +109,6 @@ function LicenceForm() {
           student_id: "",
           saison: "",
           type: "",
-          grade_au_moment: "",
           montant: "",
           date_emission: "",
           date_expiration: "",

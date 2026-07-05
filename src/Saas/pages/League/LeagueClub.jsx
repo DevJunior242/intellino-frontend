@@ -32,11 +32,9 @@ export default function LeagueClub() {
       const response = await Instance.get(
         `/api/clubs/getClubsAvailable?organisateur_id=${activeId}`,
       );
-      console.log(response);
-      setClubs(response.data.clubs.data || []);
+       setClubs(response.data.clubs.data || []);
     } catch (error) {
-      console.log(error);
-      setErrorClub(
+       setErrorClub(
         "Une erreur est survenue lors de la récupération des clubs disponibles",
       );
     } finally {

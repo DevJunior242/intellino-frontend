@@ -14,7 +14,7 @@ const AdminPeseeTable = ({ rows, loading, handleStatusAction }) => {
   };
   const isKata =
     rows.length > 0 &&
-    rows[0].competition?.discipline?.nom?.toLowerCase() === "kata";
+    rows[0].competition?.sub_discipline?.nom?.toLowerCase() === "kata";
 
   const allColumns = [
     {
@@ -44,12 +44,12 @@ const AdminPeseeTable = ({ rows, loading, handleStatusAction }) => {
       ),
     },
     {
-      field: "disciplineleague",
+      field: "Sub_discipline",
       headerName: "Discipline",
       width: 150,
       renderCell: (params) => (
         <Chip
-          label={`${params.row?.competition?.discipline?.nom}`}
+          label={`${params.row?.competition?.sub_discipline?.nom}`}
           size="small"
           variant="outlined"
         />
@@ -66,22 +66,42 @@ const AdminPeseeTable = ({ rows, loading, handleStatusAction }) => {
       field: "poids_officiel",
       headerName: "Poids Réel",
       width: 160,
-      renderCell: (params) => (
-        <TextField
-          size="small"
-          type="number"
-          placeholder="0.00"
-          variant="standard"
-          // On affiche soit ce qu'on tape, soit la valeur déjà en base
-          value={
-            poidsInput[params.row.id] !== undefined
-              ? poidsInput[params.row.id]
-              : params.row.poids_officiel || ""
-          }
-          onChange={(e) => handlePoidsChange(params.row.id, e.target.value)}
-          disabled={params.row.statut_pesee !== 0} // Désactivé si déjà validé/refusé
-        />
-      ),
+      renderCell: (params) => {
+        const category = params.row?.competition?.category;
+        const poids = Number(
+          poidsInput[params.row.id] !== undefined
+            ? poidsInput[params.row.id]
+            : params.row.poids_officiel || "",
+        );
+        const horsBornes =
+          poids > 0 &&
+          category &&
+          ((category.poids_min && poids < category.poids_min) ||
+            (category.poids_max && poids > category.poids_max));
+        return (
+          <TextField
+            size="small"
+            type="number"
+            placeholder="0.00"
+            variant="standard"
+            color={horsBornes ? "error" : undefined}
+            error={horsBornes}
+            helperText={
+              horsBornes
+                ? `Hors bornes (${category.poids_min ? Number(category.poids_min) : "-"}-${category.poids_max ? Number(category.poids_max) : "-"}kg)`
+                : ""
+            }
+            // On affiche soit ce qu'on tape, soit la valeur déjà en base
+            value={
+              poidsInput[params.row.id] !== undefined
+                ? poidsInput[params.row.id]
+                : params.row.poids_officiel || ""
+            }
+            onChange={(e) => handlePoidsChange(params.row.id, e.target.value)}
+            disabled={params.row.statut_pesee !== 0} // Désactivé si déjà validé/refusé
+          />
+        );
+      },
     },
     {
       field: "status",
@@ -102,20 +122,26 @@ const AdminPeseeTable = ({ rows, loading, handleStatusAction }) => {
       type: "actions",
       headerName: "Action",
       width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem
-          icon={<CheckCircleIcon color="success" />}
-          label="Valider"
-          onClick={() => handleStatusAction("valider", params.id)}
-          disabled={params.row.status !== 0}
-        />,
-        <GridActionsCellItem
-          icon={<CancelIcon color="error" />}
-          label="Refuser"
-          onClick={() => handleStatusAction("annuler", params.id)}
-          disabled={params.row.status === 2}
-        />,
-      ],
+      getActions: (params) => {
+        const poids =
+          poidsInput[params.id] !== undefined
+            ? poidsInput[params.id]
+            : params.row.poids_officiel;
+        return [
+          <GridActionsCellItem
+            icon={<CheckCircleIcon color="success" />}
+            label="Valider"
+            onClick={() => handleStatusAction("valider", params.id, poids)}
+            disabled={params.row.status !== 0}
+          />,
+          <GridActionsCellItem
+            icon={<CancelIcon color="error" />}
+            label="Refuser"
+            onClick={() => handleStatusAction("annuler", params.id, poids)}
+            disabled={params.row.status === 2}
+          />,
+        ];
+      },
     },
   ];
 

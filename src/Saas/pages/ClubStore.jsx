@@ -32,7 +32,7 @@ function ClubStore() {
   const [step, setStep] = useState(1); // Étape 1 : Infos, Étape 2 : Clé d'activation
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const { switchPortal, updateAuth } = UseAuth();
+  const { switchPortal, updateAuth, setAuthData } = UseAuth();
   const [disciplines, setDisciplines] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectDiscipline, setSelectDiscipline] = useState(null);
@@ -116,8 +116,9 @@ function ClubStore() {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
+
       if (response?.data?.success) {
-        const { user, clubs, new_club } = response.data;
+        const { user, clubs, new_club, leagues } = response.data;
 
         const extractedRoles = user.clubs[0].roles.map((r) => r.name);
 
@@ -126,7 +127,9 @@ function ClubStore() {
           clubs: clubs,
           role: extractedRoles,
         });
-
+        localStorage.setItem("activeId", new_club.id);
+        localStorage.setItem("activeType", "Club");
+        localStorage.setItem("activeRole", new_club.role?.[0] || "admin");
         switchPortal(new_club.id, new_club.type, new_club.role);
 
         setSelectDiscipline(null);

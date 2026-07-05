@@ -26,6 +26,7 @@ import {
   Gavel,
   Shield,
   Warning,
+  Close,
 } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
 
@@ -44,6 +45,7 @@ const ArbitreKumiteItem = ({
   arbitres,
   onOuvrirMenuPostes,
   onDesignerSuperviseur,
+  onRetirerSuperviseur,
   onLibérerPoste,
   config,
 }) => {
@@ -192,19 +194,36 @@ const ArbitreKumiteItem = ({
             )
           )}
 
-          {/* Kansa badge ou bouton désigner */}
+          {/* Kansa badge ou bouton désigner/retirer */}
           {estKansa ? (
-            <Chip
-              label="KANSA"
-              size="small"
-              sx={{
-                bgcolor: "#ff9800",
-                color: "#000",
-                fontWeight: "bold",
-                height: 22,
-                fontSize: "0.62rem",
-              }}
-            />
+            <Tooltip title="Retirer le rôle Kansa">
+              <Chip
+                label="KANSA"
+                size="small"
+                onDelete={() =>
+                  onRetirerSuperviseur(
+                    config.id,
+                    arbitre.arbitre_competition_id,
+                  )
+                }
+                deleteIcon={
+                  <Close
+                    sx={{
+                      fontSize: "14px !important",
+                      color: "#000 !important",
+                    }}
+                  />
+                }
+                sx={{
+                  bgcolor: "#ff9800",
+                  color: "#000",
+                  fontWeight: "bold",
+                  height: 22,
+                  fontSize: "0.62rem",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           ) : (
             <Tooltip title="Désigner Kansa">
               <IconButton
@@ -351,13 +370,16 @@ const ArbitresKumitePanel = ({
   config,
   arbitres,
   handleDesignerSuperviseur,
+  handleRetirerSuperviseur,
   onRefresh,
 }) => {
+  console.log("ArbitresKumitePanel config:", config);
   const [openModal, setOpenModal] = useState(false);
   const [arbitresDispos, setArbitresDispos] = useState([]);
   const [loadingArbitres, setLoadingArbitres] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [arbitreEnCours, setArbitreEnCours] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const arbitresSafe = Array.isArray(arbitres) ? arbitres : [];
 
@@ -366,23 +388,39 @@ const ArbitresKumitePanel = ({
     setLoadingArbitres(true);
     try {
       const res = await Instance.get(
-        `/api/arbitres/disponibles/${config.evenement_id}/${config.id}`,
+        `/api/arbitres/disponibles/${config.evenement_id}`,
       );
       setArbitresDispos(res.data);
       setOpenModal(true);
     } catch (error) {
       console.error(error);
+      const data = error.response?.data;
+      setErrorMsg(
+        data?.problemes
+          ? data.problemes.join(" \n")
+          : data?.message || "Erreur lors du chargement",
+      );
     } finally {
       setLoadingArbitres(false);
     }
   };
 
   const assignerArbitre = async (arbitreCompId) => {
-    await Instance.post(`/api/rotation-arbitres`, {
-      config_notation_id: config.id,
-      arbitre_competition_id: arbitreCompId,
-    });
-    onRefresh();
+    try {
+      await Instance.post(`/api/rotation-arbitres`, {
+        config_notation_id: config.id,
+        arbitre_competition_id: arbitreCompId,
+      });
+      await onRefresh();
+    } catch (error) {
+      console.error(error);
+      const data = error.response?.data;
+      setErrorMsg(
+        data?.problemes
+          ? data.problemes.join(" \n")
+          : data?.message || "Erreur lors de l'assignation",
+      );
+    }
   };
 
   const handleOuvrirMenuPostes = (event, arbitre) => {
@@ -398,7 +436,9 @@ const ArbitresKumitePanel = ({
       });
       if (response.data.success) onRefresh();
     } catch (error) {
-      alert(error.response?.data?.message || "Erreur lors de l'assignation");
+      console.error(error);
+      const data = error.response?.data;
+      setErrorMsg(data?.message || "Erreur lors de l'assignation");
     }
   };
 
@@ -407,10 +447,13 @@ const ArbitresKumitePanel = ({
       await Instance.patch(`/api/rotation-arbitres/assigner`, {
         rotation_id: rotationId,
         poste: null,
+        est_superviseur: false,
       });
       onRefresh();
     } catch (error) {
       console.error(error);
+      const data = error.response?.data;
+      setErrorMsg(data?.message || "Erreur lors de la libération du poste");
     }
   };
 
@@ -464,6 +507,19 @@ const ArbitresKumitePanel = ({
         </Alert>
       )}
 
+      {/* Afficher les erreurs API */}
+      {errorMsg && (
+        <Alert
+          severity="error"
+          sx={{ borderRadius: 2, py: 0.5, fontSize: "0.72rem" }}
+          onClose={() => setErrorMsg(null)}
+        >
+          {errorMsg.split("\n").map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </Alert>
+      )}
+
       <Divider sx={{ bgcolor: "#1e2433" }} />
 
       {/* Liste arbitres ou vide */}
@@ -514,6 +570,7 @@ const ArbitresKumitePanel = ({
               config={config}
               onOuvrirMenuPostes={handleOuvrirMenuPostes}
               onDesignerSuperviseur={handleDesignerSuperviseur}
+              onRetirerSuperviseur={handleRetirerSuperviseur}
               onLibérerPoste={handleLibérerPoste}
             />
           ))}

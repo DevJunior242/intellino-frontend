@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -68,8 +68,8 @@ const CarteNonAssigne = ({ inscription, configs, onAssigner, submitId }) => {
             display="block"
             noWrap
           >
-            {inscription.club?.name ?? "—"}
-            {inscription.kata && ` · ${inscription.kata.nom}`}
+            {inscription?.organisateur?.name ?? "—"}
+            {inscription?.kata ?? "_"}
           </Typography>
         </Box>
 
@@ -114,7 +114,7 @@ const CarteNonAssigne = ({ inscription, configs, onAssigner, submitId }) => {
           {configs.map((config) => (
             <Chip
               key={config.id}
-              label={config.plateau_nom}
+              label={config?.plateau_nom}
               size="small"
               sx={{ height: 16, fontSize: "0.6rem", cursor: "pointer" }}
               onClick={() =>
@@ -261,7 +261,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
   };
 
   const handleAssigner = async (inscriptionId, configId) => {
-    // ✅ Vérification — déjà assigné quelque part ?
+    //  Vérification — déjà assigné quelque part ?
     const dejaAssigne = Object.values(parTatami)
       .flat()
       .some((o) => o.inscription?.id === inscriptionId);
@@ -288,7 +288,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
   };
 
   const handleRetirer = async (inscriptionId) => {
-    // ✅ Vérification — bien assigné ?
+    // Vérification — bien assigné ?
     const estAssigne = Object.values(parTatami)
       .flat()
       .some((o) => o.inscription?.id === inscriptionId);
@@ -317,7 +317,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
       await Instance.post(`/api/ordre-passages/${competition}/reset`);
       await fetchData();
       showSuccess("Toutes les affectations ont été réinitialisées");
-    } catch (err) {
+    } catch {
       setErreur("Erreur lors de la réinitialisation");
       setLoading(false);
     }
@@ -412,7 +412,8 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
         color="error"
         size="small"
         onClick={handleResetAll}
-        disabled={loading || totalAssignes === 0}
+        // disabled={loading || totalAssignes === 0}
+        disabled
         sx={{ mb: 2, borderRadius: 2 }}
       >
         Réinitialiser toutes les affectations
@@ -444,7 +445,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
                   Non assignés
                 </Typography>
                 <Chip
-                  label={nonAssignes.length}
+                  label={nonAssignes?.length}
                   size="small"
                   sx={{
                     bgcolor: "rgba(255,255,255,0.3)",

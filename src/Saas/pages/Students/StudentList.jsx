@@ -36,7 +36,6 @@ function StudentList() {
     setErrorStudent("");
     try {
       const response = await Instance(`/api/students?club_id=${activeId}`);
-      console.log("students", response);
       setStudents(
         (response.data.students || []).map((student) => ({
           id: student.id,
@@ -50,7 +49,6 @@ function StudentList() {
         })),
       );
     } catch (error) {
-      console.error(error);
       setErrorStudent("Erreur lors de la récupération des étudiants");
     } finally {
       setLoading(false);
@@ -148,23 +146,23 @@ function StudentList() {
           },
         ]
       : []),
-    {
-      field: "status",
-      headerName: "Statut",
-      flex: 1,
-      minWidth: 120,
-      renderCell: (params) => {
-        const value = params.value;
-        return (
-          <Chip
-            label={statusConfig[value]?.label}
-            color={statusConfig[value]?.color}
-            size="small"
-            sx={{ textTransform: "capitalize" }}
-          />
-        );
-      },
-    },
+    // {
+    //   field: "status",
+    //   headerName: "Statut",
+    //   flex: 1,
+    //   minWidth: 120,
+    //   renderCell: (params) => {
+    //     const value = params.value;
+    //     return (
+    //       <Chip
+    //         label={statusConfig[value]?.label}
+    //         color={statusConfig[value]?.color}
+    //         size="small"
+    //         sx={{ textTransform: "capitalize" }}
+    //       />
+    //     );
+    //   },
+    // },
 
     {
       field: "photo",

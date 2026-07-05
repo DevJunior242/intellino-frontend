@@ -61,8 +61,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
           organisateur_type: activeType,
         },
       );
-      console.log(res);
-      if (res.data.success) {
+       if (res.data.success) {
         setSuccess(res?.data?.message || "candidat ajouté");
         setSelectedStudent(null);
         setTimeout(() => {

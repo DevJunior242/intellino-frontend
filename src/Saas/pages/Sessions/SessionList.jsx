@@ -64,9 +64,7 @@ function SessionList() {
       setLoading(true);
       setErrorSessions("");
       try {
-        const response = await Instance(
-          `/api/sessions?page=${page}&organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        );
+        const response = await Instance(`/api/sessions?page=${page}`);
         const session = response.data.sessions || [];
         const sessionArray = session.data ? session.data : session;
         setsessions(sessionArray);
@@ -77,7 +75,6 @@ function SessionList() {
           total: session.total,
         });
       } catch (error) {
-        console.error(error);
         setErrorSessions("Erreur lors de la récupération des sessions");
       } finally {
         setLoading(false);

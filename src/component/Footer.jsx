@@ -15,7 +15,7 @@ import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import { motion } from "framer-motion";
 import { tokenTheme } from "../theme";
 import { NavLink } from "react-router-dom";
-
+import React from "react";
 const footerLinks = [
   {
     title: "Navigation",

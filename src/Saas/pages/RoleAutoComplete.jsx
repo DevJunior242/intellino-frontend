@@ -16,7 +16,6 @@ const RoleAutoComplete = ({
     setLoading(true);
     try {
       const response = await Instance.get("api/roles");
-      console.log(response);
       setRole(response.data.roles);
     } catch (error) {
       console.error(error);
@@ -34,7 +33,7 @@ const RoleAutoComplete = ({
         disablePortal
         loading={isLoading}
         options={Array.isArray(roles) ? roles : []}
-        getOptionLabel={(role) => role?.name ?? ""}
+        getOptionLabel={(role) => role?.display_name ?? ""}
         value={value}
         isOptionEqualToValue={(option, value) => option.id === value?.id}
         onChange={(e, newValue) => onChange(newValue)}

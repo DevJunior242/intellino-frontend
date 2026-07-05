@@ -31,24 +31,19 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { activeId, activeType } = UseAuth();
-  console.log("activeId", activeId);
-  console.log("activeType", activeType);
 
   const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await Instance.get(
-        `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      );
-      console.log("epreuves", response);
+      const response = await Instance.get(`/api/competitions/competitions`);
+      console.log("competitions", response);
       setCompetitions(response.data.data || []);
     } catch (error) {
       console.error("Erreur Swiper:", error);
     } finally {
       setLoading(false);
     }
-  }, [activeId, activeType]);
+  }, []);
 
   useEffect(() => {
     fetchCompetitions();
@@ -111,7 +106,8 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
                   </Avatar>
                   <Box>
                     <Typography variant="caption" color="white">
-                      competition {comp?.niveau?.nom}-({comp?.discipline?.nom})
+                      competition {comp?.niveau?.nom}-(
+                      {comp?.sub_discipline?.nom})
                     </Typography>
                     <Chip
                       label={`${comp?.category?.nom ?? ""} - ${comp?.category?.sexe ?? ""}`}

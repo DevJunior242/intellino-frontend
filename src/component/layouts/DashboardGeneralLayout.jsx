@@ -27,7 +27,22 @@ import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import LogoutIcon from "@mui/icons-material/Logout";
-// ─── Theme ────────────────────────────────────────────────────────────────────
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import GroupsIcon from "@mui/icons-material/Groups";
+import BadgeIcon from "@mui/icons-material/Badge";
+import CategoryIcon from "@mui/icons-material/Category";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import GradingIcon from "@mui/icons-material/Grading";
+import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
+import { BusinessOutlined } from "@mui/icons-material";
 const theme = createTheme({
   palette: {
     mode: "dark",
@@ -54,114 +69,145 @@ const theme = createTheme({
 });
 
 // ─── Nav Config ───────────────────────────────────────────────────────────────
-const navSections = [
-  {
-    label: "PILOTAGE",
-    items: [
-      {
-        icon: "🏠",
-        label: "Acueil",
-        to: "/",
-        role: ["admin_league", "arbitre_league"],
-      },
-      {
-        icon: "⊞",
-        label: "Tableau de bord",
-        to: "/dashboard/league/stats",
-        role: ["admin_league", "arbitre_league"],
-      },
-      // {
-      //   icon: "≡",
-      //   label: "Programme d'activités",
-      //   to: "dashboard/programme-activites",
-      //   role: ["admin_league", "arbitre_league"],
-      // },
-    ],
-  },
-  {
-    label: "ORGANISATION",
-    items: [
-      {
-        icon: "🏠",
-        label: "Clubs",
-        to: "/dashboard/league/clubs",
-        role: ["admin_league"],
-      },
-      {
-        icon: "🪪",
-        label: "Licences",
-        to: "/dashboard/league/licences",
-        role: ["admin_league"],
-      },
-      {
-        icon: "⊞",
-        label: "Catégories",
-        to: "/dashboard/league/categories",
-        role: ["admin_league"],
-      },
-      {
-        icon: "👤",
-        label: "Bureau & rôles",
-        to: "/dashboard/league/bureau",
-        role: ["admin_league"],
-      },
-    ],
-  },
-  {
-    label: "SPORTIF",
-    items: [
-      {
-        icon: "★",
-        label: "Compétitions",
-        to: "/dashboard/league/competitions",
-        role: ["admin_league", "arbitre_league"],
-      },
-      {
-        icon: "📋",
-        label: "examens",
-        to: "/dashboard/league/examen",
-        role: ["admin_league"],
-      },
-      {
-        icon: "▲",
-        label: "Grades & examens",
-        to: "/dashboard/league/grades",
-        role: ["admin_league"],
-      },
-      {
-        icon: "▣",
-        label: "Fiche de notation",
-        to: "/dashboard/league/notation",
-        role: ["super_admin"],
-      },
-      {
-        icon: "👥",
-        label: "Athlètes",
-        to: "/dashboard/league/athletes",
-        role: ["admin_league"],
-      },
-      {
-        icon: "👤",
-        label: "Arbitres",
-        to: "/dashboard/league/arbitres",
-        role: ["admin_league"],
-      },
-    ],
-  },
+const getNavSections = (activeType) => {
+  const isFederation = activeType?.toLowerCase() === "federation";
 
-  {
-    label: "General",
-    items: [
-      {
-        icon: <Settings />,
-        label: "Paramétrage général",
-        to: "/settings",
-        role: ["admin_league", "arbitre_league"],
-      },
-    ],
-  },
-];
+  return [
+    {
+      label: "PILOTAGE",
+      items: [
+        {
+          icon: <HomeOutlinedIcon fontSize="small" />,
+          label: "Acueil",
+          to: "/",
+          role: ["admin", "arbitre"],
+        },
+        {
+          icon: <DashboardIcon fontSize="small" />,
+          label: "Tableau de bord",
+          to: isFederation
+            ? "/dashboard/federation/stats"
+            : "/dashboard/league/stats",
+          role: ["admin", "arbitre"],
+        },
+        {
+          icon: <CalendarMonthIcon fontSize="small" />,
+          label: "Programme d'activités",
+          to: isFederation
+            ? "/dashboard/federation/activity"
+            : "/dashboard/league/activity",
+          role: ["admin", "arbitre"],
+        },
+      ],
+    },
+    {
+      label: "ORGANISATION",
+      items: [
+        {
+          icon: <AccountTreeIcon fontSize="small" />,
+          label: "Structure",
+          to: "/dashboard/federation/structure",
+          role: ["admin"],
+          showFor: ["federation"],
+        },
+        {
+          icon: <GroupsIcon fontSize="small" />,
+          label: "Clubs",
+          to: "/dashboard/league/clubs",
+          role: ["admin"],
+          showFor: ["ligue"],
+        },
+        {
+          icon: <BadgeIcon fontSize="small" />,
+          label: "Licences",
+          to: isFederation
+            ? "/dashboard/federation/licences"
+            : "/dashboard/league/licences",
+          role: ["admin"],
+        },
+        {
+          icon: <CategoryIcon fontSize="small" />,
+          label: "Catégories",
+          to: "/dashboard/federation/categories",
+          role: ["admin"],
+          showFor: ["federation"],
+        },
+        {
+          icon: <VerifiedUserIcon fontSize="small" />,
+          label: "Affiliation",
+          to: "/dashboard/federation/affiliations",
+          role: ["admin"],
+          showFor: ["federation"],
+        },
+        {
+          icon: <SupervisorAccountIcon fontSize="small" />,
+          label: "Bureau & rôles",
+          to: isFederation
+            ? "/dashboard/federation/bureau"
+            : "/dashboard/league/bureau",
+          role: ["admin"],
+        },
+        {
+          icon: <EventNoteIcon fontSize="small" />,
+          label: "Stages",
+          to: "/dashboard/league/stage",
+          role: ["admin"],
+        },
+      ],
+    },
+    {
+      label: "SPORTIF",
+      items: [
+        {
+          icon: <EmojiEventsIcon fontSize="small" />,
+          label: "Compétitions",
+          to: "/dashboard/league/competitions",
+          role: ["admin", "arbitre"],
+        },
+        // {
+        //   icon: <FactCheckIcon fontSize="small" />,
+        //   label: "examens",
+        //   to: "/dashboard/league/examen",
+        //   role: ["admin"],
+        // },
+        {
+          icon: <WorkspacePremiumIcon fontSize="small" />,
+          label: "Grades & examens",
+          to: "/dashboard/league/grades",
+          role: ["admin"],
+        },
+      ],
+    },
+    {
+      label: "General",
+      items: [
+        //painement
+        {
+          icon: <BusinessOutlined fontSize="small" />,
+          label: "Paiements",
+          to: isFederation
+            ? "/dashboard/federation/payment-methods"
+            : "/dashboard/league/payment-methods",
+          role: ["admin"],
+        },
+        {
+          icon: <InsertInvitationSharpIcon fontSize="small" />,
+          label: "Invitation",
+          to: "/dashboard/federation/invitation",
+          role: ["admin"],
+          showFor: ["ligue"],
+        },
 
+        {
+          icon: <Settings fontSize="small" />,
+          label: "Paramétrage général",
+          to: "/settings",
+          role: ["admin"],
+        },
+      ],
+    },
+  ];
+};
 // ─── Motion Variants ──────────────────────────────────────────────────────────
 const fadeIn = {
   hidden: { opacity: 0, y: -8 },
@@ -200,7 +246,11 @@ function SidebarContent({
   onClose,
   isCollapsed,
   handleLogout,
+  navSections,
+  activeType,
+  contextOrganisation,
 }) {
+  const normalizedType = activeType?.toLowerCase();
   let itemIndex = 0;
 
   return (
@@ -254,7 +304,8 @@ function SidebarContent({
             <Typography
               sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
             >
-              Karaté<span style={{ color: "#e8c84a" }}>Ligue</span>
+              Karaté
+              <span style={{ color: "#e8c84a" }}>{contextOrganisation}</span>
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Ligue Nationale
@@ -296,9 +347,12 @@ function SidebarContent({
       {/* Nav */}
       <Box sx={{ flex: 1, py: 1 }}>
         {navSections.map((section) => {
-          const visibleItems = section.items.filter((item) =>
-            item.role ? hasAccess(item.role) : true,
-          );
+          const visibleItems = section.items.filter((item) => {
+            const roleOk = item.role ? hasAccess(item.role) : true;
+            const typeOk =
+              !item.showFor || item.showFor.includes(normalizedType);
+            return roleOk && typeOk;
+          });
           if (visibleItems.length === 0) return null;
 
           return (
@@ -434,7 +488,7 @@ function SidebarContent({
   );
 }
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function DashboardLeagueLayout() {
+export default function DashboardGeneralLayout() {
   const [activeItem, setActiveItem] = useState("Tableau de bord");
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
@@ -447,11 +501,15 @@ export default function DashboardLeagueLayout() {
     await logout();
     navigate("/login");
   };
+  const contex = activeType?.toLowerCase();
+  const contextOrganisation = contex === "federation" ? "Fédération" : "Ligue";
 
-  if (activeType !== "Ligue") {
+  const normalizedType = activeType?.toLowerCase();
+
+  if (normalizedType !== "ligue" && normalizedType !== "federation") {
     return <Navigate to="/dashboard" replace />;
   }
-
+  const navSections = getNavSections(activeType);
   const hasAccess = (allowedRoles = []) => {
     if (!auth?.isLogin) return false;
     return allowedRoles.includes(activeRole);
@@ -462,6 +520,8 @@ export default function DashboardLeagueLayout() {
     setActiveItem,
     hasAccess,
     navigate,
+    navSections,
+    activeType,
   };
 
   return (
@@ -524,6 +584,8 @@ export default function DashboardLeagueLayout() {
                 isCollapsed={isCollapsed}
                 onClose={null}
                 handleLogout={handleLogout}
+                navSections={navSections}
+                contextOrganisation={contextOrganisation}
               />
             </Box>
           </motion.div>

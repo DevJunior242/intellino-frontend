@@ -7,9 +7,9 @@ import { Instance } from "../../../Api/Axios";
 
 export default function VitalityGauge() {
   const [vitalityData, setVitalityData] = useState({
-    vitality_score: 0,
-    nouveaux_dan: 0,
-    taux_reussite: 0,
+    vitality_score: 10,
+    nouveaux_dan: 20,
+    taux_reussite: 50,
   });
   const { activeId, activeType } = UseAuth();
 
@@ -18,10 +18,7 @@ export default function VitalityGauge() {
       const response = await Instance.get(
         `/api/dashboard/league/exmenstates?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
-      console.log(response);
-      if (response.data.success) {
-        setVitalityData(response.data.data);
-      }
+      setVitalityData(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération de la vitalité", error);
     }

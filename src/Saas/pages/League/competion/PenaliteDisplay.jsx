@@ -3,30 +3,18 @@ import { Box, Stack, Typography } from "@mui/material";
 export default function PenaliteDisplay({ combat }) {
   const penalitesAka =
     combat?.actions?.filter(
-      (a) =>
-        a.combattant === "aka" &&
-        a.validee &&
-        ["chukoku", "keikoku", "hansoku_chui", "hansoku"].includes(a.type),
+      (a) => a.combattant === "aka" && a.type === "penalite",
     )?.length ?? 0;
 
   const penalitesAo =
     combat?.actions?.filter(
-      (a) =>
-        a.combattant === "ao" &&
-        a.validee &&
-        ["chukoku", "keikoku", "hansoku_chui", "hansoku"].includes(a.type),
+      (a) => a.combattant === "ao" && a.type === "penalite",
     )?.length ?? 0;
 
-  const niveaux = ["chukoku", "keikoku", "hansoku_chui", "hansoku"];
   const labels = ["C", "K", "HC", "H"];
 
   return (
-    <Stack
-      direction="row"
-      justifyContent="space-between"
-      alignItems="center"
-      maxWidth="100%"
-    >
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
       {/* AKA */}
       <Stack direction="row" gap={0.5}>
         {[...Array(4)].map((_, i) => (

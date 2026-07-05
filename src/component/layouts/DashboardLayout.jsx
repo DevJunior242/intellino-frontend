@@ -42,6 +42,7 @@ import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
 import { Groups, Key, PeopleAlt, Settings } from "@mui/icons-material";
+import BadgeIcon from "@mui/icons-material/Badge";
 
 const DRAWER_EXPANDED = 240;
 const DRAWER_COLLAPSED = 60;
@@ -52,18 +53,31 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { allowAccess } = useAllowAccess();
-  const { logout, activeRole, auth, activeType } = UseAuth();
-  console.log("activeRole", activeRole);
+  const { logout, activeRole, auth, activeType, activeId } = UseAuth();
 
   const isSuperAdmin = activeRole === "super_admin";
 
-  const isWrongContext = activeType !== "Club" && !isSuperAdmin;
   if (!auth?.isLogin) {
     return <Navigate to="/login" replace />;
   }
+  const getRedirectPath = (type) => {
+    switch (type?.toLowerCase()) {
+      case "ligue":
+        return "/dashboard/league/stats";
+      case "federation":
+        return "/dashboard/federation/stats";
+      default:
+        return "/dashboard"; // fallback de sécurité
+    }
+  };
+  if (!activeType) {
+    return null; // attendre que activeType soit résolu
+  }
+
+  const isWrongContext = activeType.toLowerCase() !== "club" && !isSuperAdmin;
 
   if (isWrongContext) {
-    return <Navigate to="/dashboard/league/stats" replace />;
+    return <Navigate to={getRedirectPath(activeType)} replace />;
   }
   const drawerWidth = collapsed ? DRAWER_COLLAPSED : DRAWER_EXPANDED;
 
@@ -73,7 +87,7 @@ export default function DashboardLayout() {
   };
 
   const clubAllow = [
-    "admin_club",
+    "admin",
     "instructeur",
     "secretaire",
     "parent",
@@ -95,7 +109,7 @@ export default function DashboardLayout() {
           to: "/",
           role: [
             "super_admin",
-            "admin_club",
+            "admin",
             "instructeur",
             "parent",
             "secretaire",
@@ -108,7 +122,7 @@ export default function DashboardLayout() {
           to: `${clubAllow.includes(activeRole) ? "/dashboard" : "/dashboard/league/stats"}`,
           role: [
             "super_admin",
-            "admin_club",
+            "admin",
             "instructeur",
             "parent",
             "secretaire",
@@ -124,6 +138,13 @@ export default function DashboardLayout() {
           title: "Clés d'activation",
           icon: <Key fontSize="small" />,
           to: "/dashboard/activation-keys",
+          role: ["super_admin"],
+        },
+        //takeover key generator
+        {
+          title: "Clés de passation",
+          icon: <Key fontSize="small" />,
+          to: "/dashboard/activation-keys/takeover",
           role: ["super_admin"],
         },
 
@@ -150,26 +171,20 @@ export default function DashboardLayout() {
           title: "Élèves",
           icon: <SchoolIcon fontSize="small" />,
           to: "/dashboard/student/list",
-          role: ["admin_club", "instructeur", "secretaire"],
+          role: ["admin", "instructeur", "secretaire"],
         },
         {
           title: "Membres du club",
           icon: <PeopleOutlineOutlinedIcon fontSize="small" />,
           to: "/dashboard/members",
-          role: [
-            "admin_club",
-            "instructeur",
-            "parent",
-            "secretaire",
-            "karateka",
-          ],
+          role: ["admin", "instructeur", "parent", "secretaire", "karateka"],
         },
 
         {
           title: "Sessions (cours)",
           icon: <EventNoteIcon fontSize="small" />,
           to: "/dashboard/session/list",
-          role: ["admin_club", "instructeur"],
+          role: ["admin", "instructeur"],
         },
         {
           title: "Grade",
@@ -177,22 +192,41 @@ export default function DashboardLayout() {
           to: "/dashboard/grade/store",
           role: ["super_admin"],
         },
+        {
+          title: "Licences",
+          icon: <BadgeIcon fontSize="small" />,
+          to: "/dashboard/licences",
+          role: ["admin"],
+        },
+        {
+          title: "Stages",
+          icon: <EventNoteIcon fontSize="small" />,
+          to: "/dashboard/stages/ma-ligue",
+          role: ["admin", "instructeur"],
+        },
       ],
     },
     {
       section: "Finance",
       items: [
+        //paiement
+        {
+          title: "Paiements",
+          icon: <PaymentIcon fontSize="small" />,
+          to: "/dashboard/payment-methods",
+          role: ["admin"],
+        },
         {
           title: "Gestion des tarifs",
           icon: <TuneIcon fontSize="small" />,
           to: "/dashboard/payment/settings",
-          role: ["admin_club", "secretaire"],
+          role: ["admin", "secretaire"],
         },
         {
           title: "Dettes",
           icon: <ShoppingCartIcon fontSize="small" />,
           to: "/dashboard/dettes",
-          role: ["admin_club", "secretaire"],
+          role: ["admin", "secretaire"],
         },
         {
           title: "Dette",
@@ -201,16 +235,16 @@ export default function DashboardLayout() {
           role: ["parent"],
         },
         {
-          title: "Paiements",
+          title: "Caisse",
           icon: <PaymentIcon fontSize="small" />,
           to: "/dashboard/payment/store",
-          role: ["admin_club", "secretaire"],
+          role: ["admin", "secretaire"],
         },
         {
           title: "Factures",
           icon: <ReceiptIcon fontSize="small" />,
           to: "/dashboard/payment/factures",
-          role: ["admin_club", "secretaire", "karateka", "parent"],
+          role: ["admin", "secretaire", "karateka", "parent"],
         },
       ],
     },
@@ -239,7 +273,7 @@ export default function DashboardLayout() {
           icon: <FactCheckIcon />,
           title: "examens",
           to: "/dashboard/examen",
-          role: ["admin_club", "instructeur"],
+          role: ["admin", "instructeur"],
         },
       ],
     },
@@ -250,7 +284,7 @@ export default function DashboardLayout() {
           icon: <EmojiEventsIcon />,
           title: "competitions",
           to: "/dashboard/competition",
-          role: ["admin_club", "instructeur"],
+          role: ["admin", "instructeur"],
         },
       ],
     },
@@ -261,7 +295,7 @@ export default function DashboardLayout() {
           title: "Catalogue",
           icon: <ShoppingCartIcon fontSize="small" />,
           to: "/dashboard/catalogue",
-          role: ["admin_club", "secretaire"],
+          role: ["admin", "secretaire"],
         },
         {
           title: "FAQ",
@@ -269,7 +303,7 @@ export default function DashboardLayout() {
           to: "/faq",
           role: [
             "super_admin",
-            "admin_club",
+            "admin",
             "instructeur",
             "parent",
             "secretaire",

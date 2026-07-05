@@ -48,10 +48,7 @@ function ExamenDetails() {
       try {
         if (!isRefresh) setLoading(true);
         // On récupère les détails complets de la examen
-        const response = await Instance.get(
-          `/api/examens/${examenId}/show?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        );
-        console.log(response);
+        const response = await Instance.get(`/api/examens/${examenId}/show`);
         setExamen(response.data.examen);
       } catch (error) {
         console.error("Erreur chargement examen", error);
@@ -62,7 +59,7 @@ function ExamenDetails() {
         setLoading(false);
       }
     },
-    [examenId, activeId, activeType],
+    [examenId],
   );
   useEffect(() => {
     fetchExamenData();

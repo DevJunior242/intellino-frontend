@@ -680,118 +680,6 @@ const StepKataNbJuges = ({
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🥊 STEP KUMITE — FORMAT TOURNOI
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const StepKumiteFormat = ({
-  value,
-  onChange,
-  kumiteFormats,
-  error,
-  onRetry,
-}) => {
-  if (error)
-    return (
-      <ErrorBlock
-        message="Impossible de charger les formats"
-        onRetry={onRetry}
-      />
-    );
-  const icons = { poules: "🔄", eliminatoire: "⚡", poules_eliminatoire: "🏆" };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {kumiteFormats.map((format, i) => {
-        const selected = value?.id === format.id;
-        return (
-          <motion.div
-            key={format.id}
-            {...fadeUp(i * 0.07)}
-            onClick={() => onChange(format)}
-            whileHover={{ x: 3 }}
-            whileTap={{ scale: 0.99 }}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 14,
-              background: selected ? C.accentDim : C.surfaceHigh,
-              border: `1.5px solid ${selected ? C.accent : C.border}`,
-              borderRadius: 14,
-              padding: "16px 18px",
-              cursor: "pointer",
-              transition: "all 0.18s",
-            }}
-          >
-            <div
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 10,
-                background: selected ? C.accentDim : C.border,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 20,
-                flexShrink: 0,
-              }}
-            >
-              {icons[format.code] ?? "🏅"}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: selected ? C.accentLight : C.text,
-                  marginBottom: 4,
-                }}
-              >
-                {format.libelle}
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: C.textMuted,
-                  margin: 0,
-                  lineHeight: 1.6,
-                }}
-              >
-                {format.description}
-              </p>
-            </div>
-            <motion.div
-              animate={{
-                scale: selected ? 1 : 0.7,
-                opacity: selected ? 1 : 0.3,
-              }}
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: "50%",
-                flexShrink: 0,
-                border: `2px solid ${selected ? C.accent : C.border}`,
-                background: selected ? C.accent : "transparent",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {selected && (
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "#fff",
-                  }}
-                />
-              )}
-            </motion.div>
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ⏱️ STEP KUMITE — DURÉE COMBAT
@@ -1078,14 +966,7 @@ const RecapKata = ({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ✅ RECAP KUMITE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const RecapKumite = ({
-  competition,
-  plateau,
-  plateauNom,
-  kumiteFormat,
-  duration,
-  mode,
-}) => {
+const RecapKumite = ({ competition, plateau, plateauNom, duration, mode }) => {
   const niv = NIVEAU_COLORS[competition?.niveau?.nom] ?? { color: C.textMuted };
   return (
     <motion.div
@@ -1143,12 +1024,6 @@ const RecapKumite = ({
         <Divider />
         <Row label="Discipline">
           <Tag color={C.danger}>Kumite</Tag>
-        </Row>
-        <Divider />
-        <Row label="Format tournoi">
-          <span style={{ color: C.accentLight, fontWeight: 500 }}>
-            {kumiteFormat?.libelle}
-          </span>
         </Row>
         <Divider />
         <Row label="Durée combat">
@@ -1275,20 +1150,17 @@ export default function ConfigNotationPage() {
   const [rotation, setRotation] = useState(1);
 
   // ── États KUMITE ───────────────────────────────────────────────────────────
-  const [kumiteFormat, setKumiteFormat] = useState(null);
   const [duration, setDuration] = useState(null);
 
   // ── Données API ────────────────────────────────────────────────────────────
   const [competitions, setCompetitions] = useState([]);
   const [modes, setModes] = useState([]);
   const [nbJuges, setNbJuges] = useState([]);
-  const [kumiteFormats, setKumiteFormats] = useState([]);
   const [loadingInit, setLoadingInit] = useState(false);
   const [errorInit, setErrorInit] = useState("");
   const [errorComps, setErrorComps] = useState("");
   const [errorModes, setErrorModes] = useState("");
   const [errorNbJuges, setErrorNbJuges] = useState("");
-  const [errorKumiteFormats, setErrorKumiteFormats] = useState("");
 
   // ── Discipline détectée ────────────────────────────────────────────────────
   const estKumite = competition?.discipline?.nom?.toLowerCase() === "kumite";
@@ -1300,7 +1172,7 @@ export default function ConfigNotationPage() {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // STEPS DYNAMIQUES
   // Kata  : Épreuve(1) → Plateau(2) → Nb juges(3) → Mode(4) → Validation(5)
-  // Kumite: Épreuve(1) → Plateau(2) → Format(3) → Durée(4) → Mode(5) → Validation(6)
+  // Kumite: Épreuve(1) → Plateau(2) → Durée(3) → Mode(4) → Validation(5)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const STEPS_KATA = [
     { num: 1, label: "Épreuve" },
@@ -1312,14 +1184,13 @@ export default function ConfigNotationPage() {
   const STEPS_KUMITE = [
     { num: 1, label: "Épreuve" },
     { num: 2, label: "Plateau" },
-    { num: 3, label: "Format" },
-    { num: 4, label: "Durée" },
-    { num: 5, label: "Mode" },
-    { num: 6, label: "Validation" },
+    { num: 3, label: "Durée" },
+    { num: 4, label: "Mode" },
+    { num: 5, label: "Validation" },
   ];
 
   const STEPS = estKumite ? STEPS_KUMITE : STEPS_KATA;
-  const dernierStep = estKumite ? 6 : 5;
+  const dernierStep = 5;
 
   const LABELS_KATA = [
     "Choisir l'épreuve",
@@ -1331,7 +1202,6 @@ export default function ConfigNotationPage() {
   const LABELS_KUMITE = [
     "Choisir l'épreuve",
     "Choisir le plateau (tatami)",
-    "Format du tournoi",
     "Durée du combat",
     "Mode de saisie",
     "Confirmer la configuration",
@@ -1345,21 +1215,17 @@ export default function ConfigNotationPage() {
     setErrorComps("");
     setErrorModes("");
     setErrorNbJuges("");
-    setErrorKumiteFormats("");
 
-    const [resComps, resModes, resNbJuges, resKumiteFormats] =
-      await Promise.allSettled([
-        Instance.get(
-          `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-        ),
-        Instance.get("/api/modes-saisie/modes-saisie"),
-        Instance.get("/api/nb-juges/nb-juges"),
-        Instance.get("/api/kumite/kumite-formats"),
-      ]);
+    const [resComps, resModes, resNbJuges] = await Promise.allSettled([
+      Instance.get(
+        `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+      ),
+      Instance.get("/api/modes-saisie/modes-saisie"),
+      Instance.get("/api/nb-juges/nb-juges"),
+    ]);
     console.log(resComps);
     console.log(resModes);
     console.log(resNbJuges);
-    console.log(resKumiteFormats);
 
     if (resComps.status === "fulfilled")
       setCompetitions(resComps.value.data.data || []);
@@ -1383,16 +1249,6 @@ export default function ConfigNotationPage() {
       setErrorNbJuges(
         resNbJuges.reason?.response?.data?.message ??
           "Impossible de charger les nb juges.",
-      );
-
-    if (resKumiteFormats.status === "fulfilled")
-      setKumiteFormats(
-        resKumiteFormats.value.data.data || resKumiteFormats.value.data || [],
-      );
-    else
-      setErrorKumiteFormats(
-        resKumiteFormats.reason?.response?.data?.message ??
-          "Impossible de charger les formats.",
       );
 
     if (resComps.status === "rejected" && resModes.status === "rejected")
@@ -1451,16 +1307,6 @@ export default function ConfigNotationPage() {
     }
   }, []);
 
-  const retryKumiteFormats = useCallback(async () => {
-    setErrorKumiteFormats("");
-    try {
-      const res = await Instance.get("/api/kumite/kumite-formats");
-      setKumiteFormats(res.data.data || res.data || []);
-    } catch (err) {
-      setErrorKumiteFormats(err.response?.data?.message ?? "Erreur réseau.");
-    }
-  }, []);
-
   // ── Reset complet ──────────────────────────────────────────────────────────
   const handleReset = () => {
     setDone(false);
@@ -1469,7 +1315,6 @@ export default function ConfigNotationPage() {
     setMode(null);
     setNbJuge(null);
     setRotation(1);
-    setKumiteFormat(null);
     setDuration(null);
     setPlateauId(null);
     setPlateauNom("");
@@ -1485,7 +1330,6 @@ export default function ConfigNotationPage() {
     setMode(null);
     setNbJuge(null);
     setRotation(1);
-    setKumiteFormat(null);
     setDuration(null);
     setPlateauId(null);
     setPlateauNom("");
@@ -1504,10 +1348,9 @@ export default function ConfigNotationPage() {
       if (step === 5) return true;
     }
     if (estKumite) {
-      if (step === 3) return !!kumiteFormat;
-      if (step === 4) return !!duration;
-      if (step === 5) return !!mode;
-      if (step === 6) return true;
+      if (step === 3) return !!duration;
+      if (step === 4) return !!mode;
+      if (step === 5) return true;
     }
     return false;
   };
@@ -1532,7 +1375,9 @@ export default function ConfigNotationPage() {
           nb_juges_option_id: nbJuge.id,
           nb_rotation: rotation,
         }),
-        ...(estKumite && { kumite_format_id: kumiteFormat.id, duration }),
+        ...(estKumite && {
+          duration,
+        }),
       };
       console.log(dataSend);
       await Instance.post("/api/config-notation/config-notation", dataSend);
@@ -1841,24 +1686,13 @@ export default function ConfigNotationPage() {
                   />
                 )}
 
-                {/* KUMITE — Step 3 : format tournoi */}
+                {/* KUMITE — Step 3 : durée combat */}
                 {estKumite && step === 3 && (
-                  <StepKumiteFormat
-                    value={kumiteFormat}
-                    onChange={setKumiteFormat}
-                    kumiteFormats={kumiteFormats}
-                    error={errorKumiteFormats}
-                    onRetry={retryKumiteFormats}
-                  />
-                )}
-
-                {/* KUMITE — Step 4 : durée combat */}
-                {estKumite && step === 4 && (
                   <StepKumiteDuration value={duration} onChange={setDuration} />
                 )}
 
-                {/* KUMITE — Step 5 : mode saisie */}
-                {estKumite && step === 5 && (
+                {/* KUMITE — Step 4 : mode saisie */}
+                {estKumite && step === 4 && (
                   <StepModeSaisie
                     value={mode}
                     onChange={setMode}
@@ -1868,13 +1702,12 @@ export default function ConfigNotationPage() {
                   />
                 )}
 
-                {/* KUMITE — Step 6 : recap */}
-                {estKumite && step === 6 && (
+                {/* KUMITE — Step 5 : recap */}
+                {estKumite && step === 5 && (
                   <RecapKumite
                     competition={competition}
                     plateau={plateauSelectionne}
                     plateauNom={plateauNom}
-                    kumiteFormat={kumiteFormat}
                     duration={duration}
                     mode={mode}
                   />

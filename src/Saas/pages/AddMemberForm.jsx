@@ -62,7 +62,6 @@ const AddMemberForm = ({ onRefresh }) => {
     };
     try {
       const res = await StoreClubMember(AllData);
-      console.log(res);
       if (res.success) {
         setSuccess(res.message);
         setSelectedRole(null);

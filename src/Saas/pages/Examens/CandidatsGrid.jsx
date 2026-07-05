@@ -11,19 +11,21 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 function CandidatsGrid({ examen }) {
   console.log("examen", examen);
   const [error, setError] = useState({});
   const [loading, setLoading] = useState(true);
 
   const [candidats, setCandidats] = useState([]);
+  const [candidatError, setCanError] = useState("");
   const [selectCandidat, setSelectCandidat] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openModalCandidat, setOpenModalCandidat] = useState(false);
 
   const { activeRole, activeId, activeType, auth } = UseAuth();
   const isSuperAdmin = auth?.roleSuperAdmin?.includes("super_admin");
-  const hasAccessRoles = ["super_admin", "admin_club"];
+  const hasAccessRoles = ["super_admin", "admin"];
   const allowAccess = isSuperAdmin || hasAccessRoles.includes(activeRole);
 
   const handleOpenModal = (candidat) => {
@@ -42,11 +44,9 @@ function CandidatsGrid({ examen }) {
 
   const fetchExamen = useCallback(async () => {
     setLoading(true);
+    setCanError("");
     try {
-      const res = await Instance.get(
-        `/api/examens/${examen?.id}?organisateur_id=${activeId}`,
-      );
-      console.log(res);
+      const res = await Instance.get(`/api/examens/${examen?.id}`);
       const ArrayCAndidat = res?.data?.candidats || [];
       const process = ArrayCAndidat.map((candidat) => ({
         ...candidat,
@@ -57,27 +57,32 @@ function CandidatsGrid({ examen }) {
       }));
 
       setCandidats(process);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setCanError("erreur de chargement");
     } finally {
       setLoading(false);
     }
-  }, [examen?.id, activeId]);
+  }, [examen?.id]);
   useEffect(() => {
     fetchExamen();
   }, [fetchExamen]);
 
   if (!candidats) return null;
-
+  if (candidatError) {
+    return (
+      <ErrorBlock
+        message="Impossible de charger les examens"
+        onRetry={fetchExamen}
+      />
+    );
+  }
   //remove
   const handleRemove = async (candidats) => {
-    console.log("candidats", candidats);
     if (!window.confirm("Supprimer le candidat ?")) return;
     try {
       const res = await Instance.delete(
-        `/api/candidats/remove/${examen?.id}/${candidats}?organisateur_id=${activeId}`,
+        `/api/candidats/remove/${examen?.id}/${candidats}`,
       );
-      console.log(res);
       if (res.data.success) {
         alert("Candidat supprimé avec succès");
         setError({});

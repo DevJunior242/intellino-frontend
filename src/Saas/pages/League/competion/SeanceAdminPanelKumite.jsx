@@ -12,26 +12,151 @@ import {
   CircularProgress,
   Stack,
   Fade,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import TimerIcon from "@mui/icons-material/Timer";
 import { Instance } from "../../../../Api/Axios";
 import ArbitresKumitePanel from "./ArbitresKumitePanel";
+import { useCallback, useEffect, useRef, useState } from "react";
+import echo from "../../../../echo";
+import CombatEnCours from "./CombatEnCours";
+import ProchainCombat from "./ProchainCombat";
+import LoadingKumite from "./LoadingKumite";
+import VainqueurOverlay from "./VainqueurOverlay";
+import { motion, AnimatePresence } from "framer-motion";
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
+const slideUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 const SeanceAdminPanelKumite = ({
   config,
   data,
   handleValider,
   handleDesignerSuperviseur,
+  handleRetirerSuperviseur,
   onRefresh,
+  onValidated,
   success,
   errors,
   submitId,
 }) => {
   const isValidee = config?.est_valide;
-  const currentCombat = data?.current_combat;
-  const athleteAka = currentCombat?.athlete_aka;
-  const athleteAo = currentCombat?.athlete_ao;
-  const { arbitres, superviseur } = data;
+
+  const { arbitres } = data;
+  const [formatModalOpen, setFormatModalOpen] = useState(false);
+  const [availableFormats, setAvailableFormats] = useState([]);
+  const [selectedFormat, setSelectedFormat] = useState(null);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [localError, setLocalError] = useState(null);
+  const [combat, setCombat] = useState(null);
+  const [nextCombat, setNextCombat] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const isInitialLoadRef = useRef(true);
+  const fetchData = useCallback(
+    async (showLoading = false) => {
+      if (!config?.id) return;
+      if (showLoading) setLoading(true);
+      try {
+        if (isInitialLoadRef.current) setLoading(true);
+        const [combatRes, nextRes] = await Promise.all([
+          Instance.get(`/api/public/configs/${config?.id}/combat-en-cours`),
+          Instance.get(`/api/public/configs/${config?.id}/next-combat`),
+        ]);
+        setCombat(combatRes.data?.combat || null);
+        setNextCombat(nextRes.data?.combat || null);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        isInitialLoadRef.current = false;
+      }
+    },
+    [config?.id],
+  );
+
+  useEffect(() => {
+    fetchData(true);
+  }, [config?.id, fetchData]);
+
+  const handleLocalValider = async (id) => {
+    if (!id) return;
+    setLocalSubmitting(true);
+    try {
+      await Instance.post(`/api/seances/configs/${id}/valider`);
+      // clear any previous local errors
+      setLocalError(null);
+      onValidated?.();
+      onRefresh?.();
+    } catch (err) {
+      const data = err.response?.data;
+      if (data?.error === "missing_kumite_format") {
+        setAvailableFormats(data.formats || []);
+        setFormatModalOpen(true);
+      } else {
+        const msg =
+          data?.problemes || data?.message || "Une erreur est survenue.";
+        setLocalError(msg);
+      }
+    } finally {
+      setLocalSubmitting(false);
+    }
+  };
+
+  const handleConfirmFormat = async () => {
+    if (!selectedFormat || !config?.id) return;
+    setLocalSubmitting(true);
+    try {
+      await Instance.post(`/api/seances/configs/${config.id}/valider`, {
+        kumite_format_id: selectedFormat,
+      });
+      setFormatModalOpen(false);
+      setSelectedFormat(null);
+      setLocalError(null);
+      onValidated?.();
+      onRefresh?.();
+    } catch (err) {
+      const data = err.response?.data;
+      const msg =
+        data?.problemes || data?.message || "Erreur lors de la validation";
+      setLocalError(msg);
+    } finally {
+      setLocalSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!config?.id) return;
+    const channel = echo.channel(`tatami.${config?.id}`);
+    const handler = () => fetchData();
+    channel.listen(".tatami.updated", handler);
+    return () => channel.stopListening(".tatami.updated", handler);
+  }, [config?.id, fetchData]);
+
+  // Listen for global event when validation is triggered from parent
+  useEffect(() => {
+    const onMissing = (e) => {
+      const { formats, configId } = e.detail || {};
+      if (configId === config?.id) {
+        setAvailableFormats(formats || []);
+        setFormatModalOpen(true);
+      }
+    };
+    window.addEventListener("missingKumiteFormat", onMissing);
+    return () => window.removeEventListener("missingKumiteFormat", onMissing);
+  }, [config?.id]);
 
   return (
     <Box
@@ -45,6 +170,7 @@ const SeanceAdminPanelKumite = ({
         "&::-webkit-scrollbar-thumb": { bgcolor: "#1e2433", borderRadius: 2 },
       }}
     >
+      {loading && <LoadingKumite />}
       {/* Messages */}
       {success[config.id] && (
         <Fade in>
@@ -63,6 +189,23 @@ const SeanceAdminPanelKumite = ({
             ))
           ) : (
             <p style={{ margin: 0 }}>{errors[config.id]}</p>
+          )}
+        </Alert>
+      )}
+      {localError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2, borderRadius: 2 }}
+          onClose={() => setLocalError(null)}
+        >
+          {Array.isArray(localError) ? (
+            localError.map((err, i) => (
+              <p key={i} style={{ margin: 0 }}>
+                {err}
+              </p>
+            ))
+          ) : (
+            <p style={{ margin: 0 }}>{localError}</p>
           )}
         </Alert>
       )}
@@ -92,11 +235,11 @@ const SeanceAdminPanelKumite = ({
           <Button
             variant="contained"
             color="primary"
-            disabled={submitId === config.id}
-            onClick={() => handleValider(config?.id)}
+            disabled={submitId === config.id || localSubmitting}
+            onClick={() => handleLocalValider(config?.id)}
             sx={{ borderRadius: 3, fontWeight: "bold", flexShrink: 0 }}
           >
-            {submitId === config.id ? (
+            {submitId === config.id || localSubmitting ? (
               <Stack direction="row" alignItems="center" gap={1}>
                 <CircularProgress size={16} color="inherit" />
                 <span>Validation...</span>
@@ -108,265 +251,65 @@ const SeanceAdminPanelKumite = ({
         )}
       </Stack>
 
-      <Grid container spacing={2}>
-        {/* Zone combat */}
-        <Grid item xs={12} md={8}>
-          {isValidee && currentCombat ? (
-            <Fade in timeout={400}>
-              <Card
-                sx={{
-                  borderRadius: 4,
-                  bgcolor: "#0e1118",
-                  border: "1px solid #1e2433",
-                }}
-                elevation={0}
-              >
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                  {/* Timer + étape */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    mb={3}
-                  >
-                    <Chip
-                      icon={<TimerIcon sx={{ fontSize: 16 }} />}
-                      label="03:00"
-                      color="secondary"
-                      variant="outlined"
-                      sx={{ fontWeight: 700 }}
-                    />
-                    <Typography variant="body2" sx={{ color: "#8b90a0" }}>
-                      {currentCombat.etape}
-                    </Typography>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: "#22c55e",
-                        animation: "pulse 1.5s ease-in-out infinite",
-                        "@keyframes pulse": {
-                          "0%,100%": { opacity: 1 },
-                          "50%": { opacity: 0.3 },
-                        },
-                      }}
-                    />
-                  </Stack>
+      {combat ? (
+        <CombatEnCours combat={combat} canControl={false} />
+      ) : (
+        !loading && (
+          <motion.div
+            key="noCombat"
+            initial="hidden"
+            animate="visible"
+            variants={fadeIn}
+          >
+            <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
+              Aucun combat en cours.
+            </Alert>
+          </motion.div>
+        )
+      )}
+      <VainqueurOverlay combat={combat} onClose={fetchData} />
 
-                  {/* Athlètes */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-around"
-                    alignItems="center"
-                    gap={2}
-                  >
-                    {/* AKA */}
-                    <Box textAlign="center" sx={{ flex: 1 }}>
-                      <Avatar
-                        sx={{
-                          width: { xs: 56, sm: 80 },
-                          height: { xs: 56, sm: 80 },
-                          bgcolor: "#dc2626",
-                          mb: 1,
-                          mx: "auto",
-                          border: "3px solid #ef4444",
-                          fontSize: { xs: "1.2rem", sm: "1.8rem" },
-                        }}
-                      >
-                        {athleteAka?.nom?.charAt(0)}
-                      </Avatar>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="bold"
-                        color="white"
-                        noWrap
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.9rem" } }}
-                      >
-                        {athleteAka?.nom}
-                      </Typography>
-                      <Chip
-                        label="AKA"
-                        size="small"
-                        sx={{
-                          bgcolor: "#dc262620",
-                          color: "#ef4444",
-                          fontWeight: 700,
-                          height: 18,
-                          fontSize: "0.6rem",
-                          mb: 1,
-                        }}
-                      />
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          color: "#ef4444",
-                          fontWeight: 900,
-                          lineHeight: 1,
-                          fontSize: { xs: "2rem", sm: "3rem" },
-                        }}
-                      >
-                        {currentCombat.score_aka || 0}
-                      </Typography>
-                      <Box mt={1}>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#636b88", fontSize: "0.6rem" }}
-                        >
-                          Pénalités C1/C2
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={20}
-                          color="error"
-                          sx={{
-                            height: 6,
-                            borderRadius: 5,
-                            mt: 0.5,
-                            bgcolor: "#1e2433",
-                          }}
-                        />
-                      </Box>
-                    </Box>
+      {/* Prochain combat */}
+      <ProchainCombat nextCombat={nextCombat} />
 
-                    {/* VS */}
-                    <Box sx={{ flexShrink: 0 }}>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: "#636b88",
-                          fontWeight: 900,
-                          fontSize: { xs: "1rem", sm: "1.5rem" },
-                        }}
-                      >
-                        VS
-                      </Typography>
-                    </Box>
+      {/* Panel arbitres */}
 
-                    {/* AO */}
-                    <Box textAlign="center" sx={{ flex: 1 }}>
-                      <Avatar
-                        sx={{
-                          width: { xs: 56, sm: 80 },
-                          height: { xs: 56, sm: 80 },
-                          bgcolor: "#1d4ed8",
-                          mb: 1,
-                          mx: "auto",
-                          border: "3px solid #3b82f6",
-                          fontSize: { xs: "1.2rem", sm: "1.8rem" },
-                        }}
-                      >
-                        {athleteAo?.nom?.charAt(0)}
-                      </Avatar>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="bold"
-                        color="white"
-                        noWrap
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.9rem" } }}
-                      >
-                        {athleteAo?.nom}
-                      </Typography>
-                      <Chip
-                        label="AO"
-                        size="small"
-                        sx={{
-                          bgcolor: "#1d4ed820",
-                          color: "#3b82f6",
-                          fontWeight: 700,
-                          height: 18,
-                          fontSize: "0.6rem",
-                          mb: 1,
-                        }}
-                      />
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          color: "#3b82f6",
-                          fontWeight: 900,
-                          lineHeight: 1,
-                          fontSize: { xs: "2rem", sm: "3rem" },
-                        }}
-                      >
-                        {currentCombat.score_ao || 0}
-                      </Typography>
-                      <Box mt={1}>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#636b88", fontSize: "0.6rem" }}
-                        >
-                          Pénalités C1/C2
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={40}
-                          color="primary"
-                          sx={{
-                            height: 6,
-                            borderRadius: 5,
-                            mt: 0.5,
-                            bgcolor: "#1e2433",
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Fade>
-          ) : (
-            <Card
-              elevation={0}
-              sx={{
-                p: { xs: 3, sm: 5 },
-                textAlign: "center",
-                border: "2px dashed #1e2433",
-                borderRadius: 4,
-                bgcolor: "#0e1118",
-              }}
-            >
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  bgcolor: "#141720",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mx: "auto",
-                  mb: 2,
-                }}
-              >
-                <TimerIcon sx={{ color: "#636b88" }} />
-              </Box>
-              <Typography variant="body1" sx={{ color: "#636b88" }}>
-                {!isValidee
-                  ? "Configuration non validée"
-                  : "En attente du premier combat..."}
-              </Typography>
-              {!isValidee && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#3b82f6", display: "block", mt: 1 }}
-                >
-                  Validez la configuration ci-dessus pour commencer
-                </Typography>
-              )}
-            </Card>
-          )}
-        </Grid>
+      <ArbitresKumitePanel
+        config={config}
+        arbitres={arbitres}
+        handleDesignerSuperviseur={handleDesignerSuperviseur}
+        handleRetirerSuperviseur={handleRetirerSuperviseur}
+        onRefresh={onRefresh}
+      />
 
-        {/* Panel arbitres */}
-        <Grid item xs={12} md={4}>
-          <ArbitresKumitePanel
-            config={config}
-            arbitres={arbitres}
-            handleDesignerSuperviseur={handleDesignerSuperviseur}
-            onRefresh={onRefresh}
-          />
-        </Grid>
-      </Grid>
+      <Dialog open={formatModalOpen} onClose={() => setFormatModalOpen(false)}>
+        <DialogTitle>Choisir le format kumite</DialogTitle>
+        <DialogContent>
+          <RadioGroup
+            value={selectedFormat}
+            onChange={(e) => setSelectedFormat(e.target.value)}
+          >
+            {availableFormats.map((f) => (
+              <FormControlLabel
+                key={f.id}
+                value={f.id}
+                control={<Radio />}
+                label={f.code}
+              />
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFormatModalOpen(false)}>Annuler</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedFormat || localSubmitting}
+            onClick={handleConfirmFormat}
+          >
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -59,7 +59,7 @@ const DISC_COLOR = { kumite: "error", kata: "success" };
 
 // ─── Carte épreuve ────────────────────────────────────────────────────────────
 const EpreuveCard = ({ epreuve, selected, onSelect }) => {
-  const discNom = epreuve.discipline?.nom?.toLowerCase() ?? "";
+  const discNom = epreuve.sub_discipline?.nom?.toLowerCase() ?? "";
   const discColor = DISC_COLOR[discNom] ?? "default";
 
   return (
@@ -107,7 +107,7 @@ const EpreuveCard = ({ epreuve, selected, onSelect }) => {
 
         {/* Discipline */}
         <Chip
-          label={epreuve.discipline?.nom ?? "—"}
+          label={epreuve.sub_discipline?.nom ?? "—"}
           size="small"
           color={discColor}
           sx={{ mb: 1.5 }}
@@ -218,7 +218,9 @@ const EvenementCard = ({ evenement, selectedEpreuveId, onSelectEpreuve }) => {
         {/* Disciplines disponibles */}
         <Stack direction="row" gap={0.5} flexWrap="wrap">
           {[
-            ...new Set(epreuves.map((e) => e.discipline?.nom).filter(Boolean)),
+            ...new Set(
+              epreuves.map((e) => e.sub_discipline?.nom).filter(Boolean),
+            ),
           ].map((disc) => (
             <Chip
               key={disc}
@@ -277,8 +279,6 @@ const EvenementCard = ({ evenement, selectedEpreuveId, onSelectEpreuve }) => {
 // PAGE PRINCIPALE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const InscriptionPage = () => {
-  const { activeId, activeType } = UseAuth();
-
   // ── données ─────────────────────────────────────────────────────────────────
   const [evenements, setEvenements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -298,22 +298,18 @@ const InscriptionPage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await Instance.get(
-        `/api/evenements/ouverts?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      );
+      const res = await Instance.get(`/api/evenements/ouverts`);
       setEvenements(res.data.evenements || []);
     } catch (err) {
-      setError("Impossible de charger les événements.");
-      console.error(err);
+      setError("Impossible de charger les événements.", err);
     } finally {
       setLoading(false);
     }
-  }, [activeId, activeType]);
+  }, []);
 
   useEffect(() => {
-    if (!activeId) return;
     fetchEvenements();
-  }, [fetchEvenements, activeId]);
+  }, [fetchEvenements]);
 
   // ── fetch inscriptions d'une épreuve ─────────────────────────────────────────
   const fetchInscriptions = useCallback(async () => {
@@ -321,9 +317,8 @@ const InscriptionPage = () => {
     setTableLoading(true);
     try {
       const res = await Instance.get(
-        `/api/inscriptions/epreuve/${selectedEpreuve.id}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        `/api/inscriptions/epreuve/${selectedEpreuve.id}`,
       );
-      console.log("inscrit", res);
       setInscriptions(res.data.inscriptions || []);
       setEpreuve(res.data.epreuve);
     } catch (err) {
@@ -331,7 +326,7 @@ const InscriptionPage = () => {
     } finally {
       setTableLoading(false);
     }
-  }, [selectedEpreuve, activeId]);
+  }, [selectedEpreuve]);
 
   useEffect(() => {
     fetchInscriptions();
@@ -452,7 +447,8 @@ const InscriptionPage = () => {
             <Avatar
               sx={{
                 bgcolor:
-                  selectedEpreuve.discipline?.nom?.toLowerCase() === "kumite"
+                  selectedEpreuve.sub_discipline?.nom?.toLowerCase() ===
+                  "kumite"
                     ? "error.main"
                     : "success.main",
                 width: 48,
@@ -467,11 +463,11 @@ const InscriptionPage = () => {
               </Typography>
               <Stack direction="row" gap={1} m={1}>
                 <Chip
-                  label={selectedEpreuve.discipline?.nom ?? "—"}
+                  label={selectedEpreuve.sub_discipline?.nom ?? "—"}
                   size="small"
                   color={
                     DISC_COLOR[
-                      selectedEpreuve.discipline?.nom?.toLowerCase()
+                      selectedEpreuve.sub_discipline?.nom?.toLowerCase()
                     ] ?? "default"
                   }
                 />
@@ -498,7 +494,7 @@ const InscriptionPage = () => {
 
           <InscriptionForm
             competitionId={selectedEpreuve.id}
-            discipline={selectedEpreuve.discipline?.nom}
+            subdiscipline={selectedEpreuve.sub_discipline?.nom}
             onSuccess={fetchInscriptions}
           />
 
@@ -547,7 +543,7 @@ export default InscriptionPage;
 //     <Avatar
 //       sx={{
 //         bgcolor:
-//           selectedEpreuve.discipline?.nom?.toLowerCase() === "kumite"
+//           selectedEpreuve.sub_discipline?.nom?.toLowerCase() === "kumite"
 //             ? "error.main"
 //             : "success.main",
 //         width: 48,
@@ -562,10 +558,10 @@ export default InscriptionPage;
 //       </Typography>
 //       <Stack direction="row" gap={1} mt={0.5}>
 //         <Chip
-//           label={selectedEpreuve.discipline?.nom ?? "—"}
+//           label={selectedEpreuve.sub_discipline?.nom ?? "—"}
 //           size="small"
 //           color={
-//             DISC_COLOR[selectedEpreuve.discipline?.nom?.toLowerCase()] ??
+//             DISC_COLOR[selectedEpreuve.sub_discipline?.nom?.toLowerCase()] ??
 //             "default"
 //           }
 //         />
