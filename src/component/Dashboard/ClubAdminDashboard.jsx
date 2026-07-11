@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { green, blue, red, purple } from "@mui/material/colors";
+import { green, blue, red, purple, orange, teal, indigo } from "@mui/material/colors";
 import {
   Groups,
   School,
@@ -21,6 +21,10 @@ import {
   MoneyOff,
   TrendingUp,
   AccountBalanceWallet,
+  EventBusy,
+  PersonAddAlt,
+  EventAvailable,
+  MilitaryTech,
 } from "@mui/icons-material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -45,6 +49,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import ErrorGlobal from "../ErrorGlobal";
 import Message from "../../Saas/pages/Message";
 import PaymentDeclarationDialog from "../../Saas/pages/Paiement/Paymentdeclarationdialog";
+import ClubAlerts from "./ClubAlerts";
 function ClubAdminDashboard() {
   const [stats, setStats] = useState({
     total_students: 0,
@@ -69,6 +74,26 @@ function ClubAdminDashboard() {
     message: "",
     severity: "success",
   });
+
+  const [alerts, setAlerts] = useState([]);
+
+  const fetchAlerts = useCallback(async () => {
+    if (!activeId) return;
+    try {
+      const response = await Instance.get("/api/dashboard/club/alert");
+      setAlerts(response.data.alerts || []);
+    } catch {
+      // Silencieux : les cartes affichent simplement 0 si les alertes sont indisponibles
+    }
+  }, [activeId]);
+
+  useEffect(() => {
+    if (activeId) {
+      fetchAlerts();
+    }
+  }, [activeId, fetchAlerts]);
+
+  const getAlert = (type) => alerts.find((a) => a.type === type) || {};
 
   const fetchAffiliationStatus = useCallback(async () => {
     if (!activeId) return;
@@ -349,7 +374,58 @@ function ClubAdminDashboard() {
             />
           </Grid>
         </Grid>
+
+        <Grid container spacing={3} justifyContent="center" sx={{ mt: 0.5 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Abonnements à renouveler"
+              value={getAlert("abonnements_expirants").count || 0}
+              icon={<EventBusy />}
+              color={orange}
+              subtitle="Échéance sous 15 jours"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Effectif (mois)"
+              value={
+                (getAlert("evolution_effectif").nouveaux || 0) -
+                (getAlert("evolution_effectif").decrocheurs || 0)
+              }
+              icon={<PersonAddAlt />}
+              color={teal}
+              subtitle={`${getAlert("evolution_effectif").nouveaux || 0} nouveaux · ${getAlert("evolution_effectif").decrocheurs || 0} partis`}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Taux de présence"
+              value={`${getAlert("presence_risque").rate ?? 0}%`}
+              icon={<EventAvailable />}
+              color={blue}
+              subtitle={`${getAlert("presence_risque").count || 0} élève(s) à risque (30j)`}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Prochain examen"
+              value={getAlert("examen_grade").count || 0}
+              icon={<MilitaryTech />}
+              color={indigo}
+              subtitle={
+                getAlert("examen_grade").date
+                  ? `Candidats · ${new Date(getAlert("examen_grade").date).toLocaleDateString()}`
+                  : "Aucun examen programmé"
+              }
+            />
+          </Grid>
+        </Grid>
       </motion.div>
+
+      <ClubAlerts alerts={alerts} />
 
       <Grid container spacing={3} sx={{ mt: 0.5 }}>
         <Grid item xs={12} md={6}>

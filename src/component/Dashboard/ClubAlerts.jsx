@@ -1,11 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Box, Paper, Typography, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { Instance } from "../../Api/Axios";
-import { UseAuth } from "../../Api/AuthContext";
-import ErrorBlock from "../../Saas/pages/ErrorBlock";
-import ConfigSkeleton from "../../Saas/pages/ConfigSkeleton";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -53,13 +49,13 @@ function AlertCard({ alert, index }) {
             >
               {alert.title}
             </Typography>
-            {alert.clubs?.length > 0 && (
+            {alert.students?.length > 0 && (
               <Typography
                 variant="caption"
                 sx={{ color: "text.secondary", display: "block", mt: 0.5 }}
               >
-                Clubs : {alert.clubs.join(", ")}
-                {alert.count > alert.clubs.length && "…"}
+                Élèves : {alert.students.join(", ")}
+                {alert.count > alert.students.length && "…"}
               </Typography>
             )}
           </Box>
@@ -69,86 +65,59 @@ function AlertCard({ alert, index }) {
   );
 }
 
-// Mapping des couleurs par type d'alerte (dérivé des couleurs sémantiques du thème)
 function getAlertConfig(theme) {
   return {
-    licences_expirees: {
-      color: theme.palette.error.main,
-      bg: alpha(theme.palette.error.main, 0.08),
-    },
-    cotisations_impayees: {
+    abonnements_expirants: {
       color: theme.palette.warning.main,
       bg: alpha(theme.palette.warning.main, 0.08),
     },
-    examens: {
-      color: theme.palette.success.main,
-      bg: alpha(theme.palette.success.main, 0.08),
-    },
-    competition: {
+    evolution_effectif: {
       color: theme.palette.info.main,
       bg: alpha(theme.palette.info.main, 0.08),
+    },
+    presence_risque: {
+      color: theme.palette.error.main,
+      bg: alpha(theme.palette.error.main, 0.08),
+    },
+    examen_grade: {
+      color: theme.palette.success.main,
+      bg: alpha(theme.palette.success.main, 0.08),
     },
   };
 }
 
-// Titre lisible par type
 const ALERT_TITLES = {
-  licences_expirees: (count) =>
-    `${count} licence${count > 1 ? "s" : ""} expirée${count > 1 ? "s" : ""}`,
-  cotisations_impayees: (count) =>
-    `${count} cotisation${count > 1 ? "s" : ""} club${count > 1 ? "s" : ""} impayée${count > 1 ? "s" : ""}`,
-  examens: (count) =>
-    `Examen de grades — ${count} candidat${count > 1 ? "s" : ""} inscrit${count > 1 ? "s" : ""}`,
-  competition: (_) => "Championnat national — inscriptions ouvertes",
+  abonnements_expirants: (alert) =>
+    alert.count > 0
+      ? `${alert.count} abonnement${alert.count > 1 ? "s" : ""} à renouveler sous 15 jours`
+      : "Aucun abonnement à renouveler",
+  evolution_effectif: (alert) =>
+    `+${alert.nouveaux || 0} nouveau${(alert.nouveaux || 0) > 1 ? "x" : ""} · -${alert.decrocheurs || 0} parti${(alert.decrocheurs || 0) > 1 ? "s" : ""} ce mois`,
+  presence_risque: (alert) =>
+    alert.count > 0
+      ? `${alert.count} élève${alert.count > 1 ? "s" : ""} sans présence (30j) — taux global ${alert.rate ?? 0}%`
+      : `Taux de présence global : ${alert.rate ?? 0}%`,
+  examen_grade: (alert) =>
+    alert.count > 0
+      ? `Examen de grade — ${alert.count} candidat${alert.count > 1 ? "s" : ""} inscrit${alert.count > 1 ? "s" : ""}`
+      : "Aucun examen de grade programmé",
 };
-export default function Alerts() {
-  const theme = useTheme();
-  const { activeId } = UseAuth();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [alerts, setAlerts] = useState([]);
-  const fetchAlerts = async () => {
-    if (!activeId) return;
-    setLoading(true);
-    setError("");
-    try {
-      const response = await Instance.get(
-        `/api/dashboard/league/alert?organisateur_id=${activeId}`,
-      );
-      console.log(response);
-      setAlerts(response.data.alerts || []);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des alertes :", error);
-      setError("Erreur lors de la récupération des alertes");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
-  if (loading) {
-    return <ConfigSkeleton />;
-  }
-  if (error) return <ErrorBlock message={error} onRetry={fetchAlerts} />;
+export default function ClubAlerts({ alerts }) {
+  const theme = useTheme();
+
+  if (!alerts?.length) return null;
 
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={0}
-      initial="hidden"
-      animate="visible"
-      style={{ flex: 1.5 }}
-    >
+    <motion.div variants={fadeUp} custom={0} initial="hidden" animate="visible">
       <Paper
         sx={{
           p: 2.5,
+          mb: 3,
           bgcolor: "background.paper",
           borderRadius: 3,
           border: "1px solid",
           borderColor: "divider",
-          height: "100%",
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
@@ -161,15 +130,18 @@ export default function Alerts() {
             bg: alpha(theme.palette.text.secondary, 0.08),
           };
           const config = alertConfig[alert.type] || fallback;
+          const isNeutral =
+            alert.type === "evolution_effectif" ||
+            (alert.count === 0 && alert.type !== "presence_risque");
 
           return (
             <AlertCard
               key={alert.type}
               alert={{
                 ...alert,
-                color: alert.count > 0 ? config.color : fallback.color,
-                bg: alert.count > 0 ? config.bg : fallback.bg,
-                title: ALERT_TITLES[alert.type]?.(alert.count) ?? alert.type,
+                color: isNeutral ? config.color : (alert.count > 0 ? config.color : fallback.color),
+                bg: isNeutral ? config.bg : (alert.count > 0 ? config.bg : fallback.bg),
+                title: ALERT_TITLES[alert.type]?.(alert) ?? alert.type,
               }}
               index={index}
             />
