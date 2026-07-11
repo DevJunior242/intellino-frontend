@@ -299,7 +299,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await Instance.post("api/register", userData);
 
-        navigate("/login");
+        navigate("/login?registered=1");
         return { success: true, user: res?.data?.user };
       } catch (error) {
         console.log(error);

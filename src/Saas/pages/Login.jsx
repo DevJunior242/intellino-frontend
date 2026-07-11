@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -135,7 +135,22 @@ export default function Login() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const [submitting, setSubmitting] = useState(false);
+  const [searchParams] = useSearchParams();
   // const [captchaToken, setCaptchaToken] = useState(null);
+
+  useEffect(() => {
+    if (searchParams.get("registered") === "1") {
+      setSuccess(
+        "Compte créé avec succès ! Vérifie ta boîte mail pour confirmer ton adresse avant de profiter de toutes les fonctionnalités.",
+      );
+    } else if (searchParams.get("verified") === "1") {
+      setSuccess("Adresse email confirmée avec succès ! Tu peux te connecter.");
+    } else if (searchParams.get("verified") === "0") {
+      setError({
+        general: "Le lien de confirmation est invalide ou a expiré.",
+      });
+    }
+  }, [searchParams]);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
