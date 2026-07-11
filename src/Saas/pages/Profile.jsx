@@ -41,11 +41,14 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   // État local pour les champs du formulaire
+  const originalEmail = auth?.user?.email || "";
   const [formData, setFormData] = useState({
     fullname: auth?.user?.fullname || "",
     phone: auth?.user?.phone || "",
-    email: auth?.user?.email || "",
+    email: originalEmail,
+    current_password: "",
   });
+  const emailChanged = formData.email !== originalEmail;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,11 +61,11 @@ const Profile = () => {
     setSuccess("");
     try {
       const res = await Instance.put("/api/setting/profile", formData);
-      console.log(res);
       if (res.data.success) {
         setSuccess(res.data.message);
         setTimeout(() => setSuccess(""), 4000);
       }
+      setFormData((prev) => ({ ...prev, current_password: "" }));
       setIsEditing(false);
     } catch (err) {
       ErrorGlobal({ error: err, setError });
@@ -84,7 +87,6 @@ const Profile = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(res);
       if (res.data.success) {
         const { user } = res.data;
 
@@ -237,6 +239,25 @@ const Profile = () => {
                 InputProps={{ readOnly: !isEditing }}
                 margin="normal"
               />
+
+              {isEditing && emailChanged && (
+                <TextField
+                  error={hasError("current_password")}
+                  helperText={
+                    getError("current_password") ||
+                    "Requis pour confirmer le changement d'adresse email"
+                  }
+                  label="Mot de passe actuel"
+                  name="current_password"
+                  type="password"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.current_password}
+                  onChange={handleChange}
+                  margin="normal"
+                  required
+                />
+              )}
 
               <TextField
                 error={hasError("phone")}
