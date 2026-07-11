@@ -10,6 +10,11 @@ import {
 import { Instance } from "../../../../Api/Axios";
 import { getApiErrorMessage } from "../../Utils/handleApiError";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha } from "@mui/material/styles";
+import useCompetitionTheme from "./useCompetitionTheme";
+
+// Couleurs des coins de combat (Aka rouge / Ao bleu) : identité fixe, indépendante du thème.
+const CORNER = { aka: "#ef4444", ao: "#3b82f6" };
 
 export default function HanteiButton({
   combat,
@@ -19,6 +24,7 @@ export default function HanteiButton({
   success,
   setSuccess,
 }) {
+  const T = useCompetitionTheme();
   const [sending, setSending] = useState(null);
 
   if (parseInt(combat?.status) !== 3) return null;
@@ -54,14 +60,14 @@ export default function HanteiButton({
       sx={{
         p: 2,
         borderRadius: 2,
-        border: "1px solid #f59e0b40",
-        bgcolor: "#f59e0b10",
+        border: `1px solid ${alpha(T.warning, 0.25)}`,
+        bgcolor: alpha(T.warning, 0.06),
         mb: 2,
       }}
     >
       <Typography
         sx={{
-          color: "#f59e0b",
+          color: T.warning,
           fontWeight: 700,
           fontSize: "0.75rem",
           letterSpacing: 1,
@@ -78,12 +84,12 @@ export default function HanteiButton({
           onClick={() => envoyerHansoku("aka")}
           sx={{
             flex: 1,
-            bgcolor: "#ef4444",
+            bgcolor: CORNER.aka,
             color: "#fff",
             fontWeight: 700,
             borderRadius: 2,
             "&:hover": { bgcolor: "#dc2626" },
-            "&.Mui-disabled": { bgcolor: "#ef444450" },
+            "&.Mui-disabled": { bgcolor: `${CORNER.aka}50` },
           }}
         >
           {sending === "aka" ? (
@@ -98,12 +104,12 @@ export default function HanteiButton({
           onClick={() => envoyerHansoku("ao")}
           sx={{
             flex: 1,
-            bgcolor: "#3b82f6",
+            bgcolor: CORNER.ao,
             color: "#fff",
             fontWeight: 700,
             borderRadius: 2,
             "&:hover": { bgcolor: "#2563eb" },
-            "&.Mui-disabled": { bgcolor: "#3b82f650" },
+            "&.Mui-disabled": { bgcolor: `${CORNER.ao}50` },
           }}
         >
           {sending === "ao" ? (

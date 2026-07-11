@@ -56,7 +56,8 @@ export default function ConfigNotationCard({
                 sm: 400,
               },
               maxWidth: 400,
-              border: "1px solid #eee",
+              border: "1px solid",
+              borderColor: "divider",
             }}
           >
             <Skeleton

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 const KumiteScoreboard = () => {
+  const T = useCompetitionTheme();
   // État pour les deux combattants
   const [aka, setAka] = useState({
     name: "AKA (Rouge)",
@@ -153,8 +155,8 @@ const KumiteScoreboard = () => {
           style={{
             marginTop: "20px",
             padding: "20px",
-            background: "#333",
-            color: "#fff",
+            background: T.surface,
+            color: T.text,
           }}
         >
           <h2>MATCH TERMINÉ</h2>

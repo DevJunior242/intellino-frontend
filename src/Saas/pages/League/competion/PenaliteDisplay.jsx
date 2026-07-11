@@ -1,6 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 export default function PenaliteDisplay({ combat }) {
+  const T = useCompetitionTheme();
   const penalitesAka =
     combat?.actions?.filter(
       (a) => a.combattant === "aka" && a.type === "penalite",
@@ -24,8 +26,8 @@ export default function PenaliteDisplay({ combat }) {
               width: 20,
               height: 20,
               borderRadius: 1,
-              bgcolor: i < penalitesAka ? "#f59e0b" : "transparent",
-              border: "1px solid #f59e0b",
+              bgcolor: i < penalitesAka ? T.warning : "transparent",
+              border: `1px solid ${T.warning}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -42,7 +44,7 @@ export default function PenaliteDisplay({ combat }) {
         ))}
       </Stack>
 
-      <Typography sx={{ color: "#64748b", fontSize: "0.7rem" }}>PEN</Typography>
+      <Typography sx={{ color: T.textMuted, fontSize: "0.7rem" }}>PEN</Typography>
 
       {/* AO */}
       <Stack direction="row" gap={0.5}>
@@ -53,8 +55,8 @@ export default function PenaliteDisplay({ combat }) {
               width: 20,
               height: 20,
               borderRadius: 1,
-              bgcolor: i < penalitesAo ? "#f59e0b" : "transparent",
-              border: "1px solid #f59e0b",
+              bgcolor: i < penalitesAo ? T.warning : "transparent",
+              border: `1px solid ${T.warning}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

@@ -1,9 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { Paper, Typography, Box, CircularProgress } from "@mui/material";
+import {
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+  useTheme,
+} from "@mui/material";
 import { Instance } from "../../../Api/Axios";
 
 export default function StageRevenueChart() {
+  const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,24 +34,37 @@ export default function StageRevenueChart() {
       elevation={0}
       sx={{
         p: 3,
-        bgcolor: "#22262f",
+        bgcolor: "background.paper",
         borderRadius: 4,
-        border: "1px solid rgba(255,255,255,0.05)",
+        border: "1px solid",
+        borderColor: "divider",
         height: 420,
       }}
     >
       <Typography
         variant="h6"
-        sx={{ color: "#e8eaf0", fontWeight: 700, mb: 2, fontSize: { xs: 12, sm: 16 } }}
+        sx={{
+          color: "text.primary",
+          fontWeight: 700,
+          mb: 2,
+          fontSize: { xs: 12, sm: 16 },
+        }}
       >
         Recettes stages encaissées (6 derniers mois)
       </Typography>
 
-      <Box sx={{ height: 320, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box
+        sx={{
+          height: 320,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         {loading ? (
           <CircularProgress />
         ) : data.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "#8b90a0" }}>
+          <Typography variant="body2" color="text.secondary">
             Aucune recette encaissée sur les 6 derniers mois.
           </Typography>
         ) : (
@@ -63,7 +83,13 @@ export default function StageRevenueChart() {
                 min: 0,
               },
             ]}
-            series={[{ dataKey: "total", label: "Recettes stages", color: "#3949AB" }]}
+            series={[
+              {
+                dataKey: "total",
+                label: "Recettes stages",
+                color: theme.palette.primary.main,
+              },
+            ]}
             borderRadius={8}
             margin={{ left: 60, right: 10, bottom: 30, top: 10 }}
             height={300}

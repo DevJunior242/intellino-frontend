@@ -10,8 +10,11 @@ import LoadingKumite from "./LoadingKumite";
 import VainqueurOverlay from "./VainqueurOverlay";
 import PodiumViewer from "./PodiumViewer";
 import BracketViewer from "./BracketViewer";
+import PublicDisplayThemeProvider from "./PublicDisplayThemeProvider";
+import useCompetitionTheme from "./useCompetitionTheme";
 
-export default function VuePubliqueKumite() {
+function VuePubliqueKumiteContent() {
+  const T = useCompetitionTheme();
   const [combat, setCombat] = useState(null);
   const [nextCombat, setNextCombat] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,7 @@ export default function VuePubliqueKumite() {
   }, [configId, fetchData]);
 
   return (
-    <Box sx={{ bgcolor: "#0a0f1a", minHeight: "100vh", p: 2 }}>
+    <Box sx={{ bgcolor: T.bg, minHeight: "100vh", p: 2 }}>
       {loading ? <LoadingKumite /> : null}
       {/* Combat en cours — AKA vs AO + scores */}
       <CombatEnCours config={combat?.config_notation} combat={combat} />
@@ -64,5 +67,13 @@ export default function VuePubliqueKumite() {
       {/* podium */}
       <PodiumViewer configId={configId} />
     </Box>
+  );
+}
+
+export default function VuePubliqueKumite() {
+  return (
+    <PublicDisplayThemeProvider>
+      <VuePubliqueKumiteContent />
+    </PublicDisplayThemeProvider>
   );
 }

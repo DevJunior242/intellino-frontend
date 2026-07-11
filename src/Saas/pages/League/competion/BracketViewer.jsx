@@ -11,21 +11,12 @@ import {
 } from "@mui/material";
 import { EmojiEvents, MilitaryTech } from "@mui/icons-material";
 import { motion } from "framer-motion";
+import useCompetitionTheme from "./useCompetitionTheme";
 
-const C = {
-  bg: "#080d14",
-  card: "#0f1623",
-  border: "#1e2a3a",
-  text: "#e2e8f0",
-  muted: "#64748b",
-  aka: "#ef4444",
-  ao: "#3b82f6",
-  gold: "#f59e0b",
-  silver: "#94a3b8",
-  bronze: "#d97706",
-  green: "#22c55e",
-  winner: "#00e5c0",
-};
+// Couleurs fixes, indépendantes du thème : coins de combat, médailles, indicateur live.
+const CORNER = { aka: "#ef4444", ao: "#3b82f6" };
+const MEDAL = { gold: "#f59e0b", bronze: "#d97706" };
+const LIVE = "#00e5c0";
 
 const ETAPE_ORDER = ["Quart-finale", "Demi-finale", "Finale"];
 
@@ -48,15 +39,16 @@ function typeVictoireLabel(type) {
 
 // ── Carte d'un combat ──────────────────────────────────────────────────────
 function CombatCard({ combat, isWide = true }) {
+  const T = useCompetitionTheme();
   if (!combat)
     return (
       <Box
         sx={{
           width: isWide ? 180 : 140,
           height: 70,
-          border: `1px dashed ${C.border}`,
+          border: `1px dashed ${T.border}`,
           borderRadius: 2,
-          bgcolor: C.card,
+          bgcolor: T.surface,
         }}
       />
     );
@@ -86,19 +78,19 @@ function CombatCard({ combat, isWide = true }) {
       <Box
         sx={{
           width: isWide ? 180 : 140,
-          border: `1px solid ${enCours ? C.winner : C.border}`,
+          border: `1px solid ${enCours ? LIVE : T.border}`,
           borderRadius: 2,
-          bgcolor: C.card,
+          bgcolor: T.surface,
           overflow: "hidden",
-          boxShadow: enCours ? `0 0 12px ${C.winner}30` : "none",
+          boxShadow: enCours ? `0 0 12px ${LIVE}30` : "none",
         }}
       >
         {/* AKA */}
-        <Box sx={rowStyle(akaWon, C.aka)}>
+        <Box sx={rowStyle(akaWon, CORNER.aka)}>
           <Typography
             sx={{
               fontSize: "0.7rem",
-              color: akaWon ? C.text : C.muted,
+              color: akaWon ? T.text : T.textMuted,
               fontWeight: akaWon ? 700 : 400,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -113,7 +105,7 @@ function CombatCard({ combat, isWide = true }) {
               <Typography
                 sx={{
                   fontSize: "0.7rem",
-                  color: akaWon ? C.aka : C.muted,
+                  color: akaWon ? CORNER.aka : T.textMuted,
                   fontWeight: 700,
                 }}
               >
@@ -127,8 +119,8 @@ function CombatCard({ combat, isWide = true }) {
                 sx={{
                   height: 14,
                   fontSize: "0.55rem",
-                  bgcolor: `${C.aka}20`,
-                  color: C.aka,
+                  bgcolor: `${CORNER.aka}20`,
+                  color: CORNER.aka,
                   px: 0,
                 }}
               />
@@ -137,14 +129,14 @@ function CombatCard({ combat, isWide = true }) {
         </Box>
 
         {/* Divider */}
-        <Box sx={{ height: "1px", bgcolor: C.border }} />
+        <Box sx={{ height: "1px", bgcolor: T.border }} />
 
         {/* AO */}
-        <Box sx={rowStyle(aoWon, C.ao)}>
+        <Box sx={rowStyle(aoWon, CORNER.ao)}>
           <Typography
             sx={{
               fontSize: "0.7rem",
-              color: aoWon ? C.text : C.muted,
+              color: aoWon ? T.text : T.textMuted,
               fontWeight: aoWon ? 700 : 400,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -160,7 +152,7 @@ function CombatCard({ combat, isWide = true }) {
               <Typography
                 sx={{
                   fontSize: "0.7rem",
-                  color: aoWon ? C.ao : C.muted,
+                  color: aoWon ? CORNER.ao : T.textMuted,
                   fontWeight: 700,
                 }}
               >
@@ -174,8 +166,8 @@ function CombatCard({ combat, isWide = true }) {
                 sx={{
                   height: 14,
                   fontSize: "0.55rem",
-                  bgcolor: `${C.ao}20`,
-                  color: C.ao,
+                  bgcolor: `${CORNER.ao}20`,
+                  color: CORNER.ao,
                   px: 0,
                 }}
               />
@@ -187,14 +179,14 @@ function CombatCard({ combat, isWide = true }) {
         {enCours && (
           <Box
             sx={{
-              bgcolor: `${C.winner}15`,
+              bgcolor: `${LIVE}15`,
               px: 1,
               py: 0.3,
               textAlign: "center",
             }}
           >
             <Typography
-              sx={{ fontSize: "0.55rem", color: C.winner, letterSpacing: 1 }}
+              sx={{ fontSize: "0.55rem", color: LIVE, letterSpacing: 1 }}
             >
               EN COURS
             </Typography>
@@ -206,7 +198,7 @@ function CombatCard({ combat, isWide = true }) {
 }
 
 // ── Ligne de connexion SVG entre rounds ───────────────────────────────────
-function Connector({ fromY, toY, x, color = C.border }) {
+function Connector({ fromY, toY, x, color = "#1e2a3a" }) {
   const midX = 20;
   return (
     <svg
@@ -226,6 +218,7 @@ function Connector({ fromY, toY, x, color = C.border }) {
 
 // ── Bracket Desktop horizontal ─────────────────────────────────────────────
 function BracketDesktop({ rounds, repechage, finale }) {
+  const T = useCompetitionTheme();
   const CARD_H = 72;
   const GAP = 16;
 
@@ -247,7 +240,7 @@ function BracketDesktop({ rounds, repechage, finale }) {
               <Typography
                 sx={{
                   fontSize: "0.65rem",
-                  color: C.muted,
+                  color: T.textMuted,
                   letterSpacing: 1.5,
                   textAlign: "center",
                   mb: 1.5,
@@ -273,7 +266,7 @@ function BracketDesktop({ rounds, repechage, finale }) {
             <Typography
               sx={{
                 fontSize: "0.65rem",
-                color: C.muted,
+                color: T.textMuted,
                 letterSpacing: 1.5,
                 mb: 1.5,
               }}
@@ -281,9 +274,9 @@ function BracketDesktop({ rounds, repechage, finale }) {
               VAINQUEUR
             </Typography>
             <Box sx={{ textAlign: "center" }}>
-              <EmojiEvents sx={{ color: C.gold, fontSize: 28, mb: 0.5 }} />
+              <EmojiEvents sx={{ color: MEDAL.gold, fontSize: 28, mb: 0.5 }} />
               <Typography
-                sx={{ color: C.gold, fontWeight: 800, fontSize: "0.85rem" }}
+                sx={{ color: MEDAL.gold, fontWeight: 800, fontSize: "0.85rem" }}
               >
                 {nom(
                   finale.vainqueur_id === finale.inscription_aka_id
@@ -299,11 +292,11 @@ function BracketDesktop({ rounds, repechage, finale }) {
       {/* Repêchage */}
       {repechage && Object.keys(repechage).length > 0 && (
         <Box sx={{ mt: 4, px: 2 }}>
-          <Box sx={{ borderTop: `1px solid ${C.border}`, pt: 3 }}>
+          <Box sx={{ borderTop: `1px solid ${T.border}`, pt: 3 }}>
             <Typography
               sx={{
                 fontSize: "0.65rem",
-                color: C.bronze,
+                color: MEDAL.bronze,
                 letterSpacing: 2,
                 mb: 2,
               }}
@@ -314,7 +307,7 @@ function BracketDesktop({ rounds, repechage, finale }) {
               {Object.entries(repechage).map(([etape, combats]) => (
                 <Box key={etape}>
                   <Typography
-                    sx={{ fontSize: "0.6rem", color: C.muted, mb: 1 }}
+                    sx={{ fontSize: "0.6rem", color: T.textMuted, mb: 1 }}
                   >
                     {etape.includes("aka") ? "Côté AKA" : "Côté AO"}
                   </Typography>
@@ -331,11 +324,11 @@ function BracketDesktop({ rounds, repechage, finale }) {
                       gap={1}
                       sx={{ mt: 1 }}
                     >
-                      <MilitaryTech sx={{ color: C.bronze, fontSize: 16 }} />
+                      <MilitaryTech sx={{ color: MEDAL.bronze, fontSize: 16 }} />
                       <Typography
                         sx={{
                           fontSize: "0.72rem",
-                          color: C.bronze,
+                          color: MEDAL.bronze,
                           fontWeight: 700,
                         }}
                       >
@@ -360,6 +353,7 @@ function BracketDesktop({ rounds, repechage, finale }) {
 
 // ── Bracket Mobile liste par étape ─────────────────────────────────────────
 function BracketMobile({ rounds, repechage, finale }) {
+  const T = useCompetitionTheme();
   return (
     <Stack gap={3} sx={{ p: 1 }}>
       {rounds.map((round, ri) => (
@@ -367,11 +361,11 @@ function BracketMobile({ rounds, repechage, finale }) {
           <Typography
             sx={{
               fontSize: "0.65rem",
-              color: C.muted,
+              color: T.textMuted,
               letterSpacing: 1.5,
               mb: 1.5,
               textTransform: "uppercase",
-              borderBottom: `1px solid ${C.border}`,
+              borderBottom: `1px solid ${T.border}`,
               pb: 0.5,
             }}
           >
@@ -391,18 +385,18 @@ function BracketMobile({ rounds, repechage, finale }) {
           sx={{
             textAlign: "center",
             py: 2,
-            borderTop: `1px solid ${C.border}`,
+            borderTop: `1px solid ${T.border}`,
           }}
         >
-          <EmojiEvents sx={{ color: C.gold, fontSize: 32 }} />
-          <Typography sx={{ color: C.gold, fontWeight: 800 }}>
+          <EmojiEvents sx={{ color: MEDAL.gold, fontSize: 32 }} />
+          <Typography sx={{ color: MEDAL.gold, fontWeight: 800 }}>
             {nom(
               finale.vainqueur_id === finale.inscription_aka_id
                 ? finale.inscription_aka
                 : finale.inscription_ao,
             )}
           </Typography>
-          <Typography sx={{ color: C.muted, fontSize: "0.7rem" }}>
+          <Typography sx={{ color: T.textMuted, fontSize: "0.7rem" }}>
             Vainqueur
           </Typography>
         </Box>
@@ -410,11 +404,11 @@ function BracketMobile({ rounds, repechage, finale }) {
 
       {/* Repêchage mobile */}
       {repechage && Object.keys(repechage).length > 0 && (
-        <Box sx={{ borderTop: `1px solid ${C.border}`, pt: 2 }}>
+        <Box sx={{ borderTop: `1px solid ${T.border}`, pt: 2 }}>
           <Typography
             sx={{
               fontSize: "0.65rem",
-              color: C.bronze,
+              color: MEDAL.bronze,
               letterSpacing: 2,
               mb: 2,
             }}
@@ -423,7 +417,7 @@ function BracketMobile({ rounds, repechage, finale }) {
           </Typography>
           {Object.entries(repechage).map(([etape, combats]) => (
             <Box key={etape} sx={{ mb: 2 }}>
-              <Typography sx={{ fontSize: "0.6rem", color: C.muted, mb: 1 }}>
+              <Typography sx={{ fontSize: "0.6rem", color: T.textMuted, mb: 1 }}>
                 {etape.includes("aka") ? "Côté AKA" : "Côté AO"}
               </Typography>
               <Stack gap={1.5}>
@@ -441,6 +435,7 @@ function BracketMobile({ rounds, repechage, finale }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────
 export default function BracketViewer({ configId }) {
+  const T = useCompetitionTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
@@ -465,13 +460,13 @@ export default function BracketViewer({ configId }) {
   if (loading)
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-        <CircularProgress sx={{ color: C.winner }} />
+        <CircularProgress sx={{ color: LIVE }} />
       </Stack>
     );
 
   if (!data)
     return (
-      <Typography sx={{ color: C.muted, p: 3 }}>
+      <Typography sx={{ color: T.textMuted, p: 3 }}>
         Aucun bracket disponible
       </Typography>
     );
@@ -498,17 +493,17 @@ export default function BracketViewer({ configId }) {
   const finale = bracketPrincipal["Finale"]?.[0] ?? null;
 
   return (
-    <Box sx={{ bgcolor: C.bg, borderRadius: 3, overflow: "hidden" }}>
+    <Box sx={{ bgcolor: T.bg, borderRadius: 3, overflow: "hidden" }}>
       {/* Header */}
       <Box
         sx={{
           px: 2.5,
           py: 1.5,
-          borderBottom: `1px solid ${C.border}`,
-          bgcolor: C.card,
+          borderBottom: `1px solid ${T.border}`,
+          bgcolor: T.surface,
         }}
       >
-        <Typography sx={{ color: C.text, fontWeight: 700, fontSize: "0.9rem" }}>
+        <Typography sx={{ color: T.text, fontWeight: 700, fontSize: "0.9rem" }}>
           Tableau éliminatoire
         </Typography>
       </Box>

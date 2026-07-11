@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
-import { Box, Typography, Paper, Stack } from "@mui/material";
+import { Box, Typography, Paper, Stack, useTheme } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 
 export default function VitalityGauge() {
+  const theme = useTheme();
   const [vitalityData, setVitalityData] = useState({
     vitality_score: 10,
     nouveaux_dan: 20,
@@ -31,12 +32,9 @@ export default function VitalityGauge() {
 
   const data = vitalityData;
   return (
-    <Paper
-      elevation={0}
-      sx={{ p: 3, border: "1px solid #eee", borderRadius: 4 }}
-    >
+    <Paper elevation={0} sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 4 }}>
       <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-        <TrendingUpIcon sx={{ color: "#d32f2f" }} />
+        <TrendingUpIcon color="error" />
         <Typography variant="h6" fontWeight="bold">
           Vitalité de la Ligue
         </Typography>
@@ -53,13 +51,16 @@ export default function VitalityGauge() {
             [`& .${gaugeClasses.valueText}`]: {
               fontSize: 32,
               fontWeight: 800,
-              fill: "#1a1a1a",
+              fill: theme.palette.text.primary,
             },
             [`& .${gaugeClasses.valueArc}`]: {
-              fill: data.vitality_score > 60 ? "#2e7d32" : "#ed6c02",
+              fill:
+                data.vitality_score > 60
+                  ? theme.palette.success.main
+                  : theme.palette.warning.main,
             },
             [`& .${gaugeClasses.referenceArc}`]: {
-              fill: "#f5f5f5",
+              fill: theme.palette.action.hover,
             },
           }}
           text={({ value }) => `${value}%`}
@@ -76,7 +77,7 @@ export default function VitalityGauge() {
         </Typography>
         <Typography
           variant="caption"
-          sx={{ display: "block", mt: 1, color: "green" }}
+          sx={{ display: "block", mt: 1, color: "success.main" }}
         >
           Taux de réussite : {data.taux_reussite}%
         </Typography>

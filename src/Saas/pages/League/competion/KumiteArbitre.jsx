@@ -19,19 +19,13 @@ import VainqueurOverlay from "./VainqueurOverlay";
 import LoadingKumite from "./LoadingKumite";
 import ProchainCombat from "./ProchainCombat";
 import { getApiErrorMessage } from "../../Utils/handleApiError";
+import useCompetitionTheme from "./useCompetitionTheme";
 
-const C = {
+// Couleurs des coins de combat (Aka rouge / Ao bleu) : identité fixe, indépendante du thème.
+const CORNER = {
   aka: "#ef4444",
-  akaLight: "#ef444420",
   ao: "#3b82f6",
-  aoLight: "#3b82f620",
   penalty: "#f59e0b",
-  penaltyLight: "#f59e0b20",
-  bg: "#0f1623",
-  card: "#141c2b",
-  border: "#1e2a3a",
-  text: "#e2e8f0",
-  muted: "#64748b",
 };
 
 const ACTIONS = {
@@ -49,6 +43,7 @@ const ACTIONS = {
 };
 
 export default function KumiteArbitre({ config }) {
+  const T = useCompetitionTheme();
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const [combat, setCombat] = useState(null);
@@ -188,12 +183,12 @@ export default function KumiteArbitre({ config }) {
   if (!combat) {
     return (
       <Box sx={{ p: 3, textAlign: "center" }}>
-        <Typography sx={{ color: C.muted }}>Aucun combat en cours</Typography>
+        <Typography sx={{ color: T.textMuted }}>Aucun combat en cours</Typography>
       </Box>
     );
   }
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: C.bg, pb: 4, px: 2, pt: 2 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: T.bg, pb: 4, px: 2, pt: 2 }}>
       {/* Erreurs / succès */}
       <AnimatePresence>
         {success[config.id] && (
@@ -220,17 +215,17 @@ export default function KumiteArbitre({ config }) {
                 p: 1,
                 mb: 2,
                 borderRadius: 2,
-                bgcolor: C.card,
-                border: `1px solid ${C.border}`,
+                bgcolor: T.surface,
+                border: `1px solid ${T.border}`,
                 textAlign: "center",
               }}
             >
-              <Typography sx={{ color: C.muted, fontSize: "0.7rem" }}>
+              <Typography sx={{ color: T.textMuted, fontSize: "0.7rem" }}>
                 Dernière action envoyée
               </Typography>
               <Typography
                 sx={{
-                  color: lastAction.combattant === "aka" ? C.aka : C.ao,
+                  color: lastAction.combattant === "aka" ? CORNER.aka : CORNER.ao,
                   fontWeight: 700,
                 }}
               >
@@ -267,7 +262,7 @@ export default function KumiteArbitre({ config }) {
           >
             <Typography
               sx={{
-                color: C.aka,
+                color: CORNER.aka,
                 fontWeight: 700,
                 fontSize: "0.8rem",
                 letterSpacing: 1,
@@ -297,12 +292,12 @@ export default function KumiteArbitre({ config }) {
                     sx={{
                       minWidth: "70px",
                       height: "50px",
-                      bgcolor: C.aka,
+                      bgcolor: CORNER.aka,
                       color: "#fff",
                       fontWeight: 700,
                       borderRadius: 2,
                       "&:hover": { bgcolor: "#dc2626" },
-                      "&.Mui-disabled": { bgcolor: `${C.aka}50` },
+                      "&.Mui-disabled": { bgcolor: `${CORNER.aka}50` },
                     }}
                   >
                     {sending === key ? (
@@ -343,7 +338,7 @@ export default function KumiteArbitre({ config }) {
           >
             <Typography
               sx={{
-                color: C.ao,
+                color: CORNER.ao,
                 fontWeight: 700,
                 fontSize: "0.8rem",
                 letterSpacing: 1,
@@ -373,12 +368,12 @@ export default function KumiteArbitre({ config }) {
                     sx={{
                       minWidth: "70px",
                       height: "50px",
-                      bgcolor: C.ao,
+                      bgcolor: CORNER.ao,
                       color: "#fff",
                       fontWeight: 700,
                       borderRadius: 2,
                       "&:hover": { bgcolor: "#2563eb" },
-                      "&.Mui-disabled": { bgcolor: `${C.ao}50` },
+                      "&.Mui-disabled": { bgcolor: `${CORNER.ao}50` },
                     }}
                   >
                     {sending === key ? (
@@ -429,7 +424,7 @@ export default function KumiteArbitre({ config }) {
           >
             <Typography
               sx={{
-                color: C.penalty,
+                color: CORNER.penalty,
                 fontWeight: 700,
                 fontSize: "0.8rem",
                 letterSpacing: 1,
@@ -447,8 +442,8 @@ export default function KumiteArbitre({ config }) {
               sx={{
                 width: "100%",
                 height: "50px",
-                borderColor: C.aka,
-                color: C.aka,
+                borderColor: CORNER.aka,
+                color: CORNER.aka,
                 fontWeight: 700,
                 borderRadius: 2,
                 fontSize: "0.8rem",
@@ -474,7 +469,7 @@ export default function KumiteArbitre({ config }) {
           >
             <Typography
               sx={{
-                color: C.penalty,
+                color: CORNER.penalty,
                 fontWeight: 700,
                 fontSize: "0.8rem",
                 letterSpacing: 1,
@@ -492,8 +487,8 @@ export default function KumiteArbitre({ config }) {
               sx={{
                 width: "100%",
                 height: "50px",
-                borderColor: C.ao,
-                color: C.ao,
+                borderColor: CORNER.ao,
+                color: CORNER.ao,
                 fontWeight: 700,
                 borderRadius: 2,
                 fontSize: "0.8rem",

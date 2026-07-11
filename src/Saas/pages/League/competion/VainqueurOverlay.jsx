@@ -1,8 +1,17 @@
 import { Box, Chip, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import useCompetitionTheme from "./useCompetitionTheme";
+
+// Couleurs des coins de combat (Aka rouge / Ao bleu) : identité fixe, indépendante du thème.
+const CORNER = {
+  aka: "#ef4444",
+  ao: "#3b82f6",
+};
 
 export default function VainqueurOverlay({ combat, onClose }) {
+  const T = useCompetitionTheme();
   const [visible, setVisible] = useState(false);
   const [vainqueurInfo, setVainqueurInfo] = useState(null);
 
@@ -22,8 +31,8 @@ export default function VainqueurOverlay({ combat, onClose }) {
         ? combat?.inscription_aka?.organisateur?.name
         : combat?.inscription_ao?.organisateur?.name,
       camp: estAka ? "AKA" : "AO",
-      color: estAka ? "#ef4444" : "#3b82f6",
-      colorLight: estAka ? "#ef444430" : "#3b82f630",
+      color: estAka ? CORNER.aka : CORNER.ao,
+      colorLight: estAka ? alpha(CORNER.aka, 0.19) : alpha(CORNER.ao, 0.19),
       scoreAka: combat?.score_final_aka ?? 0,
       scoreAo: combat?.score_final_ao ?? 0,
       typeVictoire: combat?.type_victoire ?? null,
@@ -63,7 +72,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(10, 15, 26, 0.93)",
+            background: alpha(T.bg, 0.93),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -86,7 +95,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
               {/* Label vainqueur */}
               <Typography
                 sx={{
-                  color: "#64748b",
+                  color: T.textMuted,
                   fontSize: "0.75rem",
                   letterSpacing: 4,
                   textTransform: "uppercase",
@@ -99,7 +108,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
               {/* Nom */}
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: T.text,
                   fontSize: { xs: "1.8rem", sm: "2.8rem" },
                   fontWeight: 900,
                   lineHeight: 1.1,
@@ -112,7 +121,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
               {/* Club */}
               {vainqueurInfo.club && (
                 <Typography
-                  sx={{ color: "#64748b", fontSize: "0.9rem", mb: 2 }}
+                  sx={{ color: T.textMuted, fontSize: "0.9rem", mb: 2 }}
                 >
                   {vainqueurInfo.club}
                 </Typography>
@@ -146,14 +155,18 @@ export default function VainqueurOverlay({ combat, onClose }) {
                   sx={{
                     fontSize: "3rem",
                     fontWeight: 900,
-                    color: "#ef4444",
+                    color: CORNER.aka,
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
                   {vainqueurInfo.scoreAka}
                 </Typography>
                 <Typography
-                  sx={{ color: "#1e2a3a", fontSize: "1.5rem", fontWeight: 700 }}
+                  sx={{
+                    color: T.textFaint,
+                    fontSize: "1.5rem",
+                    fontWeight: 700,
+                  }}
                 >
                   —
                 </Typography>
@@ -161,7 +174,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
                   sx={{
                     fontSize: "3rem",
                     fontWeight: 900,
-                    color: "#3b82f6",
+                    color: CORNER.ao,
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
@@ -175,9 +188,9 @@ export default function VainqueurOverlay({ combat, onClose }) {
                   label={labelVictoire(vainqueurInfo.typeVictoire)}
                   size="small"
                   sx={{
-                    bgcolor: "#f59e0b20",
-                    color: "#f59e0b",
-                    border: "1px solid #f59e0b40",
+                    bgcolor: alpha(T.warning, 0.13),
+                    color: T.warning,
+                    border: `1px solid ${alpha(T.warning, 0.25)}`,
                     fontWeight: 700,
                     fontSize: "0.7rem",
                   }}
@@ -187,7 +200,7 @@ export default function VainqueurOverlay({ combat, onClose }) {
               {/* Hint */}
               <Typography
                 sx={{
-                  color: "#1e2a3a",
+                  color: T.textFaint,
                   fontSize: "0.65rem",
                   mt: 4,
                   letterSpacing: 1,

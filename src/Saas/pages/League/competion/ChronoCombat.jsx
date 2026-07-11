@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Instance } from "../../../../Api/Axios";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 export default function ChronoCombat({ combat, canControl = false }) {
+  const T = useCompetitionTheme();
   const duree = (combat?.config_notation?.duration ?? 3) * 60; // en secondes
   const [tempsRestant, setTempsRestant] = useState(duree);
   const [actif, setActif] = useState(!!combat?.hajime_at && !combat?.yame_at);
@@ -103,7 +105,7 @@ export default function ChronoCombat({ combat, canControl = false }) {
         sx={{
           fontSize: { xs: "0.8rem", md: "1.2rem" },
           fontWeight: 900,
-          color: tempsRestant <= 30 ? "#ef4444" : "#e2e8f0",
+          color: tempsRestant <= 30 ? T.danger : T.text,
           fontVariantNumeric: "tabular-nums",
         }}
       >
@@ -118,8 +120,10 @@ export default function ChronoCombat({ combat, canControl = false }) {
             variant="contained"
             onClick={estActif ? handleStop : handleStart}
             sx={{
-              bgcolor: estActif ? "#ef4444" : "#22c55e",
-              "&:hover": { bgcolor: estActif ? "#dc2626" : "#16a34a" },
+              bgcolor: estActif ? T.danger : T.success,
+              "&:hover": {
+                bgcolor: estActif ? "#dc2626" : "#16a34a",
+              },
               fontWeight: 700,
               px: 4,
             }}

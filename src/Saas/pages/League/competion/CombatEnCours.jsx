@@ -8,20 +8,18 @@ import {
 } from "@mui/material";
 import ChronoCombat from "./ChronoCombat";
 import PenaliteDisplay from "./PenaliteDisplay";
+import { alpha } from "@mui/material/styles";
+import useCompetitionTheme from "./useCompetitionTheme";
 
-const C = {
+// Couleurs des coins de combat (Aka rouge / Ao bleu) : identité fixe, indépendante du thème.
+const CORNER = {
   aka: "#ef4444",
-  akaLight: "#ef444420",
   ao: "#3b82f6",
-  aoLight: "#3b82f620",
-  card: "#111827",
-  border: "#1e2a3a",
-  text: "#e2e8f0",
-  muted: "#64748b",
 };
 
 export default function CombatEnCours({ combat, canControl = false }) {
   const theme = useTheme();
+  const T = useCompetitionTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -30,9 +28,9 @@ export default function CombatEnCours({ combat, canControl = false }) {
   return (
     <Box
       sx={{
-        bgcolor: C.card,
+        bgcolor: T.surface,
         borderRadius: 3,
-        border: `1px solid ${C.border}`,
+        border: `1px solid ${T.border}`,
         p: isMobile ? 1.5 : 2,
         mb: 2,
       }}
@@ -40,7 +38,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
       <Typography
         variant="h6"
         sx={{
-          color: C.text,
+          color: T.text,
           fontWeight: 700,
           display: "flex",
           alignItems: "center",
@@ -55,9 +53,9 @@ export default function CombatEnCours({ combat, canControl = false }) {
             label={combat.etape}
             size="small"
             sx={{
-              bgcolor: "#f59e0b20",
-              color: "#f59e0b",
-              border: "1px solid #f59e0b40",
+              bgcolor: alpha(T.warning, 0.13),
+              color: T.warning,
+              border: `1px solid ${alpha(T.warning, 0.25)}`,
               fontWeight: 700,
               fontSize: "0.65rem",
               ml: 1,
@@ -76,8 +74,8 @@ export default function CombatEnCours({ combat, canControl = false }) {
           sx={{
             textAlign: "center",
             flex: 1,
-            borderTop: isMobile ? "none" : `3px solid ${C.aka}`,
-            borderLeft: isMobile ? `3px solid ${C.aka}` : "none",
+            borderTop: isMobile ? "none" : `3px solid ${CORNER.aka}`,
+            borderLeft: isMobile ? `3px solid ${CORNER.aka}` : "none",
             pt: isMobile ? 1 : 1,
             pl: isMobile ? 1 : 0,
           }}
@@ -86,8 +84,8 @@ export default function CombatEnCours({ combat, canControl = false }) {
             label="AKA"
             size={isMobile ? "small" : "small"}
             sx={{
-              bgcolor: C.akaLight,
-              color: C.aka,
+              bgcolor: alpha(CORNER.aka, 0.125),
+              color: CORNER.aka,
               fontWeight: 500,
               mb: 0.5,
               fontSize: isMobile ? "0.7rem" : "0.8rem",
@@ -95,7 +93,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
           />
           <Typography
             sx={{
-              color: C.text,
+              color: T.text,
               fontWeight: 500,
               fontSize: isMobile ? "0.8rem" : "0.95rem",
               wordBreak: "break-word",
@@ -108,7 +106,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
           </Typography>
           <Typography
             sx={{
-              color: C.muted,
+              color: T.textMuted,
               fontSize: isMobile ? "0.6rem" : "0.7rem",
               wordBreak: "break-word",
             }}
@@ -119,7 +117,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
             sx={{
               fontSize: isMobile ? "2rem" : "3rem",
               fontWeight: 500,
-              color: C.aka,
+              color: CORNER.aka,
               fontVariantNumeric: "tabular-nums",
               mt: isMobile ? 0.5 : 0,
             }}
@@ -135,8 +133,8 @@ export default function CombatEnCours({ combat, canControl = false }) {
           sx={{
             mx: isMobile ? 0 : 2,
             width: isMobile ? "100%" : "auto",
-            borderTop: isMobile ? `1px solid ${C.border}` : "none",
-            borderBottom: isMobile ? `1px solid ${C.border}` : "none",
+            borderTop: isMobile ? `1px solid ${T.border}` : "none",
+            borderBottom: isMobile ? `1px solid ${T.border}` : "none",
             py: isMobile ? 1.5 : 0,
             order: isMobile ? -1 : 0,
           }}
@@ -147,9 +145,9 @@ export default function CombatEnCours({ combat, canControl = false }) {
               label={`Senshu → ${combat.senshu_id === combat.inscription_aka_id ? "AKA" : "AO"}`}
               size="small"
               sx={{
-                bgcolor: "#f59e0b18",
-                color: "#f59e0b",
-                border: "1px solid #f59e0b30",
+                bgcolor: alpha(T.warning, 0.09),
+                color: T.warning,
+                border: `1px solid ${alpha(T.warning, 0.19)}`,
                 fontSize: isMobile ? "0.6rem" : "0.65rem",
                 p: isMobile ? "0 4px" : "auto",
               }}
@@ -162,8 +160,8 @@ export default function CombatEnCours({ combat, canControl = false }) {
           sx={{
             textAlign: "center",
             flex: 1,
-            borderTop: isMobile ? "none" : `3px solid ${C.ao}`,
-            borderRight: isMobile ? `3px solid ${C.ao}` : "none",
+            borderTop: isMobile ? "none" : `3px solid ${CORNER.ao}`,
+            borderRight: isMobile ? `3px solid ${CORNER.ao}` : "none",
             pt: isMobile ? 1 : 1,
             pr: isMobile ? 1 : 0,
           }}
@@ -172,8 +170,8 @@ export default function CombatEnCours({ combat, canControl = false }) {
             label="AO"
             size={isMobile ? "small" : "small"}
             sx={{
-              bgcolor: C.aoLight,
-              color: C.ao,
+              bgcolor: alpha(CORNER.ao, 0.125),
+              color: CORNER.ao,
               fontWeight: 500,
               mb: 0.5,
               fontSize: isMobile ? "0.7rem" : "0.8rem",
@@ -181,7 +179,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
           />
           <Typography
             sx={{
-              color: C.text,
+              color: T.text,
               fontWeight: 500,
               fontSize: isMobile ? "0.8rem" : "0.95rem",
               wordBreak: "break-word",
@@ -194,7 +192,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
           </Typography>
           <Typography
             sx={{
-              color: C.muted,
+              color: T.textMuted,
               fontSize: isMobile ? "0.6rem" : "0.7rem",
               wordBreak: "break-word",
             }}
@@ -205,7 +203,7 @@ export default function CombatEnCours({ combat, canControl = false }) {
             sx={{
               fontSize: isMobile ? "2rem" : "3rem",
               fontWeight: 500,
-              color: C.ao,
+              color: CORNER.ao,
               fontVariantNumeric: "tabular-nums",
               mt: isMobile ? 0.5 : 0,
             }}

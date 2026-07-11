@@ -1,7 +1,10 @@
 import { Box, keyframes } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useEffect, useState } from "react";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 const LoadingKumite = () => {
+  const T = useCompetitionTheme();
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
@@ -37,7 +40,7 @@ const LoadingKumite = () => {
   return (
     <Box
       sx={{
-        bgcolor: "#0a0f1a",
+        bgcolor: T.bg,
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -55,8 +58,7 @@ const LoadingKumite = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(255, 193, 7, 0.1) 0%, transparent 70%)",
+          background: `radial-gradient(circle at 50% 50%, ${alpha(T.warning, 0.1)} 0%, transparent 70%)`,
           pointerEvents: "none",
         }}
       />
@@ -78,14 +80,13 @@ const LoadingKumite = () => {
             width: "200px",
             height: "200px",
             borderRadius: "50%",
-            border: "4px solid #FFD700",
-            background: "linear-gradient(135deg, #1a2534 0%, #0a0f1a 100%)",
+            border: `4px solid ${T.warning}`,
+            background: `linear-gradient(135deg, ${T.surface} 0%, ${T.bg} 100%)`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
-            boxShadow:
-              "0 0 30px rgba(255, 193, 7, 0.3), inset 0 0 20px rgba(255, 193, 7, 0.1)",
+            boxShadow: `0 0 30px ${alpha(T.warning, 0.3)}, inset 0 0 20px ${alpha(T.warning, 0.1)}`,
             animation: `${spin} 3s linear infinite`,
           }}
         >
@@ -108,7 +109,7 @@ const LoadingKumite = () => {
             width: "250px",
             height: "250px",
             borderRadius: "50%",
-            border: "2px solid rgba(255, 193, 7, 0.2)",
+            border: `2px solid ${alpha(T.warning, 0.2)}`,
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -123,11 +124,11 @@ const LoadingKumite = () => {
             sx={{
               fontSize: "28px",
               fontWeight: "700",
-              color: "#FFD700",
+              color: T.warning,
               margin: 0,
               letterSpacing: "2px",
               textTransform: "uppercase",
-              textShadow: "0 2px 8px rgba(255, 193, 7, 0.3)",
+              textShadow: `0 2px 8px ${alpha(T.warning, 0.3)}`,
             }}
           >
             Chargement du Tatami
@@ -137,7 +138,7 @@ const LoadingKumite = () => {
           <Box
             sx={{
               fontSize: "24px",
-              color: "#FFD700",
+              color: T.warning,
               mt: 1,
               minHeight: "30px",
               letterSpacing: "4px",
@@ -151,7 +152,7 @@ const LoadingKumite = () => {
           <Box
             sx={{
               fontSize: "14px",
-              color: "rgba(255, 193, 7, 0.6)",
+              color: alpha(T.warning, 0.6),
               mt: 2,
               fontStyle: "italic",
               letterSpacing: "1px",
@@ -166,18 +167,17 @@ const LoadingKumite = () => {
           sx={{
             width: "280px",
             height: "4px",
-            background: "rgba(255, 193, 7, 0.1)",
+            background: alpha(T.warning, 0.1),
             borderRadius: "2px",
             overflow: "hidden",
             mt: 2,
-            border: "1px solid rgba(255, 193, 7, 0.2)",
+            border: `1px solid ${alpha(T.warning, 0.2)}`,
           }}
         >
           <Box
             sx={{
               height: "100%",
-              background:
-                "linear-gradient(90deg, transparent, #FFD700, transparent)",
+              background: `linear-gradient(90deg, transparent, ${T.warning}, transparent)`,
               animation: `${shine} 2s infinite`,
             }}
           />
@@ -199,10 +199,10 @@ const LoadingKumite = () => {
                 width: "8px",
                 height: "8px",
                 borderRadius: "50%",
-                background: "#FFD700",
+                background: T.warning,
                 animation: `${breathing} 2s ease-in-out infinite`,
                 animationDelay: `${i * 0.3}s`,
-                boxShadow: "0 0 8px rgba(255, 193, 7, 0.5)",
+                boxShadow: `0 0 8px ${alpha(T.warning, 0.5)}`,
               }}
             />
           ))}
@@ -217,7 +217,7 @@ const LoadingKumite = () => {
           left: 20,
           width: "50px",
           height: "50px",
-          border: "2px solid rgba(255, 193, 7, 0.2)",
+          border: `2px solid ${alpha(T.warning, 0.2)}`,
           borderRight: "none",
           borderBottom: "none",
         }}
@@ -229,7 +229,7 @@ const LoadingKumite = () => {
           right: 20,
           width: "50px",
           height: "50px",
-          border: "2px solid rgba(255, 193, 7, 0.2)",
+          border: `2px solid ${alpha(T.warning, 0.2)}`,
           borderLeft: "none",
           borderBottom: "none",
         }}
@@ -241,7 +241,7 @@ const LoadingKumite = () => {
           left: 20,
           width: "50px",
           height: "50px",
-          border: "2px solid rgba(255, 193, 7, 0.2)",
+          border: `2px solid ${alpha(T.warning, 0.2)}`,
           borderRight: "none",
           borderTop: "none",
         }}
@@ -253,7 +253,7 @@ const LoadingKumite = () => {
           right: 20,
           width: "50px",
           height: "50px",
-          border: "2px solid rgba(255, 193, 7, 0.2)",
+          border: `2px solid ${alpha(T.warning, 0.2)}`,
           borderLeft: "none",
           borderTop: "none",
         }}

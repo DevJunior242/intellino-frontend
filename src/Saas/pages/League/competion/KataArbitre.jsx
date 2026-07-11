@@ -19,130 +19,121 @@ import {
   Tag,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
 import ProchainAthlete from "./ProchainAthlete";
-
-// ─── Palette ──────────────────────────────────────────────────────────────────
-const C = {
-  bg: "#07090f",
-  surface: "#0d1117",
-  card: "#111827",
-  border: "#1e2a3a",
-  accent: "#3b82f6",
-  accentGlow: "rgba(59,130,246,0.18)",
-  gold: "#f59e0b",
-  goldGlow: "rgba(245,158,11,0.2)",
-  success: "#22c55e",
-  text: "#e2e8f0",
-  muted: "#64748b",
-};
+import useCompetitionTheme from "./useCompetitionTheme";
 
 // ─── Skeleton loading ─────────────────────────────────────────────────────────
-const PageSkeleton = () => (
-  <Box sx={{ p: 2, maxWidth: 480, mx: "auto" }}>
-    {/* Barre top */}
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 3,
-        zIndex: 9999,
-        overflow: "hidden",
-      }}
-    >
-      <motion.div
-        style={{
-          height: "100%",
-          background: `linear-gradient(90deg, transparent, ${C.accent}, transparent)`,
-          width: "40%",
+const PageSkeleton = () => {
+  const T = useCompetitionTheme();
+  return (
+    <Box sx={{ p: 2, maxWidth: 480, mx: "auto" }}>
+      {/* Barre top */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          zIndex: 9999,
+          overflow: "hidden",
         }}
-        animate={{ x: ["−100%", "350%"] }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </Box>
+      >
+        <motion.div
+          style={{
+            height: "100%",
+            background: `linear-gradient(90deg, transparent, ${T.accent}, transparent)`,
+            width: "40%",
+          }}
+          animate={{ x: ["−100%", "350%"] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </Box>
 
-    {/* Skeleton athlète */}
-    <Box
-      sx={{
-        p: 3,
-        borderRadius: 4,
-        bgcolor: C.card,
-        border: `1px solid ${C.border}`,
-        mb: 2,
-        textAlign: "center",
-      }}
-    >
-      <Skeleton
-        variant="circular"
-        width={56}
-        height={56}
-        sx={{ bgcolor: "#1e2a3a", mx: "auto", mb: 2 }}
-      />
-      <Skeleton
-        variant="text"
-        width="70%"
-        sx={{ bgcolor: "#1e2a3a", mx: "auto", height: 32, mb: 1 }}
-      />
-      <Stack direction="row" justifyContent="center" gap={1}>
+      {/* Skeleton athlète */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 4,
+          bgcolor: T.surface,
+          border: `1px solid ${T.border}`,
+          mb: 2,
+          textAlign: "center",
+        }}
+      >
         <Skeleton
-          variant="rounded"
-          width={90}
-          height={24}
-          sx={{ bgcolor: "#1e2a3a" }}
+          variant="circular"
+          width={56}
+          height={56}
+          sx={{ bgcolor: "action.hover", mx: "auto", mb: 2 }}
         />
         <Skeleton
-          variant="rounded"
-          width={80}
-          height={24}
-          sx={{ bgcolor: "#1e2a3a" }}
+          variant="text"
+          width="70%"
+          sx={{ bgcolor: "action.hover", mx: "auto", height: 32, mb: 1 }}
         />
-      </Stack>
-    </Box>
-
-    {/* Skeleton note */}
-    <Box
-      sx={{
-        p: 3,
-        borderRadius: 4,
-        bgcolor: C.card,
-        border: `1px solid ${C.border}`,
-      }}
-    >
-      <Skeleton
-        variant="text"
-        width="50%"
-        sx={{ bgcolor: "#1e2a3a", mx: "auto", height: 28, mb: 3 }}
-      />
-      <Skeleton
-        variant="text"
-        width="30%"
-        sx={{ bgcolor: "#1e2a3a", mx: "auto", height: 80, mb: 2 }}
-      />
-      <Skeleton
-        variant="rounded"
-        height={6}
-        sx={{ bgcolor: "#1e2a3a", mb: 3 }}
-      />
-      <Stack direction="row" gap={1} justifyContent="center" flexWrap="wrap">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        <Stack direction="row" justifyContent="center" gap={1}>
           <Skeleton
-            key={i}
             variant="rounded"
-            width={56}
-            height={32}
-            sx={{ bgcolor: "#1e2a3a" }}
+            width={90}
+            height={24}
+            sx={{ bgcolor: "action.hover" }}
           />
-        ))}
-      </Stack>
+          <Skeleton
+            variant="rounded"
+            width={80}
+            height={24}
+            sx={{ bgcolor: "action.hover" }}
+          />
+        </Stack>
+      </Box>
+
+      {/* Skeleton note */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 4,
+          bgcolor: T.surface,
+          border: `1px solid ${T.border}`,
+        }}
+      >
+        <Skeleton
+          variant="text"
+          width="50%"
+          sx={{ bgcolor: "action.hover", mx: "auto", height: 28, mb: 3 }}
+        />
+        <Skeleton
+          variant="text"
+          width="30%"
+          sx={{ bgcolor: "action.hover", mx: "auto", height: 80, mb: 2 }}
+        />
+        <Skeleton
+          variant="rounded"
+          height={6}
+          sx={{ bgcolor: "action.hover", mb: 3 }}
+        />
+        <Stack direction="row" gap={1} justifyContent="center" flexWrap="wrap">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton
+              key={i}
+              variant="rounded"
+              width={56}
+              height={32}
+              sx={{ bgcolor: "action.hover" }}
+            />
+          ))}
+        </Stack>
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 // ─── Carte athlète en cours ───────────────────────────────────────────────────
 const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
+  const T = useCompetitionTheme();
   const notesCount = notes?.length ?? 0;
   const toutesRecues = notesCount === nbJuges;
   const progression = nbJuges > 0 ? (notesCount / nbJuges) * 100 : 0;
@@ -163,9 +154,9 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
-          bgcolor: C.card,
-          border: `1px solid ${C.border}`,
-          boxShadow: `0 0 24px ${C.accentGlow}`,
+          bgcolor: T.surface,
+          border: `1px solid ${T.border}`,
+          boxShadow: `0 0 24px ${alpha(T.accent, 0.18)}`,
         }}
       >
         {/* Fond dégradé subtil */}
@@ -173,7 +164,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
           sx={{
             position: "absolute",
             inset: 0,
-            background: `radial-gradient(ellipse at 50% 0%, ${C.accentGlow} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at 50% 0%, ${alpha(T.accent, 0.18)} 0%, transparent 70%)`,
             pointerEvents: "none",
           }}
         />
@@ -193,12 +184,12 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
               width: 7,
               height: 7,
               borderRadius: "50%",
-              backgroundColor: C.success,
+              backgroundColor: T.success,
             }}
           />
           <Typography
             sx={{
-              color: C.success,
+              color: T.success,
               fontWeight: 700,
               fontSize: "0.65rem",
               letterSpacing: 2.5,
@@ -215,8 +206,8 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             width: 56,
             height: 56,
             borderRadius: "50%",
-            bgcolor: `${C.accent}18`,
-            border: `1.5px solid ${C.accent}40`,
+            bgcolor: `${T.accent}18`,
+            border: `1.5px solid ${T.accent}40`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -224,7 +215,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             mb: 1.5,
           }}
         >
-          <SportsMartialArts sx={{ color: C.accent, fontSize: 28 }} />
+          <SportsMartialArts sx={{ color: T.accent, fontSize: 28 }} />
         </Box>
 
         {/* Nom */}
@@ -232,7 +223,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
           sx={{
             fontWeight: 900,
             fontSize: { xs: "1.4rem", sm: "1.7rem" },
-            color: C.text,
+            color: T.text,
             lineHeight: 1.15,
             mb: 1,
           }}
@@ -255,16 +246,16 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
                 <Tag
                   sx={{
                     fontSize: "0.75rem !important",
-                    color: `${C.accent} !important`,
+                    color: `${T.accent} !important`,
                   }}
                 />
               }
               label={enCours?.inscription?.organisateur?.name ?? "—"}
               size="small"
               sx={{
-                bgcolor: `${C.accent}15`,
-                color: C.accent,
-                border: `1px solid ${C.accent}30`,
+                bgcolor: `${T.accent}15`,
+                color: T.accent,
+                border: `1px solid ${T.accent}30`,
                 fontSize: "0.72rem",
                 height: 24,
               }}
@@ -277,16 +268,16 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
               <Tag
                 sx={{
                   fontSize: "0.75rem !important",
-                  color: `${C.accent} !important`,
+                  color: `${T.accent} !important`,
                 }}
               />
             }
             label={`Passage ${enCours?.ordre ?? "—"}`}
             size="small"
             sx={{
-              bgcolor: `${C.accent}15`,
-              color: C.accent,
-              border: `1px solid ${C.accent}30`,
+              bgcolor: `${T.accent}15`,
+              color: T.accent,
+              border: `1px solid ${T.accent}30`,
               fontSize: "0.72rem",
               height: 24,
             }}
@@ -296,7 +287,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
               <Person
                 sx={{
                   fontSize: "0.75rem !important",
-                  color: `${C.muted} !important`,
+                  color: `${T.textMuted} !important`,
                 }}
               />
             }
@@ -304,8 +295,8 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
             size="small"
             sx={{
               bgcolor: "#1e2a3a",
-              color: C.muted,
-              border: `1px solid ${C.border}`,
+              color: T.textMuted,
+              border: `1px solid ${T.border}`,
               fontSize: "0.72rem",
               height: 24,
             }}
@@ -315,9 +306,9 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
               label={enCours.inscription.kata ?? enCours.inscription.kata}
               size="small"
               sx={{
-                bgcolor: `${C.gold}12`,
-                color: C.gold,
-                border: `1px solid ${C.gold}30`,
+                bgcolor: `${T.warning}12`,
+                color: T.warning,
+                border: `1px solid ${T.warning}30`,
                 fontSize: "0.72rem",
                 height: 24,
               }}
@@ -331,11 +322,12 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
 
 // ─── Zone saisie note ─────────────────────────────────────────────────────────
 const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
+  const T = useCompetitionTheme();
   const getColor = () => {
-    if (valeur >= 8.5) return "#22c55e";
-    if (valeur >= 7) return "#3b82f6";
-    if (valeur >= 5) return "#f59e0b";
-    return "#ef4444";
+    if (valeur >= 8.5) return T.success;
+    if (valeur >= 7) return T.accent;
+    if (valeur >= 5) return T.warning;
+    return T.danger;
   };
 
   const noteColor = getColor();
@@ -350,15 +342,15 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
         sx={{
           p: 3,
           borderRadius: 4,
-          bgcolor: C.card,
-          border: `1px solid ${C.border}`,
+          bgcolor: T.surface,
+          border: `1px solid ${T.border}`,
         }}
       >
         <Typography
           sx={{
             fontWeight: 700,
             textAlign: "center",
-            color: C.muted,
+            color: T.textMuted,
             fontSize: "0.7rem",
             letterSpacing: 2,
             textTransform: "uppercase",
@@ -400,7 +392,7 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
           <Typography
             sx={{
               fontSize: "0.65rem",
-              color: C.muted,
+              color: T.textMuted,
               letterSpacing: 1.5,
               textTransform: "uppercase",
             }}
@@ -430,13 +422,16 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
                 height: 20,
                 boxShadow: `0 0 8px ${noteColor}80`,
               },
-              "& .MuiSlider-rail": { bgcolor: "#1e2a3a", height: 5 },
+              "& .MuiSlider-rail": { bgcolor: "action.hover", height: 5 },
               "& .MuiSlider-track": { height: 5 },
             }}
           />
           <Stack direction="row" justifyContent="space-between">
             {["0", "2.5", "5", "7.5", "10"].map((v) => (
-              <Typography key={v} sx={{ fontSize: "0.6rem", color: C.muted }}>
+              <Typography
+                key={v}
+                sx={{ fontSize: "0.6rem", color: T.textMuted }}
+              >
                 {v}
               </Typography>
             ))}
@@ -462,9 +457,9 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
                     py: 0.6,
                     borderRadius: 2,
                     cursor: "pointer",
-                    bgcolor: isSelected ? noteColor : "#1e2a3a",
-                    border: `1px solid ${isSelected ? noteColor : C.border}`,
-                    color: isSelected ? "#000" : C.muted,
+                    bgcolor: isSelected ? noteColor : "action.hover",
+                    border: `1px solid ${isSelected ? noteColor : T.border}`,
+                    color: isSelected ? "#000" : T.textMuted,
                     fontSize: "0.82rem",
                     fontWeight: isSelected ? 800 : 500,
                     transition: "all 0.15s",
@@ -505,7 +500,7 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
               boxShadow: `0 4px 20px ${noteColor}40`,
               color: "#000",
               "&:hover": { boxShadow: `0 6px 24px ${noteColor}60` },
-              "&.Mui-disabled": { bgcolor: "#1e2a3a", color: C.muted },
+              "&.Mui-disabled": { bgcolor: "action.hover", color: T.textMuted },
             }}
           >
             {submitting ? (
@@ -527,150 +522,166 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
 };
 
 // ─── Note soumise ─────────────────────────────────────────────────────────────
-const NoteConfirmee = ({ valeur }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.4, ease: "easeOut" }}
-  >
-    <Box
-      sx={{
-        p: 4,
-        borderRadius: 4,
-        textAlign: "center",
-        bgcolor: C.card,
-        border: `1px solid ${C.success}40`,
-        boxShadow: `0 0 24px rgba(34,197,94,0.12)`,
-        position: "relative",
-        overflow: "hidden",
-      }}
+const NoteConfirmee = ({ valeur }) => {
+  const T = useCompetitionTheme();
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
       <Box
         sx={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.08) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <motion.div
-        initial={{ scale: 0, rotate: -20 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
-      >
-        <CheckCircle sx={{ fontSize: 64, color: C.success, mb: 1.5 }} />
-      </motion.div>
-
-      <Typography
-        sx={{
-          color: C.success,
-          fontWeight: 700,
-          fontSize: "0.65rem",
-          letterSpacing: 2.5,
-          textTransform: "uppercase",
-          mb: 1,
+          p: 4,
+          borderRadius: 4,
+          textAlign: "center",
+          bgcolor: T.surface,
+          border: `1px solid ${T.success}40`,
+          boxShadow: `0 0 24px ${alpha(T.success, 0.12)}`,
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        Note enregistrée
-      </Typography>
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background: `radial-gradient(ellipse at 50% 0%, ${alpha(T.success, 0.08)} 0%, transparent 70%)`,
+            pointerEvents: "none",
+          }}
+        />
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 12,
+            delay: 0.1,
+          }}
+        >
+          <CheckCircle sx={{ fontSize: 64, color: T.success, mb: 1.5 }} />
+        </motion.div>
+
         <Typography
           sx={{
-            fontSize: "4rem",
-            fontWeight: 900,
-            color: C.success,
-            lineHeight: 1,
-            textShadow: "0 0 30px rgba(34,197,94,0.4)",
+            color: T.success,
+            fontWeight: 700,
+            fontSize: "0.65rem",
+            letterSpacing: 2.5,
+            textTransform: "uppercase",
             mb: 1,
           }}
         >
-          {valeur.toFixed(1)}
+          Note enregistrée
         </Typography>
-      </motion.div>
 
-      <Typography sx={{ color: C.muted, fontSize: "0.85rem" }}>
-        En attente du prochain athlète...
-      </Typography>
-
-      {/* Petites particules */}
-      {[...Array(4)].map((_, i) => (
         <motion.div
-          key={i}
-          style={{
-            position: "absolute",
-            width: 5,
-            height: 5,
-            borderRadius: "50%",
-            backgroundColor: C.success,
-            left: `${20 + i * 20}%`,
-            top: "20%",
-          }}
-          animate={{ y: [0, -20, 0], opacity: [0, 0.6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-        />
-      ))}
-    </Box>
-  </motion.div>
-);
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Typography
+            sx={{
+              fontSize: "4rem",
+              fontWeight: 900,
+              color: T.success,
+              lineHeight: 1,
+              textShadow: `0 0 30px ${alpha(T.success, 0.4)}`,
+              mb: 1,
+            }}
+          >
+            {valeur.toFixed(1)}
+          </Typography>
+        </motion.div>
+
+        <Typography sx={{ color: T.textMuted, fontSize: "0.85rem" }}>
+          En attente du prochain athlète...
+        </Typography>
+
+        {/* Petites particules */}
+        {[...Array(4)].map((_, i) => (
+          <motion.div
+            key={i}
+            style={{
+              position: "absolute",
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              backgroundColor: T.success,
+              left: `${20 + i * 20}%`,
+              top: "20%",
+            }}
+            animate={{ y: [0, -20, 0], opacity: [0, 0.6, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+          />
+        ))}
+      </Box>
+    </motion.div>
+  );
+};
 
 // ─── Aucune séance active ─────────────────────────────────────────────────────
-const AucuneSeance = () => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-  >
-    <Box sx={{ textAlign: "center", py: 8, px: 3 }}>
-      <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <SportsMartialArts sx={{ fontSize: 64, color: C.muted, mb: 2 }} />
-      </motion.div>
-      <Typography
-        sx={{ color: C.text, fontWeight: 700, fontSize: "1.1rem", mb: 0.5 }}
-      >
-        Aucun athlète en cours
-      </Typography>
-      <Typography sx={{ color: C.muted, fontSize: "0.85rem" }}>
-        En attente du lancement de la séance...
-      </Typography>
-      {/* Barre d'attente animée */}
-      <Box
-        sx={{
-          mt: 3,
-          height: 2,
-          borderRadius: 99,
-          bgcolor: "#1e2a3a",
-          overflow: "hidden",
-          maxWidth: 200,
-          mx: "auto",
-        }}
-      >
+const AucuneSeance = () => {
+  const T = useCompetitionTheme();
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Box sx={{ textAlign: "center", py: 8, px: 3 }}>
         <motion.div
-          style={{
-            height: "100%",
-            background: C.accent,
-            borderRadius: 99,
-            width: "40%",
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <SportsMartialArts sx={{ fontSize: 64, color: T.textMuted, mb: 2 }} />
+        </motion.div>
+        <Typography
+          sx={{
+            color: T.text,
+            fontWeight: 700,
+            fontSize: "1.1rem",
+            mb: 0.5,
           }}
-          animate={{ x: ["-100%", "350%"] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-        />
+        >
+          Aucun athlète en cours
+        </Typography>
+        <Typography sx={{ color: T.textMuted, fontSize: "0.85rem" }}>
+          En attente du lancement de la séance...
+        </Typography>
+        {/* Barre d'attente animée */}
+        <Box
+          sx={{
+            mt: 3,
+            height: 2,
+            borderRadius: 99,
+            bgcolor: "action.hover",
+            overflow: "hidden",
+            maxWidth: 200,
+            mx: "auto",
+          }}
+        >
+          <motion.div
+            style={{
+              height: "100%",
+              background: T.accent,
+              borderRadius: 99,
+              width: "40%",
+            }}
+            animate={{ x: ["-100%", "350%"] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </Box>
       </Box>
-    </Box>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function KataArbitre({ config }) {
+  const T = useCompetitionTheme();
   const [enCours, setEnCours] = useState(null);
   const [nextAthlete, setNextAthlete] = useState(null);
   const [notes, setNotes] = useState([]);
@@ -750,7 +761,7 @@ export default function KataArbitre({ config }) {
 
   // ── Rendu ──
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: C.bg, pb: 4 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: T.bg, pb: 4 }}>
       {/* Barre top loading */}
       <AnimatePresence>
         {loading && (
@@ -766,13 +777,13 @@ export default function KataArbitre({ config }) {
               height: 3,
               zIndex: 9999,
               overflow: "hidden",
-              background: "#1e2a3a",
+              background: T.border,
             }}
           >
             <motion.div
               style={{
                 height: "100%",
-                background: `linear-gradient(90deg, transparent, ${C.accent}, transparent)`,
+                background: `linear-gradient(90deg, transparent, ${T.accent}, transparent)`,
                 width: "40%",
               }}
               animate={{ x: ["-100%", "350%"] }}
@@ -796,11 +807,11 @@ export default function KataArbitre({ config }) {
         >
           <Box>
             <Typography
-              sx={{ fontWeight: 800, color: C.text, fontSize: "1rem" }}
+              sx={{ fontWeight: 800, color: T.text, fontSize: "1rem" }}
             >
               {config?.plateau_nom ?? "Tatami"}
             </Typography>
-            <Typography sx={{ color: C.muted, fontSize: "0.72rem" }}>
+            <Typography sx={{ color: T.textMuted, fontSize: "0.72rem" }}>
               {config?.discipline} · {config?.juges_option} juges ·{" "}
               {config?.niveau}
             </Typography>

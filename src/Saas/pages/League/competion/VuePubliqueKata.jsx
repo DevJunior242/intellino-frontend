@@ -528,9 +528,9 @@ export default function VuePubliqueKata() {
                         borderRadius: 3,
                         textAlign: "center",
                         bgcolor: elimine
-                          ? alpha(theme.palette.error.main, 0.5)
+                          ? alpha(theme.palette.error.main, 0.75)
                           : aNote
-                            ? alpha(theme.palette.success.main, 0.5)
+                            ? alpha(theme.palette.success.main, 0.75)
                             : T.surfaceHigh,
                         border: "1px solid",
                         borderColor: elimine

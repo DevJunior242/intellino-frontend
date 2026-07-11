@@ -18,13 +18,10 @@ import {
 } from "@mui/material";
 import { EmojiEvents, MilitaryTech } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
+import useCompetitionTheme from "./useCompetitionTheme";
 
-const C = {
-  bg: "#0a0f1a",
-  card: "#111827",
-  border: "#1e2a3a",
-  text: "#e2e8f0",
-  muted: "#64748b",
+// Couleurs médailles : identité visuelle fixe (or/argent/bronze), indépendante du thème.
+const MEDAL = {
   or: "#f59e0b",
   argent: "#94a3b8",
   bronze: "#d97706",
@@ -50,20 +47,24 @@ const AVATAR_COLORS = [
 ];
 
 function RangBadge({ rang }) {
+  const T = useCompetitionTheme();
   if (rang === 1)
     return (
       <Chip
         icon={
           <EmojiEvents
-            sx={{ fontSize: "14px !important", color: `${C.or} !important` }}
+            sx={{
+              fontSize: "14px !important",
+              color: `${MEDAL.or} !important`,
+            }}
           />
         }
         label="1er"
         size="small"
         sx={{
-          bgcolor: `${C.or}20`,
-          color: C.or,
-          border: `1px solid ${C.or}40`,
+          bgcolor: `${MEDAL.or}20`,
+          color: MEDAL.or,
+          border: `1px solid ${MEDAL.or}40`,
           fontWeight: 700,
           fontSize: "0.7rem",
         }}
@@ -76,16 +77,16 @@ function RangBadge({ rang }) {
           <MilitaryTech
             sx={{
               fontSize: "14px !important",
-              color: `${C.argent} !important`,
+              color: `${MEDAL.argent} !important`,
             }}
           />
         }
         label="2e"
         size="small"
         sx={{
-          bgcolor: `${C.argent}20`,
-          color: C.argent,
-          border: `1px solid ${C.argent}40`,
+          bgcolor: `${MEDAL.argent}20`,
+          color: MEDAL.argent,
+          border: `1px solid ${MEDAL.argent}40`,
           fontWeight: 700,
           fontSize: "0.7rem",
         }}
@@ -98,16 +99,16 @@ function RangBadge({ rang }) {
           <MilitaryTech
             sx={{
               fontSize: "14px !important",
-              color: `${C.bronze} !important`,
+              color: `${MEDAL.bronze} !important`,
             }}
           />
         }
         label="3e"
         size="small"
         sx={{
-          bgcolor: `${C.bronze}20`,
-          color: C.bronze,
-          border: `1px solid ${C.bronze}40`,
+          bgcolor: `${MEDAL.bronze}20`,
+          color: MEDAL.bronze,
+          border: `1px solid ${MEDAL.bronze}40`,
           fontWeight: 700,
           fontSize: "0.7rem",
         }}
@@ -118,26 +119,31 @@ function RangBadge({ rang }) {
       <Chip
         label="4e"
         size="small"
-        sx={{ bgcolor: `${C.bronze}15`, color: C.bronze, fontSize: "0.7rem" }}
+        sx={{
+          bgcolor: `${MEDAL.bronze}15`,
+          color: MEDAL.bronze,
+          fontSize: "0.7rem",
+        }}
       />
     );
   return (
     <Chip
       label={`${rang}e`}
       size="small"
-      sx={{ bgcolor: "#1e2a3a", color: C.muted, fontSize: "0.7rem" }}
+      sx={{ bgcolor: "action.hover", color: T.textMuted, fontSize: "0.7rem" }}
     />
   );
 }
 
 function MarchesPodium({ or, argent, bronze1 }) {
+  const T = useCompetitionTheme();
   const marches = [
     {
       data: argent,
       rang: 2,
       label: "Argent",
       height: 110,
-      color: C.argent,
+      color: MEDAL.argent,
       bgColor: "#94a3b830",
       width: 130,
     },
@@ -146,7 +152,7 @@ function MarchesPodium({ or, argent, bronze1 }) {
       rang: 1,
       label: "Or",
       height: 160,
-      color: C.or,
+      color: MEDAL.or,
       bgColor: "#f59e0b30",
       width: 150,
     },
@@ -155,7 +161,7 @@ function MarchesPodium({ or, argent, bronze1 }) {
       rang: 3,
       label: "Bronze",
       height: 80,
-      color: C.bronze,
+      color: MEDAL.bronze,
       bgColor: "#d9770630",
       width: 130,
     },
@@ -184,7 +190,9 @@ function MarchesPodium({ or, argent, bronze1 }) {
                   animate={{ y: [0, -4, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <EmojiEvents sx={{ color: C.or, fontSize: 32, mb: 0.5 }} />
+                  <EmojiEvents
+                    sx={{ color: MEDAL.or, fontSize: 32, mb: 0.5 }}
+                  />
                 </motion.div>
               )}
               <Typography
@@ -198,7 +206,10 @@ function MarchesPodium({ or, argent, bronze1 }) {
               >
                 {m.data?.athlete_nom ?? "—"}
               </Typography>
-              <Typography sx={{ fontSize: "0.65rem", color: C.muted }} noWrap>
+              <Typography
+                sx={{ fontSize: "0.65rem", color: T.textMuted }}
+                noWrap
+              >
                 {m.data?.club_nom ?? "—"}
               </Typography>
             </Box>
@@ -247,6 +258,7 @@ function MarchesPodium({ or, argent, bronze1 }) {
 }
 
 export default function PodiumViewer({ configId }) {
+  const T = useCompetitionTheme();
   const [podium, setPodium] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -272,8 +284,8 @@ export default function PodiumViewer({ configId }) {
   if (loading)
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-        <CircularProgress sx={{ color: C.or }} />
-        <Typography sx={{ color: C.muted, mt: 2, fontSize: "0.85rem" }}>
+        <CircularProgress sx={{ color: MEDAL.or }} />
+        <Typography sx={{ color: T.textMuted, mt: 2, fontSize: "0.85rem" }}>
           Calcul du classement...
         </Typography>
       </Stack>
@@ -289,15 +301,15 @@ export default function PodiumViewer({ configId }) {
   if (!podium?.or)
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-        <EmojiEvents sx={{ fontSize: 48, color: C.muted, mb: 2 }} />
-        <Typography sx={{ color: C.muted }}>
+        <EmojiEvents sx={{ fontSize: 48, color: T.textMuted, mb: 2 }} />
+        <Typography sx={{ color: T.textMuted }}>
           Aucun résultat disponible
         </Typography>
       </Stack>
     );
 
   return (
-    <Box sx={{ bgcolor: C.bg, minHeight: "100%", p: 2 }}>
+    <Box sx={{ bgcolor: T.bg, minHeight: "100%", p: 2 }}>
       <AnimatePresence>
         {/* Podium visuel */}
         <MarchesPodium
@@ -314,17 +326,17 @@ export default function PodiumViewer({ configId }) {
         >
           <Paper
             sx={{
-              bgcolor: C.card,
-              border: `1px solid ${C.border}`,
+              bgcolor: T.surface,
+              border: `1px solid ${T.border}`,
               borderRadius: 3,
               overflow: "hidden",
             }}
           >
             <Box
-              sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${C.border}` }}
+              sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${T.border}` }}
             >
               <Typography
-                sx={{ color: C.text, fontWeight: 700, fontSize: "0.9rem" }}
+                sx={{ color: T.text, fontWeight: 700, fontSize: "0.9rem" }}
               >
                 Classement général officiel
               </Typography>
@@ -345,11 +357,11 @@ export default function PodiumViewer({ configId }) {
                       <TableCell
                         key={h}
                         sx={{
-                          color: C.muted,
+                          color: T.textMuted,
                           fontSize: "0.65rem",
                           letterSpacing: 1,
-                          bgcolor: "#0f1623",
-                          borderBottom: `1px solid ${C.border}`,
+                          bgcolor: T.bg,
+                          borderBottom: `1px solid ${T.border}`,
                           py: 1.5,
                           textTransform: "uppercase",
                         }}
@@ -370,13 +382,13 @@ export default function PodiumViewer({ configId }) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6 + i * 0.05 }}
                         sx={{
-                          "&:hover td": { bgcolor: "#1e2a3a" },
+                          "&:hover td": { bgcolor: "action.hover" },
                           "&:last-child td": { borderBottom: "none" },
                         }}
                       >
                         <TableCell
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
@@ -385,7 +397,7 @@ export default function PodiumViewer({ configId }) {
 
                         <TableCell
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
@@ -407,14 +419,14 @@ export default function PodiumViewer({ configId }) {
                                 sx={{
                                   fontSize: "0.82rem",
                                   fontWeight: 600,
-                                  color: C.text,
+                                  color: T.text,
                                   lineHeight: 1.2,
                                 }}
                               >
                                 {row.athlete_nom ?? "—"}
                               </Typography>
                               <Typography
-                                sx={{ fontSize: "0.65rem", color: C.muted }}
+                                sx={{ fontSize: "0.65rem", color: T.textMuted }}
                               >
                                 {row.club_nom ?? "—"}
                               </Typography>
@@ -424,7 +436,7 @@ export default function PodiumViewer({ configId }) {
 
                         <TableCell
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
@@ -432,8 +444,8 @@ export default function PodiumViewer({ configId }) {
                             label={row.nom_poule}
                             size="small"
                             sx={{
-                              bgcolor: "#1e2a3a",
-                              color: C.muted,
+                              bgcolor: "action.hover",
+                              color: T.textMuted,
                               fontSize: "0.65rem",
                               height: 20,
                             }}
@@ -443,7 +455,7 @@ export default function PodiumViewer({ configId }) {
                         <TableCell
                           align="center"
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
@@ -451,7 +463,7 @@ export default function PodiumViewer({ configId }) {
                             sx={{
                               fontSize: "0.85rem",
                               fontWeight: 700,
-                              color: C.or,
+                              color: MEDAL.or,
                             }}
                           >
                             {row.points_victoire}
@@ -461,14 +473,14 @@ export default function PodiumViewer({ configId }) {
                         <TableCell
                           align="center"
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
                           <Typography
                             sx={{
                               fontSize: "0.82rem",
-                              color: "#22c55e",
+                              color: T.success,
                               fontWeight: 600,
                             }}
                           >
@@ -479,14 +491,14 @@ export default function PodiumViewer({ configId }) {
                         <TableCell
                           align="center"
                           sx={{
-                            borderBottom: `1px solid ${C.border}`,
+                            borderBottom: `1px solid ${T.border}`,
                             py: 1.2,
                           }}
                         >
                           <Typography
                             sx={{
                               fontSize: "0.82rem",
-                              color: "#ef4444",
+                              color: T.danger,
                               fontWeight: 600,
                             }}
                           >

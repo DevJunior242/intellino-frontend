@@ -85,9 +85,12 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
                 transition: "all 0.3s ease",
                 border:
                   selectedId === comp.id
-                    ? "3px solid #2e7d32"
-                    : "1px solid #e0e0e0",
-                bgcolor: selectedId === comp.id ? "#4caf50" : "#1a1a1a",
+                    ? "3px solid"
+                    : "1px solid",
+                borderColor:
+                  selectedId === comp.id ? "success.dark" : "divider",
+                bgcolor:
+                  selectedId === comp.id ? "success.main" : "background.paper",
                 transform: selectedId === comp.id ? "scale(1.02)" : "none",
                 "&:hover": { boxShadow: 10 },
               }}
@@ -105,7 +108,14 @@ const MySwiperComp = ({ onSelect, selectedId }) => {
                     <EmojiEventsIcon />
                   </Avatar>
                   <Box>
-                    <Typography variant="caption" color="white">
+                    <Typography
+                      variant="caption"
+                      color={
+                        selectedId === comp.id
+                          ? "success.contrastText"
+                          : "text.primary"
+                      }
+                    >
                       competition {comp?.niveau?.nom}-(
                       {comp?.sub_discipline?.nom})
                     </Typography>
