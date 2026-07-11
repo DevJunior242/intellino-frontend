@@ -27,14 +27,22 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 
-const ACCENT = "#5C6BC0";
-const ACCENT_SOFT = "rgba(92, 107, 192, 0.16)";
-const SURFACE = "#1A1D29";
-const BORDER = "rgba(255, 255, 255, 0.08)";
-const TEXT = "#F5F5F7";
-const MUTED = "rgba(245, 245, 247, 0.6)";
+// Palette dérivée du thème actif (au lieu de valeurs fixes) pour s'adapter
+// au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    ACCENT: t.palette.primary.main,
+    ACCENT_SOFT: alpha(t.palette.primary.main, 0.16),
+    SURFACE: t.palette.background.paper,
+    BORDER: t.palette.divider,
+    TEXT: t.palette.text.primary,
+    MUTED: t.palette.text.secondary,
+  };
+};
 
 const PROVIDER_LABELS = {
   orange_money: { label: "Orange Money", color: "#FF6600" },
@@ -43,18 +51,17 @@ const PROVIDER_LABELS = {
   virement_bancaire: { label: "Virement", color: "#37474F" },
 };
 
-const textFieldDarkSx = {
+const getTextFieldDarkSx = ({ TEXT, BORDER, ACCENT, MUTED }) => ({
   "& .MuiOutlinedInput-root": {
     color: TEXT,
-    bgcolor: "rgba(255,255,255,0.04)",
     borderRadius: 2,
     "& fieldset": { borderColor: BORDER },
-    "&:hover fieldset": { borderColor: "rgba(255,255,255,0.24)" },
+    "&:hover fieldset": { borderColor: MUTED },
     "&.Mui-focused fieldset": { borderColor: ACCENT },
   },
   "& .MuiInputLabel-root": { color: MUTED },
   "& .MuiFormHelperText-root": { color: MUTED },
-};
+});
 
 function formatMontant(montant) {
   return Number(montant || 0).toLocaleString("fr-FR", {
@@ -67,6 +74,7 @@ function formatMontant(montant) {
 // Formulaire de définition/mise à jour du tarif de la saison en cours
 // ---------------------------------------------------------------------------
 function TarifFormDialog({ open, current, onClose, onSuccess }) {
+  const { ACCENT, SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   const [cotisation, setCotisation] = useState("");
   const [error, setError] = useState(null);
   const [serverError, setServerError] = useState(null);
@@ -166,7 +174,7 @@ function TarifFormDialog({ open, current, onClose, onSuccess }) {
                 </InputAdornment>
               ),
             }}
-            sx={textFieldDarkSx}
+            sx={getTextFieldDarkSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
         </Stack>
       </DialogContent>
@@ -202,6 +210,7 @@ function TarifFormDialog({ open, current, onClose, onSuccess }) {
 // Carte d'une cotisation déclarée par un club, en attente de vérification
 // ---------------------------------------------------------------------------
 function PaymentCard({ payment, onConfirm, onReject, processing }) {
+  const { SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   const rawProvider = payment.payment_method?.provider ?? null;
   const provider = PROVIDER_LABELS[rawProvider] || {
     label: rawProvider || "Non renseigné",
@@ -315,6 +324,8 @@ function PaymentCard({ payment, onConfirm, onReject, processing }) {
 }
 
 export default function AffiliationTarifIndex() {
+  const { ACCENT, ACCENT_SOFT, SURFACE, BORDER, TEXT, MUTED } =
+    useLocalTheme();
   const [affiliations, setAffiliations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -441,10 +452,7 @@ export default function AffiliationTarifIndex() {
       )}
 
       {loading ? (
-        <Skeleton
-          height={140}
-          sx={{ borderRadius: 3, bgcolor: "rgba(255,255,255,0.08)", mb: 4 }}
-        />
+        <Skeleton height={140} sx={{ borderRadius: 3, mb: 4 }} />
       ) : (
         <Card
           elevation={0}
@@ -517,10 +525,7 @@ export default function AffiliationTarifIndex() {
       </Typography>
 
       {loadingPayments ? (
-        <Skeleton
-          height={140}
-          sx={{ borderRadius: 3, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
+        <Skeleton height={140} sx={{ borderRadius: 3 }} />
       ) : pendingPayments.length === 0 ? (
         <Typography variant="body2" sx={{ color: MUTED }}>
           Aucune déclaration en attente de vérification.

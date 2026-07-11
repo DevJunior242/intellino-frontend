@@ -141,18 +141,19 @@ function LicenceForm() {
           elevation={0}
           sx={{
             p: 4,
-            bgcolor: "#22262f",
+            bgcolor: "background.paper",
             borderRadius: 3,
-            border: "1px solid rgba(255,255,255,0.05)",
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <Typography
             variant="h5"
-            sx={{ color: "#e8c84a", fontWeight: 700, mb: 1 }}
+            sx={{ color: "primary.main", fontWeight: 700, mb: 1 }}
           >
             Nouvelle Licence
           </Typography>
-          <Typography variant="body2" sx={{ color: "#8b90a0", mb: 4 }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
             Remplissez les informations pour générer la licence officielle.
           </Typography>
           {success && <Message text={success} type="success" />}
@@ -222,9 +223,7 @@ function LicenceForm() {
               </Grid> */}
 
               <Grid item xs={12}>
-                <Divider
-                  sx={{ my: 1, borderColor: "rgba(255,255,255,0.05)" }}
-                />
+                <Divider sx={{ my: 1 }} />
               </Grid>
 
               {/* 3. Dates (Émission et Expiration) */}
@@ -294,8 +293,8 @@ function LicenceForm() {
                   <Button
                     variant="outlined"
                     sx={{
-                      color: "#8b90a0",
-                      borderColor: "rgba(255,255,255,0.2)",
+                      color: "text.secondary",
+                      borderColor: "divider",
                     }}
                   >
                     Annuler
@@ -305,11 +304,11 @@ function LicenceForm() {
                     variant="contained"
                     disabled={submitting}
                     sx={{
-                      bgcolor: "#e8c84a",
-                      color: "#1a1d23",
+                      bgcolor: "primary.main",
+                      color: "primary.contrastText",
                       fontWeight: 700,
                       px: 4,
-                      "&:hover": { bgcolor: "#d4b63b" },
+                      "&:hover": { bgcolor: "primary.dark" },
                     }}
                   >
                     {submitting ? "Génération..." : "Valider la licence"}

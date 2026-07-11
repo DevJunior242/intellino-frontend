@@ -32,8 +32,6 @@ export default defineConfig({
           if (id.includes("@mui") || id.includes("@emotion"))
             return "vendor-mui";
           if (id.includes("react-router")) return "vendor-router";
-          if (id.includes("react-dom") || id.includes("/react/"))
-            return "vendor-react";
 
           return "vendor";
         },

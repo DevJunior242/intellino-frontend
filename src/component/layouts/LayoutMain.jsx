@@ -1,9 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import Footer from "../Footer";
 import Navbar from "../Navbar";
 import { Box } from "@mui/material";
 import TopBar from "../../Header/Topbar";
+import LoadingScreen from "../LoadingScreen";
 
 function LayoutMain() {
   return (
@@ -17,7 +18,9 @@ function LayoutMain() {
     >
       <Navbar />
       <Box component="main" sx={{ flexGrow: 1, width: "100%" }}>
-        <Outlet />
+        <Suspense fallback={<LoadingScreen />}>
+          <Outlet />
+        </Suspense>
       </Box>
       <Footer />
     </Box>

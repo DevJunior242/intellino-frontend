@@ -247,10 +247,10 @@ const SessionInfos = ({ sessionId }) => {
             </Typography>
             <Box sx={{ ml: 4 }}>
               <Typography variant="body1">
-                <b>Club :</b> {session.course?.club?.name}
+                <b>Club :</b> {session.course?.organisateur?.name}
               </Typography>
               <Typography variant="body1">
-                <b>Lieu :</b> {session.course?.club?.country}
+                <b>Lieu :</b> {"au sein du club"}
               </Typography>
               <Divider sx={{ my: 1.5 }} />
               <Typography

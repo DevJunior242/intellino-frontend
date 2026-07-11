@@ -66,7 +66,7 @@ export default function StageForm({ open, handleClose, onRefresh }) {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Ajouter un club manuel</DialogTitle>
+      <DialogTitle>Ajouter un stage</DialogTitle>
       <DialogContent
         sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
       >

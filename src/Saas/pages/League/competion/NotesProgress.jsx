@@ -12,6 +12,7 @@ import {
 import { CheckCircle, HourglassEmpty } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 export default function NotesProgress({
   ordrePassageId,
@@ -19,6 +20,7 @@ export default function NotesProgress({
   onNotesChange,
   configId,
 }) {
+  const T = useCompetitionTheme();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [score, setScore] = useState(null);
@@ -74,13 +76,14 @@ export default function NotesProgress({
         sx={{
           p: 3,
           borderRadius: 3,
-          bgcolor: "#141720",
-          border: "1px solid #1e2433",
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Stack direction="row" alignItems="center" gap={1.5} mb={2}>
-          <CircularProgress size={16} sx={{ color: "#6c63ff" }} />
-          <Typography variant="body2" sx={{ color: "#636b88" }}>
+          <CircularProgress size={16} sx={{ color: "primary.main" }} />
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             Chargement des notes...
           </Typography>
         </Stack>
@@ -90,7 +93,7 @@ export default function NotesProgress({
             sx={{
               height: 52,
               borderRadius: 2,
-              bgcolor: "#1e2433",
+              bgcolor: "divider",
               mb: 1,
               opacity: 1 - i * 0.15,
             }}
@@ -106,8 +109,9 @@ export default function NotesProgress({
       sx={{
         p: { xs: 2, sm: 3 },
         borderRadius: 3,
-        bgcolor: "#141720",
-        border: "1px solid #1e2433",
+        bgcolor: "background.paper",
+        border: "1px solid",
+        borderColor: "divider",
       }}
     >
       {/* Header avec progression */}
@@ -120,7 +124,7 @@ export default function NotesProgress({
         <Stack direction="row" alignItems="center" gap={1}>
           <Typography
             fontWeight="bold"
-            sx={{ color: "#dde1f0", fontSize: "0.9rem" }}
+            sx={{ color: "text.primary", fontSize: "0.9rem" }}
           >
             Notes reçues
           </Typography>
@@ -155,12 +159,12 @@ export default function NotesProgress({
           variant="determinate"
           value={progression}
           color={toutesRecues ? "success" : "primary"}
-          sx={{ borderRadius: 2, height: 6, bgcolor: "#1e2433" }}
+          sx={{ borderRadius: 2, height: 6, bgcolor: "divider" }}
         />
         <Typography
           variant="caption"
           sx={{
-            color: "#636b88",
+            color: "text.secondary",
             mt: 0.5,
             display: "block",
             fontSize: "0.65rem",
@@ -185,9 +189,9 @@ export default function NotesProgress({
                 sx={{
                   p: { xs: 1.2, sm: 1.5 },
                   borderRadius: 2,
-                  bgcolor: note ? "rgba(34,197,94,0.06)" : "#1a1e2a",
+                  bgcolor: note ? "rgba(34,197,94,0.06)" : T.surfaceHigh,
                   border: "1px solid",
-                  borderColor: note ? "rgba(34,197,94,0.2)" : "#1e2433",
+                  borderColor: note ? "rgba(34,197,94,0.2)" : T.border,
                   transition: "all 0.4s ease",
                 }}
               >
@@ -197,7 +201,7 @@ export default function NotesProgress({
                   ) : (
                     <HourglassEmpty
                       sx={{
-                        color: "#636b88",
+                        color: "text.secondary",
                         fontSize: 16,
                         animation: "spin 3s linear infinite",
                         "@keyframes spin": {
@@ -211,7 +215,7 @@ export default function NotesProgress({
                     <Typography
                       variant="body2"
                       sx={{
-                        color: note ? "#dde1f0" : "#636b88",
+                        color: note ? "text.primary" : "text.secondary",
                         fontWeight: 500,
                         fontSize: { xs: "0.75rem", sm: "0.82rem" },
                         lineHeight: 1.2,
@@ -222,7 +226,7 @@ export default function NotesProgress({
                     {note && (
                       <Typography
                         variant="caption"
-                        sx={{ color: "#636b88", fontSize: "0.65rem" }}
+                        sx={{ color: "text.secondary", fontSize: "0.65rem" }}
                       >
                         {note.arbitre}
                       </Typography>
@@ -242,10 +246,10 @@ export default function NotesProgress({
                   </Typography>
                 ) : (
                   <Stack direction="row" alignItems="center" gap={0.5}>
-                    <CircularProgress size={10} sx={{ color: "#636b88" }} />
+                    <CircularProgress size={10} sx={{ color: "text.secondary" }} />
                     <Typography
                       variant="caption"
-                      sx={{ color: "#636b88", fontSize: "0.65rem" }}
+                      sx={{ color: "text.secondary", fontSize: "0.65rem" }}
                     >
                       attente
                     </Typography>

@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { Suspense } from "react";
 import { Outlet } from "react-router-dom";
+import LoadingScreen from "../LoadingScreen";
 
 function LayoutAuth() {
   return (
@@ -13,7 +14,9 @@ function LayoutAuth() {
           minHeight: "80vh",
         }}
       >
-        <Outlet />
+        <Suspense fallback={<LoadingScreen />}>
+          <Outlet />
+        </Suspense>
       </Box>
     </Box>
   );

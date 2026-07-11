@@ -14,116 +14,139 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { alpha, useTheme } from "@mui/material/styles";
 
-// --- COULEURS DU THÈME EXACT (Dark Mode de l'image) ---
-const theme = {
-  bg: "#1a1d21", // Fond principal
-  paper: "#212529", // Fond des grands blocs
-  card: "#2c3035", // Fond des stats cards (Date, Lieu, etc.)
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a", // Jaune Karaté
-  success: "#4caf50", // Vert
-  warning: "#f44336", // Rouge
+// Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const muiTheme = useTheme();
+  return {
+    bg: muiTheme.palette.background.default,
+    paper: muiTheme.palette.background.paper,
+    card: muiTheme.palette.background.paper,
+    textMain: muiTheme.palette.text.primary,
+    textSecondary: muiTheme.palette.text.secondary,
+    accent: muiTheme.palette.primary.main,
+    success: muiTheme.palette.success.main,
+    warning: muiTheme.palette.error.main,
+    info: muiTheme.palette.info.main,
+  };
 };
 
 // --- COMPOSANT : Carte d'Info Principale ---
-const InfoCard = ({ title, value, detail, color }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 3,
-      bgcolor: theme.card,
-      borderRadius: 4,
-      flexGrow: 1,
-      minWidth: "220px",
-      border: "1px solid rgba(255,255,255,0.03)",
-    }}
-  >
-    <Typography
-      variant="body2"
-      sx={{ color: theme.textSecondary, mb: 1, fontWeight: 500 }}
-    >
-      {title}
-    </Typography>
-    <Typography
-      variant="h6"
-      sx={{ color: color || theme.textMain, fontWeight: 700, lineHeight: 1.2 }}
-    >
-      {value}
-    </Typography>
-    {detail && (
-      <Typography
-        variant="caption"
-        sx={{ color: theme.textSecondary, display: "block", mt: 0.5 }}
-      >
-        {detail}
-      </Typography>
-    )}
-  </Paper>
-);
-
-// --- COMPOSANT : Curseurs de Notation (Grade Sliders) ---
-const GradeSlider = ({ title, value, onChange }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2.5,
-      bgcolor: theme.card,
-      borderRadius: 3,
-      border: "1px solid rgba(255,255,255,0.03)",
-    }}
-  >
-    <Typography
-      variant="caption"
+const InfoCard = ({ title, value, detail, color }) => {
+  const theme = useLocalTheme();
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        color: theme.textSecondary,
-        fontWeight: 600,
-        textTransform: "uppercase",
-        letterSpacing: 1,
-        mb: 1.5,
-        display: "block",
+        p: 3,
+        bgcolor: theme.card,
+        borderRadius: 4,
+        flexGrow: 1,
+        minWidth: "220px",
+        border: "1px solid",
+        borderColor: "divider",
       }}
     >
-      {title}
-    </Typography>
-    <Stack direction="row" spacing={3} alignItems="center">
       <Typography
-        variant="h3"
-        sx={{ color: "#2196f3", fontWeight: 800, lineHeight: 1 }}
+        variant="body2"
+        sx={{ color: theme.textSecondary, mb: 1, fontWeight: 500 }}
       >
-        {value.toFixed(1)}
+        {title}
       </Typography>
-      <Slider
-        value={value}
-        onChange={onChange}
-        min={0}
-        max={10}
-        step={0.1}
-        valueLabelDisplay="auto"
+      <Typography
+        variant="h6"
         sx={{
-          color: "#2196f3",
-          height: 4,
-          "& .MuiSlider-thumb": {
-            width: 20,
-            height: 20,
-            backgroundColor: "#fff",
-            border: "2px solid #2196f3",
-            "&:hover, &.Mui-focusVisible, &.Mui-active": {
-              boxShadow: "none",
-            },
-          },
-          "& .MuiSlider-track": { border: "none" },
-          "& .MuiSlider-rail": { opacity: 0.2, backgroundColor: "#1a1d21" },
-          "& .MuiSlider-valueLabel": { bgcolor: "#2196f3" },
+          color: color || theme.textMain,
+          fontWeight: 700,
+          lineHeight: 1.2,
         }}
-      />
-    </Stack>
-  </Paper>
-);
+      >
+        {value}
+      </Typography>
+      {detail && (
+        <Typography
+          variant="caption"
+          sx={{ color: theme.textSecondary, display: "block", mt: 0.5 }}
+        >
+          {detail}
+        </Typography>
+      )}
+    </Paper>
+  );
+};
+
+// --- COMPOSANT : Curseurs de Notation (Grade Sliders) ---
+const GradeSlider = ({ title, value, onChange }) => {
+  const theme = useLocalTheme();
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        bgcolor: theme.card,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.textSecondary,
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          mb: 1.5,
+          display: "block",
+        }}
+      >
+        {title}
+      </Typography>
+      <Stack direction="row" spacing={3} alignItems="center">
+        <Typography
+          variant="h3"
+          sx={{ color: theme.info, fontWeight: 800, lineHeight: 1 }}
+        >
+          {value.toFixed(1)}
+        </Typography>
+        <Slider
+          value={value}
+          onChange={onChange}
+          min={0}
+          max={10}
+          step={0.1}
+          valueLabelDisplay="auto"
+          sx={{
+            color: theme.info,
+            height: 4,
+            "& .MuiSlider-thumb": {
+              width: 20,
+              height: 20,
+              backgroundColor: "#fff",
+              border: "2px solid",
+              borderColor: theme.info,
+              "&:hover, &.Mui-focusVisible, &.Mui-active": {
+                boxShadow: "none",
+              },
+            },
+            "& .MuiSlider-track": { border: "none" },
+            "& .MuiSlider-rail": {
+              opacity: 0.2,
+              backgroundColor: theme.textSecondary,
+            },
+            "& .MuiSlider-valueLabel": { bgcolor: theme.info },
+          }}
+        />
+      </Stack>
+    </Paper>
+  );
+};
 
 // --- COMPOSANT PRINCIPAL : Page Fiche de Notation de Grade ---
 export default function FicheNotationGrade() {
+  const theme = useLocalTheme();
   const [grades, setGrades] = useState({
     kihon: 7.5,
     kata: 8.0,
@@ -192,8 +215,8 @@ export default function FicheNotationGrade() {
         <Button
           variant="outlined"
           sx={{
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.2)",
+            color: "text.primary",
+            borderColor: "divider",
             textTransform: "none",
             px: 3,
             borderRadius: 2,
@@ -206,7 +229,7 @@ export default function FicheNotationGrade() {
           endIcon={<KeyboardArrowDownIcon />}
           sx={{
             color: theme.textSecondary,
-            borderColor: "rgba(255,255,255,0.2)",
+            borderColor: "divider",
             textTransform: "none",
             px: 3,
             borderRadius: 2,
@@ -242,7 +265,8 @@ export default function FicheNotationGrade() {
           bgcolor: theme.paper,
           borderRadius: 4,
           mb: 4,
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography
@@ -256,8 +280,10 @@ export default function FicheNotationGrade() {
             label={isAdmisse ? "Admisse" : "Ajournée"}
             size="large"
             sx={{
-              bgcolor: isAdmisse ? "rgba(76, 175, 80, 0.08)" : theme.warning,
-              color: isAdmisse ? "#4caf50" : "#ffffff",
+              bgcolor: isAdmisse
+                ? alpha(theme.success, 0.08)
+                : theme.warning,
+              color: isAdmisse ? theme.success : "#fff",
               fontWeight: 700,
               fontSize: "0.8rem",
               px: 1.5,
@@ -282,7 +308,8 @@ export default function FicheNotationGrade() {
           bgcolor: theme.paper,
           borderRadius: 4,
           mb: 4,
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography
@@ -335,9 +362,10 @@ export default function FicheNotationGrade() {
               elevation={0}
               sx={{
                 p: 2.5,
-                bgcolor: "rgba(33, 150, 243, 0.05)",
+                bgcolor: alpha(theme.info, 0.05),
                 borderRadius: 3,
-                border: "1px solid rgba(33, 150, 243, 0.1)",
+                border: "1px solid",
+                borderColor: alpha(theme.info, 0.1),
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -349,7 +377,7 @@ export default function FicheNotationGrade() {
               <Typography
                 variant="caption"
                 sx={{
-                  color: "#2196f3",
+                  color: theme.info,
                   fontWeight: 600,
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -360,13 +388,13 @@ export default function FicheNotationGrade() {
               </Typography>
               <Typography
                 variant="h3"
-                sx={{ color: "#2196f3", fontWeight: 800, lineHeight: 1 }}
+                sx={{ color: theme.info, fontWeight: 800, lineHeight: 1 }}
               >
                 {moyenne}
               </Typography>
               <Typography
                 variant="caption"
-                sx={{ color: "#2196f3", mt: 1, fontWeight: 500 }}
+                sx={{ color: theme.info, mt: 1, fontWeight: 500 }}
               >
                 Seuil : {seuiAdmisse.toFixed(1)} / 10
               </Typography>
@@ -392,10 +420,10 @@ export default function FicheNotationGrade() {
             mb: 4,
             "& .MuiOutlinedInput-root": {
               color: theme.textMain,
-              "& fieldset": { borderColor: "rgba(255,255,255,0.03)" },
-              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+              "& fieldset": { borderColor: "divider" },
+              "&:hover fieldset": { borderColor: theme.textSecondary },
               "&.Mui-focused fieldset": {
-                borderColor: "rgba(255,255,255,0.1)",
+                borderColor: theme.accent,
               },
             },
           }}
@@ -410,8 +438,8 @@ export default function FicheNotationGrade() {
           <Button
             variant="outlined"
             sx={{
-              color: "#fff",
-              borderColor: "rgba(255,255,255,0.2)",
+              color: "text.primary",
+              borderColor: "divider",
               textTransform: "none",
               px: 4,
               py: 1.5,
@@ -424,14 +452,14 @@ export default function FicheNotationGrade() {
             variant="outlined"
             sx={{
               color: theme.textSecondary,
-              borderColor: "rgba(255,255,255,0.2)",
+              borderColor: "divider",
               textTransform: "none",
               px: 4,
               py: 1.5,
               borderRadius: 2,
               "&:hover": {
                 borderColor: theme.accent,
-                bgcolor: "rgba(232, 200, 74, 0.05)",
+                bgcolor: alpha(theme.accent, 0.05),
               },
             }}
           >

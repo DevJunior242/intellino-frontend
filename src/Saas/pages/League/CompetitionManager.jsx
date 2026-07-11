@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Box, Typography, Paper, Stack, Button, Chip } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
@@ -9,62 +10,80 @@ import { UseAuth } from "../../../Api/AuthContext.jsx";
 import ConfigSkeleton from "../ConfigSkeleton.jsx";
 import EditEvenement from "./competion/EditEvenement.jsx";
 
-const theme = {
-  bg: "#1a1d21",
-  paper: "#212529",
-  card: "#2c3035",
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a",
-  success: "#4caf50",
-  warning: "#f44336",
+// Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    bg: t.palette.background.default,
+    paper: t.palette.background.paper,
+    card: t.palette.background.paper,
+    textMain: t.palette.text.primary,
+    textSecondary: t.palette.text.secondary,
+    accent: t.palette.primary.main,
+    success: t.palette.success.main,
+    warning: t.palette.error.main,
+  };
 };
 
-const InfoCard = ({ title, value, detail, color }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2.5,
-      bgcolor: theme.card,
-      borderRadius: 2,
-      flexGrow: 1,
-      minWidth: { xs: "100%", sm: "180px" },
-      border: "1px solid rgba(255,255,255,0.03)",
-    }}
-  >
-    <Typography
-      variant="body2"
-      sx={{ color: theme.textSecondary, mb: 1, fontWeight: 500 }}
+const InfoCard = ({ title, value, detail, color }) => {
+  const theme = useLocalTheme();
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        bgcolor: theme.card,
+        borderRadius: 2,
+        flexGrow: 1,
+        minWidth: { xs: "100%", sm: "180px" },
+        border: "1px solid",
+        borderColor: "divider",
+      }}
     >
-      {title}
-    </Typography>
-    <Typography
-      variant="h5"
-      sx={{ color: color || theme.textMain, fontWeight: 700, lineHeight: 1.2 }}
-    >
-      {value}
-    </Typography>
-    {detail && (
       <Typography
-        variant="caption"
-        sx={{ color: color || theme.textSecondary, display: "block", mt: 0.5 }}
+        variant="body2"
+        sx={{ color: theme.textSecondary, mb: 1, fontWeight: 500 }}
       >
-        {detail}
+        {title}
       </Typography>
-    )}
-  </Paper>
-);
+      <Typography
+        variant="h5"
+        sx={{
+          color: color || theme.textMain,
+          fontWeight: 700,
+          lineHeight: 1.2,
+        }}
+      >
+        {value}
+      </Typography>
+      {detail && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: color || theme.textSecondary,
+            display: "block",
+            mt: 0.5,
+          }}
+        >
+          {detail}
+        </Typography>
+      )}
+    </Paper>
+  );
+};
 
 const StatusBadge = ({ label, type }) => {
+  const theme = useLocalTheme();
   const getColors = () => {
     switch (type) {
       case "open":
-        return { bgcolor: "rgba(76, 175, 80, 0.08)", color: "#4caf50" };
+        return { bgcolor: alpha(theme.success, 0.08), color: theme.success };
       case "close":
-        return { bgcolor: theme.warning, color: "#ffffff" };
+        return { bgcolor: theme.warning, color: "#fff" };
       case "done":
         return {
-          bgcolor: "rgba(255,255,255,0.05)",
+          bgcolor: alpha(theme.textMain, 0.05),
           color: theme.textSecondary,
         };
       default:
@@ -102,6 +121,7 @@ const getStatut = (status) =>
   STATUT_CONFIG[status] ?? { label: String(status), color: "default" };
 
 export default function CompetitionManager() {
+  const theme = useLocalTheme();
   const { auth, activeId, activeType, activeRole } = UseAuth();
 
   const [activeComp, setActiveComp] = useState({});
@@ -256,8 +276,8 @@ export default function CompetitionManager() {
           <Button
             variant="outlined"
             sx={{
-              color: "#fff",
-              borderColor: "rgba(255,255,255,0.2)",
+              color: "text.primary",
+              borderColor: "divider",
               textTransform: "none",
               px: 3,
               borderRadius: 2,
@@ -280,7 +300,8 @@ export default function CompetitionManager() {
               bgcolor: theme.paper,
               borderRadius: 4,
               mb: 4,
-              border: "1px solid rgba(255,255,255,0.05)",
+              border: "1px solid",
+              borderColor: "divider",
             }}
           >
             <Typography

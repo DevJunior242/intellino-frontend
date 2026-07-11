@@ -15,6 +15,7 @@ import {
   Button,
   TextField,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { Instance } from "../../Api/Axios";
 import { UseAuth } from "../../Api/AuthContext";
@@ -57,7 +58,24 @@ const fadeUp = {
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+const useLocalTheme = () => {
+  const muiTheme = useTheme();
+  return {
+    bg: muiTheme.palette.background.default,
+    paper: muiTheme.palette.background.paper,
+    card: muiTheme.palette.background.paper,
+    textMain: muiTheme.palette.text.primary,
+    textSecondary: muiTheme.palette.text.secondary,
+    accent: muiTheme.palette.primary.main,
+    success: muiTheme.palette.success.main,
+    warning: muiTheme.palette.error.main,
+    info: muiTheme.palette.info.main,
+  };
+};
+
 function StatCard({ label, value, sub, subColor, index }) {
+  const theme = useLocalTheme();
+
   return (
     <motion.div
       custom={index}
@@ -70,9 +88,10 @@ function StatCard({ label, value, sub, subColor, index }) {
       <Paper
         sx={{
           p: 2.5,
-          bgcolor: "#22262f",
+          bgcolor: theme.paper,
           borderRadius: 3,
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid",
+          borderColor: "divider",
           height: "100%",
         }}
       >
@@ -88,13 +107,16 @@ function StatCard({ label, value, sub, subColor, index }) {
           sx={{
             fontWeight: 700,
             letterSpacing: "-0.5px",
-            color: "#e8eaf0",
+            color: theme.textMain,
             mb: 0.5,
           }}
         >
           {value}
         </Typography>
-        <Typography variant="caption" sx={{ color: subColor, fontWeight: 500 }}>
+        <Typography
+          variant="caption"
+          sx={{ color: subColor || theme.textSecondary, fontWeight: 500 }}
+        >
           {sub}
         </Typography>
       </Paper>
@@ -111,6 +133,7 @@ function AdminLeagueDashboard() {
 
   const { activeId, invitationCode } = UseAuth();
   const navigate = useNavigate();
+  const theme = useLocalTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -161,7 +184,7 @@ function AdminLeagueDashboard() {
     const [statsRes, aVerifierRes, examRes] = await Promise.allSettled([
       Instance.get("/api/stage-payments/statistiques"),
       Instance.get("/api/stage-payments/a-verifier"),
-      Instance.get("/api/dashboard/league/exmenstates"),
+      Instance.get("/api/examens/vitality-stats"),
     ]);
 
     if (statsRes.status === "fulfilled") {
@@ -202,7 +225,7 @@ function AdminLeagueDashboard() {
   }
   if (error) return <ErrorBlock message={error} onRetry={fetchStats} />;
   return (
-    <Box>
+    <Box sx={{ bgcolor: theme.bg }}>
       <Box
         sx={{
           display: "flex",
@@ -211,7 +234,8 @@ function AdminLeagueDashboard() {
           flexWrap: "wrap",
           gap: 2,
           mb: 4,
-          borderBottom: "1px solid #e0e0e0",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           pb: 2,
         }}
       >

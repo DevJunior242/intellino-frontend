@@ -18,6 +18,7 @@ import {
   CheckCircle as CheckCircleIcon,
   ArrowForward as ArrowForwardIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 import { UseAuth } from "../../../Api/AuthContext";
 
@@ -209,7 +210,7 @@ export default function LeagueFederationAffiliation() {
               sx={{
                 borderRadius: 4,
                 border: "1px solid",
-                borderColor: "grey.100",
+                borderColor: "divider",
                 overflow: "visible",
               }}
             >
@@ -230,7 +231,7 @@ export default function LeagueFederationAffiliation() {
                       justifyContent: "center",
                       width: 54,
                       height: 54,
-                      bgcolor: "primary.lighter", // ou use generic text/bg : alpha(theme.palette.primary.main, 0.1)
+                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
                       color: "primary.main",
                       borderRadius: 3,
                       flexShrink: 0,
@@ -243,7 +244,7 @@ export default function LeagueFederationAffiliation() {
                   >
                     <Typography
                       variant="h5"
-                      sx={{ fontWeight: 700, color: "grey.900" }}
+                      sx={{ fontWeight: 700, color: "text.primary" }}
                     >
                       Rattachement National de la Ligue
                     </Typography>

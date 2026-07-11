@@ -1,32 +1,39 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import { UseAuth } from "../../../../Api/AuthContext";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
 import Message from "../../Message";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🎨 DESIGN TOKENS
+// 🎨 DESIGN TOKENS — dérivés du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const C = {
-  bg: "#080a0f",
-  surface: "#0e1118",
-  surfaceHigh: "#141720",
-  border: "#1e2433",
-  accent: "#6c63ff",
-  accentLight: "#9d97ff",
-  accentDim: "rgba(108,99,255,0.12)",
-  teal: "#00e5c0",
-  tealDim: "rgba(0,229,192,0.10)",
-  amber: "#ffb547",
-  amberDim: "rgba(255,181,71,0.10)",
-  success: "#22c55e",
-  successDim: "rgba(34,197,94,0.10)",
-  danger: "#ef4444",
-  dangerDim: "rgba(239,68,68,0.10)",
-  text: "#dde1f0",
-  textMuted: "#636b88",
-  textFaint: "#2a3048",
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    bg: t.palette.background.default,
+    surface: t.palette.background.paper,
+    surfaceHigh: t.palette.background.paper,
+    border: t.palette.divider,
+    accent: t.palette.primary.main,
+    accentLight: t.palette.primary.light,
+    accentDim: alpha(t.palette.primary.main, 0.12),
+    accentContrastText: t.palette.primary.contrastText,
+    teal: t.palette.info.main,
+    tealDim: alpha(t.palette.info.main, 0.1),
+    amber: t.palette.warning.main,
+    amberDim: alpha(t.palette.warning.main, 0.1),
+    success: t.palette.success.main,
+    successDim: alpha(t.palette.success.main, 0.1),
+    successContrastText: t.palette.success.contrastText,
+    danger: t.palette.error.main,
+    dangerDim: alpha(t.palette.error.main, 0.1),
+    text: t.palette.text.primary,
+    textMuted: t.palette.text.secondary,
+    textFaint: t.palette.text.disabled,
+  };
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -38,202 +45,219 @@ const fadeUp = (delay = 0) => ({
   transition: { delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
 });
 
-const NIVEAU_COLORS = {
+const getNiveauColors = (C) => ({
   local: { color: C.teal, label: "Local" },
   regional: { color: C.amber, label: "Régional" },
   national: { color: C.accent, label: "National" },
   international: { color: C.danger, label: "International" },
-};
+});
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🧩 PRIMITIVES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const Tag = ({ children, color = C.accent }) => (
-  <span
-    style={{
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: "0.1em",
-      textTransform: "uppercase",
-      color,
-      background: `${color}18`,
-      padding: "3px 9px",
-      borderRadius: 20,
-    }}
-  >
-    {children}
-  </span>
-);
-
-const Divider = () => (
-  <div style={{ height: 1, background: C.border, margin: "4px 0" }} />
-);
-
-const Row = ({ label, children }) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}
-  >
-    <span style={{ fontSize: 12, color: C.textMuted }}>{label}</span>
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+const Tag = ({ children, color }) => {
+  const C = useLocalTheme();
+  const resolvedColor = color ?? C.accent;
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        color: resolvedColor,
+        background: `${resolvedColor}18`,
+        padding: "3px 9px",
+        borderRadius: 20,
+      }}
+    >
       {children}
+    </span>
+  );
+};
+
+const Divider = () => {
+  const C = useLocalTheme();
+  return <div style={{ height: 1, background: C.border, margin: "4px 0" }} />;
+};
+
+const Row = ({ label, children }) => {
+  const C = useLocalTheme();
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <span style={{ fontSize: 12, color: C.textMuted }}>{label}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 💀 SKELETON
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const SkeletonCard = () => (
-  <div
-    style={{
-      background: C.surfaceHigh,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      padding: "14px 18px",
-      marginBottom: 10,
-    }}
-  >
-    <style>{`@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+const SkeletonCard = () => {
+  const C = useLocalTheme();
+  return (
     <div
       style={{
-        width: 220,
-        height: 14,
-        borderRadius: 6,
-        background: C.border,
-        marginBottom: 8,
-        animation: "pulse 1.4s ease-in-out infinite",
+        background: C.surfaceHigh,
+        border: `1px solid ${C.border}`,
+        borderRadius: 12,
+        padding: "14px 18px",
+        marginBottom: 10,
       }}
-    />
-    <div
-      style={{
-        width: 120,
-        height: 11,
-        borderRadius: 6,
-        background: C.border,
-        animation: "pulse 1.4s ease-in-out infinite 0.2s",
-      }}
-    />
-  </div>
-);
+    >
+      <style>{`@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+      <div
+        style={{
+          width: 220,
+          height: 14,
+          borderRadius: 6,
+          background: C.border,
+          marginBottom: 8,
+          animation: "pulse 1.4s ease-in-out infinite",
+        }}
+      />
+      <div
+        style={{
+          width: 120,
+          height: 11,
+          borderRadius: 6,
+          background: C.border,
+          animation: "pulse 1.4s ease-in-out infinite 0.2s",
+        }}
+      />
+    </div>
+  );
+};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ❌ ERROR BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const ErrorBlock = ({ message, onRetry }) => (
-  <motion.div
-    {...fadeUp(0)}
-    style={{
-      textAlign: "center",
-      padding: "32px 20px",
-      background: C.dangerDim,
-      border: `1px solid ${C.danger}`,
-      borderRadius: 12,
-    }}
-  >
-    <div style={{ fontSize: 28, marginBottom: 12 }}>⚠</div>
-    <div style={{ color: C.danger, fontWeight: 600, marginBottom: 6 }}>
-      {message}
-    </div>
-    <motion.button
-      onClick={onRetry}
-      whileTap={{ scale: 0.97 }}
+const ErrorBlock = ({ message, onRetry }) => {
+  const C = useLocalTheme();
+  return (
+    <motion.div
+      {...fadeUp(0)}
       style={{
+        textAlign: "center",
+        padding: "32px 20px",
         background: C.dangerDim,
         border: `1px solid ${C.danger}`,
-        color: C.danger,
-        borderRadius: 8,
-        padding: "8px 18px",
-        fontSize: 13,
-        cursor: "pointer",
-        fontFamily: "inherit",
+        borderRadius: 12,
       }}
     >
-      Réessayer
-    </motion.button>
-  </motion.div>
-);
+      <div style={{ fontSize: 28, marginBottom: 12 }}>⚠</div>
+      <div style={{ color: C.danger, fontWeight: 600, marginBottom: 6 }}>
+        {message}
+      </div>
+      <motion.button
+        onClick={onRetry}
+        whileTap={{ scale: 0.97 }}
+        style={{
+          background: C.dangerDim,
+          border: `1px solid ${C.danger}`,
+          color: C.danger,
+          borderRadius: 8,
+          padding: "8px 18px",
+          fontSize: 13,
+          cursor: "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        Réessayer
+      </motion.button>
+    </motion.div>
+  );
+};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 📋 STEPPER HEADER — DYNAMIQUE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const StepHeader = ({ current, steps }) => (
-  <div style={{ display: "flex", alignItems: "center", marginBottom: 28 }}>
-    {steps.map((s, i) => {
-      const done = current > s.num;
-      const active = current === s.num;
-      const color = done ? C.success : active ? C.accent : C.textFaint;
-      return (
-        <div
-          key={s.num}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            flex: i < steps.length - 1 ? 1 : "none",
-          }}
-        >
+const StepHeader = ({ current, steps }) => {
+  const C = useLocalTheme();
+  return (
+    <div style={{ display: "flex", alignItems: "center", marginBottom: 28 }}>
+      {steps.map((s, i) => {
+        const done = current > s.num;
+        const active = current === s.num;
+        const color = done ? C.success : active ? C.accent : C.textFaint;
+        return (
           <div
+            key={s.num}
             style={{
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              gap: 5,
+              flex: i < steps.length - 1 ? 1 : "none",
             }}
           >
-            <motion.div
-              animate={{
-                background: done
-                  ? C.success
-                  : active
-                    ? C.accent
-                    : C.surfaceHigh,
-              }}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                border: `2px solid ${color}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                fontWeight: 700,
-                color: done || active ? "#fff" : C.textFaint,
-              }}
-            >
-              {done ? "✓" : s.num}
-            </motion.div>
-            <span
-              style={{
-                fontSize: 10,
-                color,
-                whiteSpace: "nowrap",
-                fontWeight: active ? 600 : 400,
-              }}
-            >
-              {s.label}
-            </span>
-          </div>
-          {i < steps.length - 1 && (
             <div
               style={{
-                flex: 1,
-                height: 2,
-                margin: "0 6px",
-                background: done ? C.success : C.border,
-                marginBottom: 16,
-                transition: "background 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 5,
               }}
-            />
-          )}
-        </div>
-      );
-    })}
-  </div>
-);
+            >
+              <motion.div
+                animate={{
+                  background: done
+                    ? C.success
+                    : active
+                      ? C.accent
+                      : C.surfaceHigh,
+                }}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  border: `2px solid ${color}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: done || active ? C.accentContrastText : C.textFaint,
+                }}
+              >
+                {done ? "✓" : s.num}
+              </motion.div>
+              <span
+                style={{
+                  fontSize: 10,
+                  color,
+                  whiteSpace: "nowrap",
+                  fontWeight: active ? 600 : 400,
+                }}
+              >
+                {s.label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  margin: "0 6px",
+                  background: done ? C.success : C.border,
+                  marginBottom: 16,
+                  transition: "background 0.3s",
+                }}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🏆 STEP 1 — ÉPREUVE (commun kata + kumite)
@@ -245,6 +269,8 @@ const Step1Competition = ({
   error,
   onRetry,
 }) => {
+  const C = useLocalTheme();
+  const NIVEAU_COLORS = getNiveauColors(C);
   if (error)
     return (
       <ErrorBlock
@@ -274,12 +300,20 @@ const Step1Competition = ({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {competitions.map((comp, i) => {
+        console.log("comp", comp);
         const niv = NIVEAU_COLORS[comp.niveau?.nom] ?? {
           color: C.textMuted,
           label: comp.niveau?.nom,
         };
         const selected = value?.id === comp.id;
-        const discNom = comp.discipline?.nom?.toLowerCase() ?? "";
+        const discNom = comp.sub_discipline?.nom?.toLowerCase() ?? "";
+        const poidsLabel = comp.category?.poids_max
+          ? comp?.category?.poids_min
+            ? `${Number(comp?.category?.poids_min)}-${Number(comp.category.poids_max)}kg`
+            : `-${Number(comp?.category?.poids_max)}kg`
+          : comp?.category?.poids_min
+            ? `+${Number(comp?.category?.poids_min)}kg`
+            : null;
         return (
           <motion.div
             key={comp.id}
@@ -315,15 +349,16 @@ const Step1Competition = ({
                 </span>
                 <Tag color={niv.color}>{niv.label}</Tag>
                 <Tag color={discNom === "kumite" ? C.danger : C.teal}>
-                  {comp.discipline?.nom ?? "—"}
+                  {comp.sub_discipline?.nom ?? "—"}({" "}
+                  {poidsLabel && `  ${poidsLabel}`})
                 </Tag>
               </div>
               <div style={{ fontSize: 12, color: C.textMuted }}>
-                {comp.evenement?.nom ?? "—"}
+                {comp?.evenement?.nom ?? "—"}
               </div>
               {comp.heure_debut_prevu && (
                 <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>
-                  {new Date(comp.heure_debut_prevu).toLocaleString("fr-FR", {
+                  {new Date(comp?.heure_debut_prevu).toLocaleString("fr-FR", {
                     weekday: "short",
                     day: "numeric",
                     month: "short",
@@ -381,6 +416,7 @@ const Step2Plateau = ({
   setCreerNouveau,
   loading,
 }) => {
+  const C = useLocalTheme();
   if (loading)
     return (
       <div>
@@ -569,6 +605,7 @@ const StepKataNbJuges = ({
   error,
   onRetry,
 }) => {
+  const C = useLocalTheme();
   if (error)
     return (
       <ErrorBlock
@@ -685,6 +722,7 @@ const StepKataNbJuges = ({
 // ⏱️ STEP KUMITE — DURÉE COMBAT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const StepKumiteDuration = ({ value, onChange }) => {
+  const C = useLocalTheme();
   const durees = [
     {
       valeur: 2,
@@ -752,6 +790,7 @@ const StepKumiteDuration = ({ value, onChange }) => {
 // 📱 STEP MODE SAISIE (commun)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const StepModeSaisie = ({ value, onChange, modes, error, onRetry }) => {
+  const C = useLocalTheme();
   if (error)
     return (
       <ErrorBlock
@@ -877,6 +916,8 @@ const RecapKata = ({
   mode,
   rotation,
 }) => {
+  const C = useLocalTheme();
+  const NIVEAU_COLORS = getNiveauColors(C);
   const niv = NIVEAU_COLORS[competition?.niveau?.nom] ?? { color: C.textMuted };
   return (
     <motion.div
@@ -967,6 +1008,8 @@ const RecapKata = ({
 // ✅ RECAP KUMITE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const RecapKumite = ({ competition, plateau, plateauNom, duration, mode }) => {
+  const C = useLocalTheme();
+  const NIVEAU_COLORS = getNiveauColors(C);
   const niv = NIVEAU_COLORS[competition?.niveau?.nom] ?? { color: C.textMuted };
   return (
     <motion.div
@@ -1050,84 +1093,90 @@ const RecapKumite = ({ competition, plateau, plateauNom, duration, mode }) => {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🎉 ÉCRAN SUCCÈS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const SuccessScreen = ({ competition, mode, onReset }) => (
-  <div
-    style={{
-      minHeight: "100vh",
-      background: C.bg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "'DM Sans', sans-serif",
-    }}
-  >
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{ textAlign: "center", maxWidth: 420, padding: 32 }}
+const SuccessScreen = ({ competition, mode, onReset }) => {
+  const C = useLocalTheme();
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: C.bg,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
     >
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: "50%",
-          background: C.successDim,
-          border: `2px solid ${C.success}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 32,
-          margin: "0 auto 20px",
-        }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{ textAlign: "center", maxWidth: 420, padding: 32 }}
       >
-        ✓
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: "50%",
+            background: C.successDim,
+            border: `2px solid ${C.success}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 32,
+            margin: "0 auto 20px",
+          }}
+        >
+          ✓
+        </motion.div>
+        <h2
+          style={{
+            color: C.text,
+            fontSize: 22,
+            fontWeight: 700,
+            margin: "0 0 8px",
+          }}
+        >
+          Configuration créée !
+        </h2>
+        <p style={{ color: C.textMuted, fontSize: 14, margin: "0 0 28px" }}>
+          Le plateau pour{" "}
+          <strong style={{ color: C.text }}>
+            {competition?.category?.nom}
+          </strong>{" "}
+          est configuré.
+          {mode?.code === "tablettes" &&
+            " Les arbitres peuvent se connecter avec leurs codes PIN."}
+        </p>
+        <motion.button
+          onClick={onReset}
+          whileTap={{ scale: 0.97 }}
+          style={{
+            background: C.accentDim,
+            border: `1px solid ${C.accent}`,
+            color: C.accentLight,
+            borderRadius: 10,
+            padding: "10px 24px",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          + Nouvelle configuration
+        </motion.button>
       </motion.div>
-      <h2
-        style={{
-          color: C.text,
-          fontSize: 22,
-          fontWeight: 700,
-          margin: "0 0 8px",
-        }}
-      >
-        Configuration créée !
-      </h2>
-      <p style={{ color: C.textMuted, fontSize: 14, margin: "0 0 28px" }}>
-        Le plateau pour{" "}
-        <strong style={{ color: C.text }}>{competition?.category?.nom}</strong>{" "}
-        est configuré.
-        {mode?.code === "tablettes" &&
-          " Les arbitres peuvent se connecter avec leurs codes PIN."}
-      </p>
-      <motion.button
-        onClick={onReset}
-        whileTap={{ scale: 0.97 }}
-        style={{
-          background: C.accentDim,
-          border: `1px solid ${C.accent}`,
-          color: C.accentLight,
-          borderRadius: 10,
-          padding: "10px 24px",
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: "pointer",
-          fontFamily: "inherit",
-        }}
-      >
-        + Nouvelle configuration
-      </motion.button>
-    </motion.div>
-  </div>
-);
+    </div>
+  );
+};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🏠 PAGE PRINCIPALE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function ConfigNotationPage() {
+  const C = useLocalTheme();
   //id
   const { activeId, activeType } = UseAuth();
   // ── États communs ──────────────────────────────────────────────────────────
@@ -1163,8 +1212,9 @@ export default function ConfigNotationPage() {
   const [errorNbJuges, setErrorNbJuges] = useState("");
 
   // ── Discipline détectée ────────────────────────────────────────────────────
-  const estKumite = competition?.discipline?.nom?.toLowerCase() === "kumite";
-  const estKata = competition?.discipline?.nom?.toLowerCase() === "kata";
+  const estKumite =
+    competition?.sub_discipline?.nom?.toLowerCase() === "kumite";
+  const estKata = competition?.sub_discipline?.nom?.toLowerCase() === "kata";
 
   // ── Plateau sélectionné (objet) ────────────────────────────────────────────
   const plateauSelectionne = plateaux.find((p) => p.id === plateauId) ?? null;
@@ -1217,15 +1267,10 @@ export default function ConfigNotationPage() {
     setErrorNbJuges("");
 
     const [resComps, resModes, resNbJuges] = await Promise.allSettled([
-      Instance.get(
-        `/api/competitions/competitions?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      ),
+      Instance.get(`/api/competitions/competitions`),
       Instance.get("/api/modes-saisie/modes-saisie"),
       Instance.get("/api/nb-juges/nb-juges"),
     ]);
-    console.log(resComps);
-    console.log(resModes);
-    console.log(resNbJuges);
 
     if (resComps.status === "fulfilled")
       setCompetitions(resComps.value.data.data || []);
@@ -1383,7 +1428,6 @@ export default function ConfigNotationPage() {
       await Instance.post("/api/config-notation/config-notation", dataSend);
       setDone(true);
     } catch (err) {
-      console.error(err);
       ErrorGlobal({ error: err, setError });
       // if (err.response?.status === 422) {
       //   const msgs = Object.values(err.response.data.errors ?? {})
@@ -1790,7 +1834,7 @@ export default function ConfigNotationPage() {
                     flex: 1,
                     background: canNext() ? C.accent : C.surfaceHigh,
                     border: "none",
-                    color: canNext() ? "#fff" : C.textFaint,
+                    color: canNext() ? C.accentContrastText : C.textFaint,
                     borderRadius: 10,
                     padding: "12px",
                     fontSize: 14,
@@ -1814,7 +1858,7 @@ export default function ConfigNotationPage() {
                       ? C.surfaceHigh
                       : `linear-gradient(135deg, ${C.accent}, ${C.teal})`,
                     border: "none",
-                    color: loading ? C.textFaint : "#fff",
+                    color: loading ? C.textFaint : C.accentContrastText,
                     borderRadius: 10,
                     padding: "13px",
                     fontSize: 14,

@@ -16,7 +16,7 @@ export default function VitalityGauge() {
   const getVitalityStats = async () => {
     try {
       const response = await Instance.get(
-        `/api/dashboard/league/exmenstates?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        `/api/examens/vitality-stats?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       setVitalityData(response.data);
     } catch (error) {

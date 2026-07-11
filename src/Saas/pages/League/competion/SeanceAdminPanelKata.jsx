@@ -31,10 +31,13 @@ import {
   CheckCircle,
   Warning,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import ProchainAthlete from "./ProchainAthlete";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 const AthleteCard = ({ enCours, config, notes }) => {
+  const T = useCompetitionTheme();
   return (
     <Paper
       elevation={0}
@@ -42,9 +45,9 @@ const AthleteCard = ({ enCours, config, notes }) => {
         p: { xs: 8, sm: 10 },
         mb: 2,
         borderRadius: 3,
-        background:
-          "linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(108,99,255,0.03) 100%)",
-        border: "1px solid rgba(108,99,255,0.25)",
+        background: `linear-gradient(135deg, ${alpha(T.accent, 0.08)} 0%, ${alpha(T.accent, 0.03)} 100%)`,
+        border: "1px solid",
+        borderColor: alpha(T.accent, 0.25),
         position: "relative",
         overflow: "hidden",
       }}
@@ -58,7 +61,7 @@ const AthleteCard = ({ enCours, config, notes }) => {
           width: 80,
           height: 80,
           borderRadius: "50%",
-          bgcolor: "rgba(108,99,255,0.05)",
+          bgcolor: alpha(T.accent, 0.05),
         }}
       />
 
@@ -76,7 +79,7 @@ const AthleteCard = ({ enCours, config, notes }) => {
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                bgcolor: "#22c55e",
+                bgcolor: T.success,
                 animation: "blink 1.5s ease-in-out infinite",
                 "@keyframes blink": {
                   "0%,100%": { opacity: 1 },
@@ -87,7 +90,7 @@ const AthleteCard = ({ enCours, config, notes }) => {
             <Typography
               variant="caption"
               sx={{
-                color: "#22c55e",
+                color: T.success,
                 fontWeight: 700,
                 textTransform: "uppercase",
                 fontSize: "0.65rem",
@@ -105,7 +108,7 @@ const AthleteCard = ({ enCours, config, notes }) => {
           <Typography
             variant="body2"
             sx={{
-              color: "#8b90a0",
+              color: T.textMuted,
               fontSize: { xs: "0.7rem", sm: "0.8rem" },
               mt: 1,
             }}
@@ -137,6 +140,7 @@ const ArbitreItem = ({
   onLibérerPoste,
   onOuvrirMenuPostes,
 }) => {
+  const T = useCompetitionTheme();
   const aUnPoste = arbitre.poste !== null;
   const isLoadingChef =
     loadingAction?.id === arbitre.arbitre_competition_id &&
@@ -149,11 +153,13 @@ const ArbitreItem = ({
       sx={{
         p: { xs: 1.5, sm: 2 },
         borderRadius: 2,
-        bgcolor: arbitre.est_superviseur ? "rgba(255,183,0,0.06)" : "#141720",
+        bgcolor: arbitre.est_superviseur
+          ? alpha(T.warning, 0.06)
+          : T.surfaceHigh,
         border: "1px solid",
         borderColor: arbitre.est_superviseur
-          ? "rgba(255,183,0,0.2)"
-          : "#1e2433",
+          ? alpha(T.warning, 0.2)
+          : T.border,
         transition: "border-color 0.2s",
       }}
     >
@@ -177,8 +183,8 @@ const ArbitreItem = ({
               height: 32,
               borderRadius: "50%",
               bgcolor: arbitre.est_superviseur
-                ? "rgba(255,183,0,0.15)"
-                : "#1e2433",
+                ? alpha(T.warning, 0.15)
+                : T.border,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -189,7 +195,7 @@ const ArbitreItem = ({
               variant="caption"
               fontWeight="bold"
               sx={{
-                color: arbitre.est_superviseur ? "#ffb547" : "#8b90a0",
+                color: arbitre.est_superviseur ? T.warning : T.textMuted,
                 fontSize: "0.7rem",
               }}
             >
@@ -200,7 +206,7 @@ const ArbitreItem = ({
             <Typography
               variant="body2"
               fontWeight={600}
-              sx={{ color: "#dde1f0" }}
+              sx={{ color: T.text }}
               noWrap
             >
               {arbitre.nom}
@@ -208,7 +214,7 @@ const ArbitreItem = ({
             <Typography
               variant="caption"
               sx={{
-                color: arbitre.est_superviseur ? "#ffb547" : "#636b88",
+                color: arbitre.est_superviseur ? T.warning : T.textMuted,
                 fontSize: "0.65rem",
               }}
             >
@@ -247,7 +253,7 @@ const ArbitreItem = ({
             <>
               <Typography
                 variant="caption"
-                sx={{ color: "#636b88", fontSize: "0.65rem" }}
+                sx={{ color: "text.secondary", fontSize: "0.65rem" }}
               >
                 Au banc
               </Typography>
@@ -261,8 +267,8 @@ const ArbitreItem = ({
                   py: 0.3,
                   px: 1,
                   height: 26,
-                  borderColor: "#1e2433",
-                  color: "#8b90a0",
+                  borderColor: T.border,
+                  color: T.textMuted,
                   minWidth: "auto",
                 }}
                 disabled={isLoadingPoste}
@@ -287,8 +293,8 @@ const ArbitreItem = ({
                   py: 0.3,
                   px: 1,
                   height: 26,
-                  borderColor: "#1e2433",
-                  color: "#8b90a0",
+                  borderColor: T.border,
+                  color: T.textMuted,
                   minWidth: "auto",
                 }}
                 disabled={isLoadingChef}
@@ -313,99 +319,104 @@ const ArbitreItem = ({
 // ─── Modal arbitres disponibles ───────────────────────────────────────────────
 const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
   <Modal open={open} onClose={onClose}>
-    <Box
-      sx={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: { xs: "92vw", sm: 400 },
-        bgcolor: "#0e1118",
-        border: "1px solid #1e2433",
-        borderRadius: 4,
-        p: 3,
-        boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
-        maxHeight: "80vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: { xs: "92vw", sm: 400 },
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 4,
+          p: 3,
+          boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
-        <Typography
-          variant="h6"
-          sx={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
         >
-          Arbitres disponibles
-        </Typography>
-        <IconButton size="small" onClick={onClose} sx={{ color: "#636b88" }}>
-          ✕
-        </IconButton>
-      </Stack>
-      <Divider sx={{ mb: 2, bgcolor: "#1e2433" }} />
-      <List sx={{ overflow: "auto", flex: 1 }}>
-        {arbitresDispos.length > 0 ? (
-          arbitresDispos.map((arb) => (
-            <ListItem disablePadding sx={{ mb: 1 }} key={arb.id}>
-              <ListItemButton
-                onClick={() => onAssigner(arb.id)}
-                sx={{
-                  borderRadius: 2,
-                  "&:hover": { bgcolor: "#141720" },
-                }}
-              >
-                <Box
+          <Typography
+            variant="h6"
+            sx={{ color: "text.primary", fontWeight: 700, fontSize: "1rem" }}
+          >
+            Arbitres disponibles
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={onClose}
+            sx={{ color: "text.secondary" }}
+          >
+            ✕
+          </IconButton>
+        </Stack>
+        <Divider sx={{ mb: 2 }} />
+        <List sx={{ overflow: "auto", flex: 1 }}>
+          {arbitresDispos.length > 0 ? (
+            arbitresDispos.map((arb) => (
+              <ListItem disablePadding sx={{ mb: 1 }} key={arb.id}>
+                <ListItemButton
+                  onClick={() => onAssigner(arb.id)}
                   sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    bgcolor: "#1e2433",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mr: 1.5,
-                    flexShrink: 0,
+                    borderRadius: 2,
+                    "&:hover": { bgcolor: "action.hover" },
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    fontWeight="bold"
-                    sx={{ color: "#6c63ff" }}
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      bgcolor: "divider",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mr: 1.5,
+                      flexShrink: 0,
+                    }}
                   >
-                    {arb.user?.fullname?.charAt(0)?.toUpperCase()}
-                  </Typography>
-                </Box>
+                    <Typography
+                      variant="caption"
+                      fontWeight="bold"
+                      sx={{ color: "primary.main" }}
+                    >
+                      {arb.user?.fullname?.charAt(0)?.toUpperCase()}
+                    </Typography>
+                  </Box>
 
-                <ListItemText
-                  primary={arb.user?.fullname || "Nom inconnu"}
-                  secondary={arb.grade || "Arbitre Officiel"}
-                  primaryTypographyProps={{
-                    color: "#dde1f0",
-                    fontWeight: 600,
-                    fontSize: "0.85rem",
-                  }}
-                  secondaryTypographyProps={{
-                    color: "#636b88",
-                    fontSize: "0.72rem",
-                  }}
-                />
+                  <ListItemText
+                    primary={arb.user?.fullname || "Nom inconnu"}
+                    secondary={arb.grade || "Arbitre Officiel"}
+                    primaryTypographyProps={{
+                      color: "text.primary",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                    }}
+                    secondaryTypographyProps={{
+                      color: "text.secondary",
+                      fontSize: "0.72rem",
+                    }}
+                  />
 
-                <AddCircle sx={{ color: "#6c63ff", fontSize: 20 }} />
-              </ListItemButton>
-            </ListItem>
-          ))
-        ) : (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography sx={{ color: "#636b88", fontSize: "0.85rem" }}>
-              Aucun arbitre disponible pour cet événement.
-            </Typography>
-          </Box>
-        )}
-      </List>
+                  <AddCircle sx={{ color: "primary.main", fontSize: 20 }} />
+                </ListItemButton>
+              </ListItem>
+            ))
+          ) : (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography sx={{ color: "text.secondary", fontSize: "0.85rem" }}>
+                Aucun arbitre disponible pour cet événement.
+              </Typography>
+            </Box>
+          )}
+        </List>
     </Box>
   </Modal>
 );
@@ -423,6 +434,7 @@ export default function SeanceAdminPanelKata({
   submitId,
   onRefresh,
 }) {
+  const T = useCompetitionTheme();
   const [openModal, setOpenModal] = useState(false);
   const [arbitresDispos, setArbitresDispos] = useState([]);
   const [loadingArbitres, setLoadingArbitres] = useState(false);
@@ -516,7 +528,7 @@ export default function SeanceAdminPanelKata({
         flexDirection: "column",
         overflowY: "auto",
         "&::-webkit-scrollbar": { width: 4 },
-        "&::-webkit-scrollbar-thumb": { bgcolor: "#1e2433", borderRadius: 2 },
+        "&::-webkit-scrollbar-thumb": { bgcolor: "divider", borderRadius: 2 },
       }}
     >
       {/* ── Header ── */}
@@ -531,12 +543,12 @@ export default function SeanceAdminPanelKata({
           <Typography
             variant="h6"
             fontWeight="bold"
-            color="white"
+            color="text.primary"
             sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
           >
             {config.evenement_nom}
           </Typography>
-          <Typography variant="body2" sx={{ color: "#8b90a0" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {config?.plateau_nom ?? "Tatami"}
           </Typography>
           <Stack direction="row" gap={0.5} mt={0.5} flexWrap="wrap">
@@ -678,7 +690,7 @@ export default function SeanceAdminPanelKata({
         <Chip
           label={`Prochain athlète · ${nextAthlete?.inscription?.athlete?.fullname ?? "—"}`}
           size="small"
-          sx={{ bgcolor: "#141720", color: "#636b88", fontSize: "0.65rem" }}
+          sx={{ bgcolor: "background.paper", color: "text.secondary", fontSize: "0.65rem" }}
         />
       </Divider>
       {nextAthlete ? (
@@ -691,7 +703,7 @@ export default function SeanceAdminPanelKata({
         <Chip
           label={`Arbitres · ${Array.isArray(arbitres) ? arbitres.length : 0} affectés`}
           size="small"
-          sx={{ bgcolor: "#141720", color: "#636b88", fontSize: "0.65rem" }}
+          sx={{ bgcolor: "background.paper", color: "text.secondary", fontSize: "0.65rem" }}
         />
       </Divider>
 
@@ -701,18 +713,19 @@ export default function SeanceAdminPanelKata({
           sx={{
             p: 3,
             textAlign: "center",
-            border: "1px dashed #1e2433",
+            border: "1px dashed",
+            borderColor: "divider",
             borderRadius: 3,
           }}
         >
-          <Typography variant="body2" sx={{ color: "#636b88" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             Aucun arbitre affecté au{" "}
-            <strong style={{ color: "#dde1f0" }}>{config?.plateau_nom}</strong>
+            <strong style={{ color: T.text }}>{config?.plateau_nom}</strong>
           </Typography>
           <Button
             variant="contained"
             onClick={chargerArbitresDispos}
-            sx={{ bgcolor: "#6c63ff", "&:hover": { bgcolor: "#5a52d5" } }}
+            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
           >
             Assigner des arbitres
           </Button>
@@ -737,9 +750,9 @@ export default function SeanceAdminPanelKata({
             onClick={chargerArbitresDispos}
             sx={{
               mt: 1,
-              borderColor: "#1e2433",
-              color: "#636b88",
-              "&:hover": { borderColor: "#6c63ff", color: "#6c63ff" },
+              borderColor: "divider",
+              color: "text.secondary",
+              "&:hover": { borderColor: "primary.main", color: "primary.main" },
             }}
           >
             {loadingArbitres ? "Chargement..." : "+ Ajouter un arbitre"}
@@ -754,9 +767,10 @@ export default function SeanceAdminPanelKata({
         onClose={() => setAnchorEl(null)}
         PaperProps={{
           sx: {
-            bgcolor: "#0e1118",
-            border: "1px solid #1e2433",
-            color: "#fff",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            color: "text.primary",
             borderRadius: 2,
           },
         }}
@@ -773,8 +787,8 @@ export default function SeanceAdminPanelKata({
               }}
               sx={{
                 fontSize: "0.82rem",
-                "&:hover": { bgcolor: "#1e2433" },
-                color: estPris ? "#636b88" : "#dde1f0",
+                "&:hover": { bgcolor: "action.hover" },
+                color: estPris ? "text.secondary" : "text.primary",
               }}
             >
               Poste {num}{" "}
@@ -786,8 +800,8 @@ export default function SeanceAdminPanelKata({
                     ml: 1,
                     height: 16,
                     fontSize: "0.6rem",
-                    bgcolor: "#1e2433",
-                    color: "#636b88",
+                    bgcolor: "divider",
+                    color: "text.secondary",
                   }}
                 />
               )}

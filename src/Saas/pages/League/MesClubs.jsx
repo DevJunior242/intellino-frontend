@@ -24,6 +24,7 @@ import {
   Divider,
 } from "@mui/material";
 import { motion } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import ErrorBlock from "../ErrorBlock";
@@ -37,6 +38,7 @@ const icons = {
   more: "⋮",
 };
 function MesClubs() {
+  const theme = useTheme();
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -107,8 +109,9 @@ function MesClubs() {
         <Paper
           sx={{
             p: 2,
-            bgcolor: "#22262f",
-            border: "1px solid rgba(255,255,255,0.05)",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <TextField
@@ -128,7 +131,7 @@ function MesClubs() {
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                bgcolor: "rgba(255,255,255,0.03)",
+                bgcolor: "action.hover",
                 borderRadius: 2,
               },
             }}
@@ -158,9 +161,15 @@ function MesClubs() {
                 }}
                 sx={{
                   fontWeight: 600,
-                  bgcolor: status === item.value ? "#e8c84a" : "transparent",
-                  color: status === item.value ? "#1a1d23" : "#fff",
-                  "&:hover": { bgcolor: "#e8c84a", color: "#1a1d23" },
+                  bgcolor: status === item.value ? "primary.main" : "transparent",
+                  color:
+                    status === item.value
+                      ? "primary.contrastText"
+                      : "text.primary",
+                  "&:hover": {
+                    bgcolor: "primary.main",
+                    color: "primary.contrastText",
+                  },
                 }}
               />
             ))}
@@ -172,8 +181,8 @@ function MesClubs() {
               variant="outlined"
               startIcon={<span>{icons.export}</span>}
               sx={{
-                borderColor: "rgba(255,255,255,0.2)",
-                color: "#e8eaf0",
+                borderColor: "divider",
+                color: "text.primary",
                 textTransform: "none",
               }}
             >
@@ -183,11 +192,11 @@ function MesClubs() {
               variant="contained"
               startIcon={<span>{icons.add}</span>}
               sx={{
-                bgcolor: "#e8c84a",
-                color: "#1a1d23",
+                bgcolor: "primary.main",
+                color: "primary.contrastText",
                 fontWeight: 700,
                 textTransform: "none",
-                "&:hover": { bgcolor: "#d4b63b" },
+                "&:hover": { bgcolor: "primary.dark" },
               }}
               onClick={() => navigate("/dashboard/league/clubs/list")}
             >
@@ -200,9 +209,10 @@ function MesClubs() {
         <TableContainer
           component={Paper}
           sx={{
-            bgcolor: "#22262f",
+            bgcolor: "background.paper",
             borderRadius: 3,
-            border: "1px solid rgba(255,255,255,0.05)",
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <Table>
@@ -210,9 +220,10 @@ function MesClubs() {
               <TableRow
                 sx={{
                   "& th": {
-                    color: "#555a6b",
+                    color: "text.secondary",
                     fontWeight: 700,
-                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                   },
                 }}
               >
@@ -230,7 +241,7 @@ function MesClubs() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
-                    <Typography sx={{ color: "#8b90a0" }}>
+                    <Typography sx={{ color: "text.secondary" }}>
                       Chargement des clubs...
                     </Typography>
                   </TableCell>
@@ -242,8 +253,9 @@ function MesClubs() {
                     hover
                     sx={{
                       "& td": {
-                        borderBottom: "1px solid rgba(255,255,255,0.03)",
-                        color: "#e8eaf0",
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                        color: "text.primary",
                       },
                     }}
                   >
@@ -254,12 +266,13 @@ function MesClubs() {
                           sx={{
                             width: 40,
                             height: 40,
-                            bgcolor: "rgba(232, 200, 74, 0.12)",
-                            color: "#e8c84a",
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            color: "primary.main",
                             fontWeight: 700,
                             fontSize: "0.9rem",
                             borderRadius: 2,
-                            border: "1px solid rgba(232, 200, 74, 0.2)",
+                            border: "1px solid",
+                            borderColor: alpha(theme.palette.primary.main, 0.2),
                           }}
                         >
                           {club.name
@@ -271,7 +284,7 @@ function MesClubs() {
                           <Typography
                             sx={{
                               fontWeight: 600,
-                              color: "#e8eaf0",
+                              color: "text.primary",
                               fontSize: "0.85rem",
                               lineHeight: 1.2,
                             }}
@@ -282,7 +295,7 @@ function MesClubs() {
                           <Typography
                             variant="caption"
                             sx={{
-                              color: "#8b90a0",
+                              color: "text.secondary",
                               fontSize: "0.72rem",
                               display: "block",
                               mt: 0.3,
@@ -325,7 +338,7 @@ function MesClubs() {
                           label="Aucune"
                           size="small"
                           sx={{
-                            bgcolor: "#444",
+                            bgcolor: "action.disabledBackground",
                             fontSize: "0.7rem",
                           }}
                         />
@@ -335,7 +348,7 @@ function MesClubs() {
                     <TableCell align="right">
                       <IconButton
                         size="small"
-                        sx={{ color: "#8b90a0" }}
+                        sx={{ color: "text.secondary" }}
                         onClick={(e) => handleOpenMenu(e, club)}
                       >
                         {icons.more}
@@ -346,7 +359,7 @@ function MesClubs() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
-                    <Typography sx={{ color: "#8b90a0" }}>
+                    <Typography sx={{ color: "text.secondary" }}>
                       Aucun club disponible
                     </Typography>
                   </TableCell>
@@ -374,16 +387,20 @@ function MesClubs() {
         onClose={handleCloseMenu}
         PaperProps={{
           sx: {
-            bgcolor: "#22262f",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "#e8eaf0",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            color: "text.primary",
             minWidth: 180,
             boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
             "& .MuiMenuItem-root": {
               fontSize: "0.85rem",
               py: 1.2,
               gap: 1.5,
-              "&:hover": { bgcolor: "rgba(232,200,74,0.08)", color: "#e8c84a" },
+              "&:hover": {
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                color: "primary.main",
+              },
             },
           },
         }}
@@ -412,7 +429,7 @@ function MesClubs() {
           <span>🪪</span> Donner licences
         </MenuItem> */}
 
-        <Divider sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+        <Divider />
 
         {/* Action : Ouverture d'une Modal pour une action rapide */}
         <MenuItem

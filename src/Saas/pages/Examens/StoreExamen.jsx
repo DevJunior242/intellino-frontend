@@ -38,6 +38,7 @@ function StoreExamen({ open, handleClose }) {
   const navigate = useNavigate();
   const { activeType } = UseAuth();
   const isLigueUser = activeType === "Ligue";
+  const isFederationUser = activeType === "Federation";
 
   //obtenir les medals
   const getGrade = useCallback(async () => {
@@ -90,8 +91,11 @@ function StoreExamen({ open, handleClose }) {
       const response = await Instance.post("/api/examens", formData);
       if (response.data.success) {
         const routePrefix = isLigueUser
-          ? "/dashboard/league"
-          : "/dashboard/examen";
+          ? "/dashboard/league/examen"
+          : isFederationUser
+            ? "/dashboard/federation/examen"
+            : "examen";
+
         navigate(`${routePrefix}/${response.data.data.id}/show`);
         setSuccess(response.data.message);
 

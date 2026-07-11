@@ -34,14 +34,22 @@ import {
   AccountBalance as AccountBalanceIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 
-const SURFACE = "#1A1D29";
-const BORDER = "rgba(255, 255, 255, 0.08)";
-const TEXT = "#F5F5F7";
-const MUTED = "rgba(245, 245, 247, 0.6)";
-const ACCENT = "#5C6BC0";
-const ACCENT_SOFT = "rgba(92, 107, 192, 0.16)";
+// Palette dérivée du thème actif (au lieu de valeurs fixes) pour s'adapter
+// au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    SURFACE: t.palette.background.paper,
+    BORDER: t.palette.divider,
+    TEXT: t.palette.text.primary,
+    MUTED: t.palette.text.secondary,
+    ACCENT: t.palette.primary.main,
+    ACCENT_SOFT: alpha(t.palette.primary.main, 0.16),
+  };
+};
 
 // Identité visuelle approximative de chaque opérateur — pas de logos,
 // juste une couleur de marque pour une reconnaissance rapide en un coup d'œil.
@@ -66,19 +74,18 @@ function getProviderVisual(provider) {
   );
 }
 
-const darkInputSx = {
+const getDarkInputSx = ({ TEXT, BORDER, ACCENT, MUTED }) => ({
   "& .MuiOutlinedInput-root": {
     color: TEXT,
-    bgcolor: "rgba(255,255,255,0.04)",
     borderRadius: 2,
     "& fieldset": { borderColor: BORDER },
-    "&:hover fieldset": { borderColor: "rgba(255,255,255,0.24)" },
+    "&:hover fieldset": { borderColor: MUTED },
     "&.Mui-focused fieldset": { borderColor: ACCENT },
   },
   "& .MuiInputLabel-root": { color: MUTED },
   "& .MuiFormHelperText-root": { color: MUTED },
   "& .MuiSelect-icon": { color: MUTED },
-};
+});
 
 // ---------------------------------------------------------------------------
 // Badge provider — pastille colorée + nom, réutilisé carte + formulaire
@@ -118,6 +125,7 @@ function ProviderBadge({ provider, size = "medium" }) {
 // Carte d'un moyen de paiement
 // ---------------------------------------------------------------------------
 function PaymentMethodCard({ method, onEdit, onDelete, onToggle, toggling }) {
+  const { ACCENT, SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   return (
     <motion.div
       layout
@@ -141,7 +149,7 @@ function PaymentMethodCard({ method, onEdit, onDelete, onToggle, toggling }) {
             "box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease",
           "&:hover": {
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
-            borderColor: "rgba(255,255,255,0.16)",
+            borderColor: MUTED,
           },
         }}
       >
@@ -230,27 +238,16 @@ function PaymentMethodCard({ method, onEdit, onDelete, onToggle, toggling }) {
 }
 
 function PaymentMethodSkeleton() {
+  const { SURFACE, BORDER } = useLocalTheme();
   return (
     <Card
       elevation={0}
       sx={{ borderRadius: 3, border: `1px solid ${BORDER}`, bgcolor: SURFACE }}
     >
       <CardContent>
-        <Skeleton
-          width={120}
-          height={28}
-          sx={{ borderRadius: 2, mb: 1.5, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
-        <Skeleton
-          width="70%"
-          height={24}
-          sx={{ mb: 1, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
-        <Skeleton
-          width="50%"
-          height={20}
-          sx={{ bgcolor: "rgba(255,255,255,0.08)" }}
-        />
+        <Skeleton width={120} height={28} sx={{ borderRadius: 2, mb: 1.5 }} />
+        <Skeleton width="70%" height={24} sx={{ mb: 1 }} />
+        <Skeleton width="50%" height={20} />
       </CardContent>
     </Card>
   );
@@ -267,6 +264,7 @@ const EMPTY_FORM = {
 };
 
 function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
+  const { ACCENT, SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -374,7 +372,7 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
             </Alert>
           )}
 
-          <FormControl fullWidth error={!!errors.provider} sx={darkInputSx}>
+          <FormControl fullWidth error={!!errors.provider} sx={getDarkInputSx({ TEXT, BORDER, ACCENT, MUTED })}>
             <InputLabel>Opérateur</InputLabel>
             <Select
               value={form.provider}
@@ -405,7 +403,7 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
               "Pour vous repérer si vous avez plusieurs comptes."
             }
             disabled={submitting}
-            sx={darkInputSx}
+            sx={getDarkInputSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
 
           <TextField
@@ -420,7 +418,7 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
               "Ce que les clubs verront pour vous payer."
             }
             disabled={submitting}
-            sx={darkInputSx}
+            sx={getDarkInputSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
 
           <TextField
@@ -430,7 +428,7 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
             value={form.account_name}
             onChange={handleChange("account_name")}
             disabled={submitting}
-            sx={darkInputSx}
+            sx={getDarkInputSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
         </Stack>
       </DialogContent>
@@ -470,6 +468,7 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
 // Confirmation de suppression
 // ---------------------------------------------------------------------------
 function ConfirmDeleteDialog({ open, method, onClose, onConfirm, loading }) {
+  const { SURFACE, TEXT, MUTED } = useLocalTheme();
   return (
     <Dialog
       open={open}
@@ -508,6 +507,7 @@ function ConfirmDeleteDialog({ open, method, onClose, onConfirm, loading }) {
 // Composant principal
 // ---------------------------------------------------------------------------
 export default function PaymentMethodIndex() {
+  const { ACCENT, ACCENT_SOFT, BORDER, TEXT, MUTED } = useLocalTheme();
   const [methods, setMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

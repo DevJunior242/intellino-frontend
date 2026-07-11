@@ -216,7 +216,7 @@ const CarteAssigne = ({ ordre, index, onRetirer, submitId }) => {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function RepartitionAthletes({ competition, configs, onBack }) {
-  const [nonAssignes, setNonAssignes] = useState([]);
+  const [groupesNonAssignes, setGroupesNonAssignes] = useState([]);
   const [parTatami, setParTatami] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitId, setSubmitId] = useState(null);
@@ -234,7 +234,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
           ),
         ]);
 
-        setNonAssignes(nonAssRes.data || []);
+        setGroupesNonAssignes(nonAssRes.data?.groups || []);
 
         const newParTatami = {};
         configs.forEach((config, i) => {
@@ -242,7 +242,6 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
         });
         setParTatami(newParTatami);
       } catch (err) {
-        console.error(err);
         setErreur("Erreur lors du chargement des données");
       } finally {
         if (!silent) setLoading(false);
@@ -327,7 +326,10 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
     (sum, t) => sum + t.length,
     0,
   );
-  const totalNonAssignes = nonAssignes.length;
+  const totalNonAssignes = groupesNonAssignes.reduce(
+    (sum, g) => sum + g.inscriptions.length,
+    0,
+  );
   const totalAthletes = totalAssignes + totalNonAssignes;
 
   return (
@@ -445,7 +447,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
                   Non assignés
                 </Typography>
                 <Chip
-                  label={nonAssignes?.length}
+                  label={totalNonAssignes}
                   size="small"
                   sx={{
                     bgcolor: "rgba(255,255,255,0.3)",
@@ -480,7 +482,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
             >
               {loading ? (
                 <AthleteSkeleton />
-              ) : nonAssignes.length === 0 ? (
+              ) : totalNonAssignes === 0 ? (
                 <Stack alignItems="center" gap={1} py={3}>
                   <CheckCircle sx={{ color: "success.main", fontSize: 32 }} />
                   <Typography variant="body2" color="text.secondary">
@@ -488,15 +490,32 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
                   </Typography>
                 </Stack>
               ) : (
-                nonAssignes.map((inscription) => (
-                  <CarteNonAssigne
-                    key={inscription.id}
-                    inscription={inscription}
-                    configs={configs}
-                    onAssigner={handleAssigner}
-                    submitId={submitId}
-                  />
-                ))
+                groupesNonAssignes
+                  .filter((groupe) => groupe.inscriptions.length > 0)
+                  .map((groupe, i) => (
+                    <Box key={groupe.label ?? i}>
+                      {groupe.label && (
+                        <Chip
+                          label={`${groupe.label} (${groupe.inscriptions.length})`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                          sx={{ mb: 0.75, fontWeight: 700 }}
+                        />
+                      )}
+                      <Stack spacing={1} sx={{ mb: 1 }}>
+                        {groupe.inscriptions.map((inscription) => (
+                          <CarteNonAssigne
+                            key={inscription.id}
+                            inscription={inscription}
+                            configs={configs}
+                            onAssigner={handleAssigner}
+                            submitId={submitId}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  ))
               )}
             </Stack>
           </Paper>

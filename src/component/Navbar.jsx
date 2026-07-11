@@ -93,7 +93,7 @@ function Navbar() {
       }}
     >
       <Box sx={{ display: "flex" }}>
-        <ThemeToggle />
+        <ThemeToggle iconColor="rgba(21, 8, 8, 0.88)" />
 
         <motion.img
           src="/Intellino-Logo.png"

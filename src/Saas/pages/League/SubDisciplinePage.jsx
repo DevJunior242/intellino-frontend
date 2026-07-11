@@ -1,81 +1,99 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
 
-// ── Palette & tokens ─────────────────────────────────────────────────────────
-const C = {
-  bg: "#0d0f14",
-  surface: "#13161e",
-  surfaceHigh: "#1a1e2a",
-  border: "#252a38",
-  borderHover: "#353c52",
-  accent: "#6c63ff",
-  accentLight: "#8b84ff",
-  accentDim: "rgba(108,99,255,0.15)",
-  teal: "#1de4bd",
-  tealDim: "rgba(29,228,189,0.12)",
-  amber: "#f5a623",
-  amberDim: "rgba(245,166,35,0.12)",
-  text: "#e8eaf0",
-  textMuted: "#7a8099",
-  textFaint: "#3e4460",
-  success: "#22c55e",
-  successDim: "rgba(34,197,94,0.12)",
-  danger: "#ef4444",
-  dangerDim: "rgba(239,68,68,0.1)",
+// ── Palette & tokens dérivés du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération. ──────────────────
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    bg: t.palette.background.default,
+    surface: t.palette.background.paper,
+    surfaceHigh: t.palette.background.paper,
+    border: t.palette.divider,
+    borderHover: alpha(t.palette.text.primary, 0.24),
+    accent: t.palette.primary.main,
+    accentLight: t.palette.primary.light,
+    accentDim: alpha(t.palette.primary.main, 0.15),
+    accentContrastText: t.palette.primary.contrastText,
+    teal: t.palette.info.main,
+    tealDim: alpha(t.palette.info.main, 0.12),
+    amber: t.palette.warning.main,
+    amberDim: alpha(t.palette.warning.main, 0.12),
+    text: t.palette.text.primary,
+    textMuted: t.palette.text.secondary,
+    textFaint: t.palette.text.disabled,
+    success: t.palette.success.main,
+    successDim: alpha(t.palette.success.main, 0.12),
+    successContrastText: t.palette.success.contrastText,
+    danger: t.palette.error.main,
+    dangerDim: alpha(t.palette.error.main, 0.1),
+  };
 };
 
 // ── Tiny design-system primitives ────────────────────────────────────────────
-const Label = ({ children, required }) => (
-  <label
-    style={{
-      display: "block",
-      fontSize: 11,
-      fontWeight: 600,
-      letterSpacing: "0.08em",
-      textTransform: "uppercase",
-      color: C.textMuted,
-      marginBottom: 6,
-    }}
-  >
-    {children}
-    {required && <span style={{ color: C.accent, marginLeft: 3 }}>*</span>}
-  </label>
-);
+const Label = ({ children, required }) => {
+  const C = useLocalTheme();
+  return (
+    <label
+      style={{
+        display: "block",
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: C.textMuted,
+        marginBottom: 6,
+      }}
+    >
+      {children}
+      {required && <span style={{ color: C.accent, marginLeft: 3 }}>*</span>}
+    </label>
+  );
+};
 
-const Input = ({ error, ...props }) => (
-  <input
-    {...props}
-    style={{
-      width: "100%",
-      boxSizing: "border-box",
-      background: C.surfaceHigh,
-      border: `1px solid ${error ? C.danger : C.border}`,
-      borderRadius: 8,
-      padding: "10px 14px",
-      color: C.text,
-      fontSize: 14,
-      outline: "none",
-      transition: "border-color 0.2s",
-      fontFamily: "inherit",
-      ...props.style,
-    }}
-    onFocus={(e) => (e.target.style.borderColor = error ? C.danger : C.accent)}
-    onBlur={(e) => (e.target.style.borderColor = error ? C.danger : C.border)}
-  />
-);
+const Input = ({ error, ...props }) => {
+  const C = useLocalTheme();
+  return (
+    <input
+      {...props}
+      style={{
+        width: "100%",
+        boxSizing: "border-box",
+        background: C.surfaceHigh,
+        border: `1px solid ${error ? C.danger : C.border}`,
+        borderRadius: 8,
+        padding: "10px 14px",
+        color: C.text,
+        fontSize: 14,
+        outline: "none",
+        transition: "border-color 0.2s",
+        fontFamily: "inherit",
+        ...props.style,
+      }}
+      onFocus={(e) =>
+        (e.target.style.borderColor = error ? C.danger : C.accent)
+      }
+      onBlur={(e) => (e.target.style.borderColor = error ? C.danger : C.border)}
+    />
+  );
+};
 
-const Err = ({ msg }) =>
-  msg ? (
+const Err = ({ msg }) => {
+  const C = useLocalTheme();
+  return msg ? (
     <p style={{ color: C.danger, fontSize: 12, marginTop: 5, marginBottom: 0 }}>
       {msg}
     </p>
   ) : null;
+};
 
 const SectionCard = ({ index, color, title, subtitle, icon, children }) => {
+  const C = useLocalTheme();
   const colors = {
     accent: { pill: C.accentDim, text: C.accentLight, border: C.accent },
     teal: { pill: C.tealDim, text: C.teal, border: C.teal },
@@ -176,59 +194,67 @@ const SectionCard = ({ index, color, title, subtitle, icon, children }) => {
   );
 };
 
-const Chip = ({ label, selected, onClick, color = C.accent }) => (
-  <motion.button
-    type="button"
-    onClick={onClick}
-    whileHover={{ scale: 1.03 }}
-    whileTap={{ scale: 0.97 }}
-    style={{
-      border: `1.5px solid ${selected ? color : C.border}`,
-      background: selected ? `rgba(108,99,255,0.15)` : C.surfaceHigh,
-      color: selected ? C.accentLight : C.textMuted,
-      borderRadius: 8,
-      padding: "8px 16px",
-      fontSize: 13,
-      fontWeight: selected ? 600 : 400,
-      cursor: "pointer",
-      transition: "all 0.18s",
-      fontFamily: "inherit",
-    }}
-  >
-    {label}
-  </motion.button>
-);
-
-// ── Recap block ───────────────────────────────────────────────────────────────
-const RecapRow = ({ label, value }) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: 16,
-      padding: "10px 0",
-      borderBottom: `1px solid ${C.border}`,
-    }}
-  >
-    <span style={{ color: C.textMuted, fontSize: 13, flexShrink: 0 }}>
-      {label}
-    </span>
-    <span
+const Chip = ({ label, selected, onClick, color }) => {
+  const C = useLocalTheme();
+  const resolvedColor = color ?? C.accent;
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
       style={{
-        color: C.text,
+        border: `1.5px solid ${selected ? resolvedColor : C.border}`,
+        background: selected ? C.accentDim : C.surfaceHigh,
+        color: selected ? C.accentLight : C.textMuted,
+        borderRadius: 8,
+        padding: "8px 16px",
         fontSize: 13,
-        fontWeight: 500,
-        textAlign: "right",
+        fontWeight: selected ? 600 : 400,
+        cursor: "pointer",
+        transition: "all 0.18s",
+        fontFamily: "inherit",
       }}
     >
-      {value}
-    </span>
-  </div>
-);
+      {label}
+    </motion.button>
+  );
+};
+
+// ── Recap block ───────────────────────────────────────────────────────────────
+const RecapRow = ({ label, value }) => {
+  const C = useLocalTheme();
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 16,
+        padding: "10px 0",
+        borderBottom: `1px solid ${C.border}`,
+      }}
+    >
+      <span style={{ color: C.textMuted, fontSize: 13, flexShrink: 0 }}>
+        {label}
+      </span>
+      <span
+        style={{
+          color: C.text,
+          fontSize: 13,
+          fontWeight: 500,
+          textAlign: "right",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+};
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function SubDisciplinePage() {
+  const C = useLocalTheme();
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const { activeId, activeType } = UseAuth();
@@ -847,7 +873,7 @@ export default function SubDisciplinePage() {
                   background: loading ? C.surfaceHigh : C.accent,
                   border: "none",
                   borderRadius: 12,
-                  color: loading ? C.textMuted : "#fff",
+                  color: loading ? C.textMuted : C.accentContrastText,
                   fontSize: 15,
                   fontWeight: 700,
                   cursor: loading ? "not-allowed" : "pointer",
@@ -891,7 +917,7 @@ export default function SubDisciplinePage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#fff",
+                      color: C.successContrastText,
                       fontSize: 18,
                     }}
                   >

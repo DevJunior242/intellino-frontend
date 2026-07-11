@@ -10,6 +10,7 @@ import {
   LinearProgress,
   Avatar,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import ErrorBlock from "../ErrorBlock";
@@ -17,73 +18,86 @@ import ConfigSkeleton from "../ConfigSkeleton";
 import VitalityGauge from "./VitalityGauge";
 import { useNavigate } from "react-router-dom";
 
-const theme = {
-  bg: "#1a1d21",
-  paper: "#212529",
-  card: "#2c3035",
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a",
-  success: "#4caf50",
-  warning: "#f44336",
-  info: "#2196f3",
+// Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const muiTheme = useTheme();
+  return {
+    bg: muiTheme.palette.background.default,
+    paper: muiTheme.palette.background.paper,
+    card: muiTheme.palette.background.paper,
+    textMain: muiTheme.palette.text.primary,
+    textSecondary: muiTheme.palette.text.secondary,
+    accent: muiTheme.palette.primary.main,
+    success: muiTheme.palette.success.main,
+    warning: muiTheme.palette.error.main,
+    info: muiTheme.palette.info.main,
+  };
 };
 
 // --- COMPOSANT : Stat Card du haut ---
-const StatCard = ({ title, value, detail, detailColor }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 3,
-      bgcolor: theme.paper,
-      borderRadius: 4,
-      flex: 1,
-      border: "1px solid rgba(255,255,255,0.05)",
-    }}
-  >
-    <Typography variant="body2" sx={{ color: theme.textSecondary, mb: 1.5 }}>
-      {title}
-    </Typography>
-    <Typography variant="h3" sx={{ color: theme.textMain, fontWeight: 800 }}>
-      {value}
-    </Typography>
-    <Typography
-      variant="caption"
-      sx={{ color: detailColor || theme.textSecondary, fontWeight: 500 }}
+const StatCard = ({ title, value, detail, detailColor }) => {
+  const theme = useLocalTheme();
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        bgcolor: theme.paper,
+        borderRadius: 4,
+        flex: 1,
+        border: "1px solid",
+        borderColor: "divider",
+      }}
     >
-      {detail}
-    </Typography>
-  </Paper>
-);
-
-// --- COMPOSANT : Barre de répartition des grades ---
-const GradeProgress = ({ label, value, progressColor }) => (
-  <Box sx={{ mb: 2.5 }}>
-    <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+      <Typography variant="body2" sx={{ color: theme.textSecondary, mb: 1.5 }}>
+        {title}
+      </Typography>
+      <Typography variant="h3" sx={{ color: theme.textMain, fontWeight: 800 }}>
+        {value}
+      </Typography>
       <Typography
         variant="caption"
-        sx={{ color: theme.textMain, fontWeight: 500 }}
+        sx={{ color: detailColor || theme.textSecondary, fontWeight: 500 }}
       >
-        {label}
+        {detail}
       </Typography>
-      <Typography variant="caption" sx={{ color: theme.textSecondary }}>
-        {value}%
-      </Typography>
-    </Stack>
-    <LinearProgress
-      variant="determinate"
-      value={value}
-      sx={{
-        height: 6,
-        borderRadius: 3,
-        bgcolor: "#1a1d21",
-        "& .MuiLinearProgress-bar": { bgcolor: progressColor || theme.info },
-      }}
-    />
-  </Box>
-);
+    </Paper>
+  );
+};
+
+// --- COMPOSANT : Barre de répartition des grades ---
+const GradeProgress = ({ label, value, progressColor }) => {
+  const theme = useLocalTheme();
+  return (
+    <Box sx={{ mb: 2.5 }}>
+      <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+        <Typography
+          variant="caption"
+          sx={{ color: theme.textMain, fontWeight: 500 }}
+        >
+          {label}
+        </Typography>
+        <Typography variant="caption" sx={{ color: theme.textSecondary }}>
+          {value}%
+        </Typography>
+      </Stack>
+      <LinearProgress
+        variant="determinate"
+        value={value}
+        sx={{
+          height: 6,
+          borderRadius: 3,
+          bgcolor: "divider",
+          "& .MuiLinearProgress-bar": { bgcolor: progressColor || theme.info },
+        }}
+      />
+    </Box>
+  );
+};
 
 export default function GradesExamens() {
+  const theme = useLocalTheme();
   const [stats, setStats] = useState({
     total_grades: 0,
     total_examens: 0,
@@ -100,13 +114,16 @@ export default function GradesExamens() {
     setError("");
     try {
       const response = await Instance.get(
-        `/api/dashboard/league/exmenstates?organisateur_id=${activeId}&organisateur_type=Ligue`,
+        `/api/examens/vitality-stats?organisateur_id=${activeId}&organisateur_type=Ligue`,
       );
       console.log(response);
       setStats(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des statistiques :", error);
-      setError("Erreur lors de la récupération des statistiques");
+      setError(
+        error.response?.data?.message ||
+          "Erreur lors de la récupération des statistiques",
+      );
     } finally {
       setLoading(false);
     }
@@ -155,14 +172,14 @@ export default function GradesExamens() {
             ml: 2,
             px: 4,
             py: 1.5,
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.3)",
+            color: "text.primary",
+            borderColor: "divider",
             textTransform: "none",
             borderRadius: 2,
             fontSize: "1rem",
             "&:hover": {
-              borderColor: "#fff",
-              bgcolor: "rgba(255,255,255,0.05)",
+              borderColor: "text.primary",
+              bgcolor: "action.hover",
             },
           }}
           onClick={() => navigate("/dashboard/league/examen")}
@@ -224,7 +241,8 @@ export default function GradesExamens() {
               p: 4,
               bgcolor: theme.paper,
               borderRadius: 4,
-              border: "1px solid rgba(255,255,255,0.05)",
+              border: "1px solid",
+              borderColor: "divider",
             }}
           >
             <Typography

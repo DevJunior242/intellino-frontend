@@ -58,9 +58,7 @@ export default function ConfigNotationCardDetails() {
 
     setLoading(true);
     try {
-      const res = await Instance.get(
-        `/api/config-notation/config-notation?organisateur_id=${activeId}&organisateur_type=${activeType}`,
-      );
+      const res = await Instance.get(`/api/config-notation/config-notation`);
       setConfigs(res.data || []);
       return res.data || [];
     } catch (err) {
@@ -68,7 +66,7 @@ export default function ConfigNotationCardDetails() {
     } finally {
       setLoading(false);
     }
-  }, [activeId, activeType]);
+  }, [activeId]);
 
   useEffect(() => {
     getConfigs();
@@ -218,8 +216,12 @@ export default function ConfigNotationCardDetails() {
           p: 2,
           bgcolor: "background.default",
           // Effet de fond subtil pour une ambiance professionnelle
-          backgroundImage:
-            "radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 40%)",
+          backgroundImage: (theme) =>
+            `radial-gradient(circle at top left, ${
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.05)"
+                : "rgba(0, 0, 0, 0.04)"
+            }, transparent 40%)`,
         }}
       >
         <motion.div

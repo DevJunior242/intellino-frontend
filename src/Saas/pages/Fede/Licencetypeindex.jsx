@@ -41,20 +41,25 @@ import {
   GroupOutlined as GroupOutlinedIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 import LicenciesDialog from "./Licenciesdialog";
 // ---------------------------------------------------------------------------
-// Palette adaptée à un dashboard sombre (fonds noir/gris, texte blanc).
-// L'accent indigo reste le seul repère de couleur vive, tout le reste
-// est en niveaux de gris/blanc avec opacité pour la hiérarchie.
+// Palette dérivée du thème actif (au lieu de valeurs fixes) pour s'adapter
+// au clair/sombre des dashboards ligue/fédération.
 // ---------------------------------------------------------------------------
-const ACCENT = "#5C6BC0"; // indigo plus clair que sur fond blanc, pour rester lisible sur dark
-const ACCENT_SOFT = "rgba(92, 107, 192, 0.16)";
-const SURFACE = "#1A1D29"; // carte/panneau
-const SURFACE_HOVER = "#20242F";
-const BORDER = "rgba(255, 255, 255, 0.08)";
-const TEXT = "#F5F5F7";
-const MUTED = "rgba(245, 245, 247, 0.6)";
+const useLocalTheme = () => {
+  const t = useTheme();
+  return {
+    ACCENT: t.palette.primary.main,
+    ACCENT_SOFT: alpha(t.palette.primary.main, 0.16),
+    SURFACE: t.palette.background.paper,
+    SURFACE_HOVER: alpha(t.palette.text.primary, 0.06),
+    BORDER: t.palette.divider,
+    TEXT: t.palette.text.primary,
+    MUTED: t.palette.text.secondary,
+  };
+};
 
 const PAGE_SIZE = 9;
 
@@ -70,6 +75,8 @@ function formatTarif(tarif) {
 // Carte d'un type de licence
 // ---------------------------------------------------------------------------
 function LicenceTypeCard({ type, onEdit, onDelete, onViewLicencies }) {
+  const { ACCENT, ACCENT_SOFT, SURFACE, SURFACE_HOVER, BORDER, TEXT, MUTED } =
+    useLocalTheme();
   return (
     <motion.div
       layout
@@ -91,7 +98,7 @@ function LicenceTypeCard({ type, onEdit, onDelete, onViewLicencies }) {
           transition: "box-shadow 0.2s ease, border-color 0.2s ease",
           "&:hover": {
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
-            borderColor: "rgba(255,255,255,0.16)",
+            borderColor: MUTED,
           },
         }}
       >
@@ -182,27 +189,16 @@ function LicenceTypeCard({ type, onEdit, onDelete, onViewLicencies }) {
 }
 
 function LicenceTypeSkeleton() {
+  const { SURFACE, BORDER } = useLocalTheme();
   return (
     <Card
       elevation={0}
       sx={{ borderRadius: 3, border: `1px solid ${BORDER}`, bgcolor: SURFACE }}
     >
       <CardContent>
-        <Skeleton
-          width={80}
-          height={22}
-          sx={{ borderRadius: 2, mb: 1.5, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
-        <Skeleton
-          width="70%"
-          height={26}
-          sx={{ mb: 1.5, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
-        <Skeleton
-          width="50%"
-          height={36}
-          sx={{ bgcolor: "rgba(255,255,255,0.08)" }}
-        />
+        <Skeleton width={80} height={22} sx={{ borderRadius: 2, mb: 1.5 }} />
+        <Skeleton width="70%" height={26} sx={{ mb: 1.5 }} />
+        <Skeleton width="50%" height={36} />
       </CardContent>
     </Card>
   );
@@ -213,20 +209,21 @@ function LicenceTypeSkeleton() {
 // ---------------------------------------------------------------------------
 const EMPTY_FORM = { code: "", nom: "", tarif: "" };
 
-const textFieldDarkSx = {
+const getTextFieldDarkSx = ({ TEXT, BORDER, ACCENT, MUTED }) => ({
   "& .MuiOutlinedInput-root": {
     color: TEXT,
-    bgcolor: "rgba(255,255,255,0.04)",
     borderRadius: 2,
     "& fieldset": { borderColor: BORDER },
-    "&:hover fieldset": { borderColor: "rgba(255,255,255,0.24)" },
+    "&:hover fieldset": { borderColor: MUTED },
     "&.Mui-focused fieldset": { borderColor: ACCENT },
   },
   "& .MuiInputLabel-root": { color: MUTED },
   "& .MuiFormHelperText-root": { color: MUTED },
-};
+});
 
 function LicenceTypeFormDialog({ open, editing, onClose, onSuccess }) {
+  const { ACCENT, ACCENT_SOFT, SURFACE, SURFACE_HOVER, BORDER, TEXT, MUTED } =
+    useLocalTheme();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -350,7 +347,7 @@ function LicenceTypeFormDialog({ open, editing, onClose, onSuccess }) {
                 : "Identifiant technique, sans espace.")
             }
             disabled={submitting || !!editing}
-            sx={textFieldDarkSx}
+            sx={getTextFieldDarkSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
 
           <TextField
@@ -362,7 +359,7 @@ function LicenceTypeFormDialog({ open, editing, onClose, onSuccess }) {
             error={!!errors.nom}
             helperText={errors.nom}
             disabled={submitting}
-            sx={textFieldDarkSx}
+            sx={getTextFieldDarkSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
 
           <TextField
@@ -383,7 +380,7 @@ function LicenceTypeFormDialog({ open, editing, onClose, onSuccess }) {
                 </InputAdornment>
               ),
             }}
-            sx={textFieldDarkSx}
+            sx={getTextFieldDarkSx({ TEXT, BORDER, ACCENT, MUTED })}
           />
         </Stack>
       </DialogContent>
@@ -419,6 +416,7 @@ function LicenceTypeFormDialog({ open, editing, onClose, onSuccess }) {
 // Confirmation de suppression
 // ---------------------------------------------------------------------------
 function ConfirmDeleteDialog({ open, type, onClose, onConfirm, loading }) {
+  const { SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   return (
     <Dialog
       open={open}
@@ -469,6 +467,8 @@ const PROVIDER_LABELS = {
 };
 
 function PaymentLotCard({ lot, onConfirm, onReject, processing }) {
+  const { ACCENT, ACCENT_SOFT, SURFACE, SURFACE_HOVER, BORDER, TEXT, MUTED } =
+    useLocalTheme();
   const [expanded, setExpanded] = useState(false);
   const rawProvider = lot.payment_method?.provider ?? null;
   const provider = PROVIDER_LABELS[rawProvider] || {
@@ -620,13 +620,11 @@ function PaymentsToVerifySection({
   onReject,
   processingId,
 }) {
+  const { ACCENT, ACCENT_SOFT, TEXT } = useLocalTheme();
   if (loading) {
     return (
       <Stack spacing={1.5} sx={{ mb: 3 }}>
-        <Skeleton
-          height={140}
-          sx={{ borderRadius: 3, bgcolor: "rgba(255,255,255,0.08)" }}
-        />
+        <Skeleton height={140} sx={{ borderRadius: 3 }} />
       </Stack>
     );
   }
@@ -670,6 +668,8 @@ function PaymentsToVerifySection({
 }
 
 export default function LicenceTypeIndex() {
+  const { ACCENT, ACCENT_SOFT, SURFACE, SURFACE_HOVER, BORDER, TEXT, MUTED } =
+    useLocalTheme();
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -925,7 +925,7 @@ export default function LicenceTypeIndex() {
                   </InputAdornment>
                 ),
               }}
-              sx={{ ...textFieldDarkSx, maxWidth: 420 }}
+              sx={{ ...getTextFieldDarkSx({ TEXT, BORDER, ACCENT, MUTED }), maxWidth: 420 }}
             />
             <Tooltip title="Réinitialiser la recherche">
               <span>

@@ -168,6 +168,58 @@ export const settingTheme = (mode) => {
   };
 };
 
+// Couleurs extraites du logo de la Fédération Burkinabè de Karaté (FBK),
+// utilisées uniquement pour l'habillage des dashboards (club/ligue/fédération),
+// jamais pour les pages publiques (accueil, à propos, login) qui restent la
+// marque Intellino.
+export const FBK_COLORS = {
+  blue: "#204C84",
+  gold: "#FDCD00",
+};
+
+// Thème des dashboards (club/ligue/fédération) : en clair, bleu/or FBK en
+// primary/secondary. En sombre, on garde le thème dashboard déjà en place
+// (repris tel quel depuis DashboardGeneralLayout) — inchangé, appliqué
+// désormais uniformément à tous les dashboards.
+export const dashboardSettingTheme = (mode) => {
+  if (mode === "dark") {
+    return {
+      palette: {
+        mode: "dark",
+        background: { default: "#1a1d23", paper: "#22262f" },
+        primary: { main: "#e8c84a" },
+        text: { primary: "#e8eaf0", secondary: "#8b90a0" },
+      },
+      typography: {
+        fontFamily: "'Sora', 'Segoe UI', sans-serif",
+      },
+      shape: { borderRadius: 12 },
+      components: {
+        MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
+        MuiDrawer: {
+          styleOverrides: {
+            paper: {
+              backgroundImage: "none",
+              backgroundColor: "#1e2229",
+              borderRight: "1px solid rgba(255,255,255,0.06)",
+            },
+          },
+        },
+      },
+    };
+  }
+
+  const base = settingTheme(mode);
+  return {
+    ...base,
+    palette: {
+      ...base.palette,
+      primary: { main: FBK_COLORS.blue },
+      secondary: { main: FBK_COLORS.gold },
+    },
+  };
+};
+
 export const ColorModeContext = createContext({
   toggleColorMode: () => {},
 });

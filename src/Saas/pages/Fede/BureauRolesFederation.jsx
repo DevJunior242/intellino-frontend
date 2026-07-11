@@ -11,22 +11,24 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { alpha, useTheme } from "@mui/material/styles";
 import MemberFederationForm from "./MemberFederationForm";
 import Membres from "../League/Membres";
 import { Instance } from "../../../Api/Axios";
 import { UseAuth } from "../../../Api/AuthContext";
 
-// Couleurs exactes de ton interface
-const theme = {
-  bg: "#1a1d21",
-  card: "#2c3035",
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a", // Jaune
-  chipBg: "rgba(255, 255, 255, 0.05)",
-};
-
 export default function BureauRolesFederation() {
+  const muiTheme = useTheme();
+  // Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+  // s'adapter au clair/sombre des dashboards ligue/fédération.
+  const theme = {
+    bg: muiTheme.palette.background.default,
+    card: muiTheme.palette.background.paper,
+    textMain: muiTheme.palette.text.primary,
+    textSecondary: muiTheme.palette.text.secondary,
+    accent: muiTheme.palette.primary.main,
+    chipBg: alpha(muiTheme.palette.text.primary, 0.05),
+  };
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -69,15 +71,15 @@ export default function BureauRolesFederation() {
           variant="outlined"
           startIcon={<AddIcon />}
           sx={{
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.2)",
+            color: "text.primary",
+            borderColor: "divider",
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             py: 1,
             "&:hover": {
-              borderColor: "#fff",
-              bgcolor: "rgba(255,255,255,0.05)",
+              borderColor: "text.primary",
+              bgcolor: "action.hover",
             },
           }}
           onClick={handleOpen}
@@ -87,14 +89,14 @@ export default function BureauRolesFederation() {
         <Button
           variant="outlined"
           sx={{
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.2)",
+            color: "text.primary",
+            borderColor: "divider",
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              borderColor: "#fff",
-              bgcolor: "rgba(255,255,255,0.05)",
+              borderColor: "text.primary",
+              bgcolor: "action.hover",
             },
           }}
         >

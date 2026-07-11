@@ -29,6 +29,7 @@ import {
   Close,
 } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 const postesKumite = [
   { id: 1, label: "Arbitre Central (Shushin)", color: "#2e7d32" },
@@ -49,6 +50,7 @@ const ArbitreKumiteItem = ({
   onLibérerPoste,
   config,
 }) => {
+  const T = useCompetitionTheme();
   const aUnPoste = arbitre.poste !== null;
   const estShushin = arbitre.poste === "shushin" || arbitre.poste === 1;
   const estKansa = arbitre.est_superviseur;
@@ -64,19 +66,15 @@ const ArbitreKumiteItem = ({
       sx={{
         p: { xs: 1.5, sm: 2 },
         borderRadius: 2,
-        bgcolor: estKansa ? "rgba(255,152,0,0.06)" : "#141720",
+        bgcolor: estKansa ? "rgba(255,152,0,0.06)" : T.surfaceHigh,
         border: "1px solid",
         borderColor: estKansa
           ? "rgba(255,152,0,0.25)"
           : estShushin
             ? "rgba(46,125,50,0.25)"
-            : "#1e2433",
+            : T.border,
         borderLeft: "3px solid",
-        borderLeftColor: estKansa
-          ? "#ff9800"
-          : estShushin
-            ? "#2e7d32"
-            : "#1e2433",
+        borderLeftColor: estKansa ? "#ff9800" : estShushin ? "#2e7d32" : T.border,
         transition: "all 0.2s",
         mb: 1,
       }}
@@ -100,7 +98,7 @@ const ArbitreKumiteItem = ({
               width: 34,
               height: 34,
               borderRadius: "50%",
-              bgcolor: estKansa ? "rgba(255,152,0,0.15)" : "#1e2433",
+              bgcolor: estKansa ? "rgba(255,152,0,0.15)" : T.border,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -115,7 +113,7 @@ const ArbitreKumiteItem = ({
                   ? "#ff9800"
                   : estShushin
                     ? "#2e7d32"
-                    : "#8b90a0",
+                    : T.textMuted,
                 fontSize: "0.75rem",
               }}
             >
@@ -126,7 +124,7 @@ const ArbitreKumiteItem = ({
             <Typography
               variant="body2"
               fontWeight={600}
-              sx={{ color: "#dde1f0" }}
+              sx={{ color: T.text }}
               noWrap
             >
               {arbitre.nom}
@@ -138,7 +136,7 @@ const ArbitreKumiteItem = ({
                   ? "#ff9800"
                   : estShushin
                     ? "#4ade80"
-                    : "#636b88",
+                    : T.textMuted,
                 fontSize: "0.65rem",
               }}
             >
@@ -168,8 +166,8 @@ const ArbitreKumiteItem = ({
                 fontWeight: "bold",
                 height: 22,
                 fontSize: "0.62rem",
-                bgcolor: estShushin ? "#2e7d3230" : "#1e2433",
-                color: estShushin ? "#4ade80" : "#dde1f0",
+                bgcolor: estShushin ? "#2e7d3230" : T.border,
+                color: estShushin ? "#4ade80" : T.text,
               }}
             />
           ) : (
@@ -184,8 +182,8 @@ const ArbitreKumiteItem = ({
                   py: 0.3,
                   px: 0.8,
                   height: 24,
-                  borderColor: "#1e2433",
-                  color: "#8b90a0",
+                  borderColor: T.border,
+                  color: T.textMuted,
                   minWidth: "auto",
                 }}
               >
@@ -238,7 +236,7 @@ const ArbitreKumiteItem = ({
               >
                 <Shield
                   sx={{
-                    color: "#636b88",
+                    color: "text.secondary",
                     fontSize: 14,
                     "&:hover": { color: "#ff9800" },
                   }}
@@ -276,8 +274,9 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
         left: "50%",
         transform: "translate(-50%, -50%)",
         width: { xs: "92vw", sm: 400 },
-        bgcolor: "#0e1118",
-        border: "1px solid #1e2433",
+        bgcolor: "background.paper",
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: 4,
         p: 3,
         maxHeight: "80vh",
@@ -293,15 +292,19 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
       >
         <Typography
           variant="h6"
-          sx={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}
+          sx={{ color: "text.primary", fontWeight: 700, fontSize: "1rem" }}
         >
           Arbitres disponibles
         </Typography>
-        <IconButton size="small" onClick={onClose} sx={{ color: "#636b88" }}>
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{ color: "text.secondary" }}
+        >
           ✕
         </IconButton>
       </Stack>
-      <Divider sx={{ mb: 2, bgcolor: "#1e2433" }} />
+      <Divider sx={{ mb: 2 }} />
       <List sx={{ overflow: "auto", flex: 1 }}>
         {arbitresDispos.length > 0 ? (
           arbitresDispos.map((arb) => (
@@ -310,7 +313,7 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
               button
               onClick={() => onAssigner(arb.id)}
               sx={{
-                "&:hover": { bgcolor: "#141720" },
+                "&:hover": { bgcolor: "action.hover" },
                 borderRadius: 2,
                 mb: 1,
                 cursor: "pointer",
@@ -321,7 +324,7 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
                   width: 36,
                   height: 36,
                   borderRadius: "50%",
-                  bgcolor: "#1e2433",
+                  bgcolor: "divider",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -332,7 +335,7 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
                 <Typography
                   variant="caption"
                   fontWeight="bold"
-                  sx={{ color: "#6c63ff" }}
+                  sx={{ color: "primary.main" }}
                 >
                   {arb.user?.fullname?.charAt(0)?.toUpperCase()}
                 </Typography>
@@ -341,21 +344,21 @@ const ModalArbitresDispos = ({ open, onClose, arbitresDispos, onAssigner }) => (
                 primary={arb.user?.fullname || "Nom inconnu"}
                 secondary={arb.grade || "Arbitre Officiel"}
                 primaryTypographyProps={{
-                  color: "#dde1f0",
+                  color: "text.primary",
                   fontWeight: 600,
                   fontSize: "0.85rem",
                 }}
                 secondaryTypographyProps={{
-                  color: "#636b88",
+                  color: "text.secondary",
                   fontSize: "0.72rem",
                 }}
               />
-              <AddCircle sx={{ color: "#6c63ff", fontSize: 20 }} />
+              <AddCircle sx={{ color: "primary.main", fontSize: 20 }} />
             </ListItem>
           ))
         ) : (
           <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography sx={{ color: "#636b88", fontSize: "0.85rem" }}>
+            <Typography sx={{ color: "text.secondary", fontSize: "0.85rem" }}>
               Aucun arbitre disponible.
             </Typography>
           </Box>
@@ -373,6 +376,7 @@ const ArbitresKumitePanel = ({
   handleRetirerSuperviseur,
   onRefresh,
 }) => {
+  const T = useCompetitionTheme();
   console.log("ArbitresKumitePanel config:", config);
   const [openModal, setOpenModal] = useState(false);
   const [arbitresDispos, setArbitresDispos] = useState([]);
@@ -468,22 +472,23 @@ const ArbitresKumitePanel = ({
       spacing={2}
       sx={{
         p: { xs: 2, sm: 2 },
-        bgcolor: "#0e1118",
+        bgcolor: "background.paper",
         borderRadius: 4,
-        border: "1px solid #1e2433",
+        border: "1px solid",
+        borderColor: "divider",
         height: "100%",
         overflowY: "auto",
         "&::-webkit-scrollbar": { width: 4 },
-        "&::-webkit-scrollbar-thumb": { bgcolor: "#1e2433", borderRadius: 2 },
+        "&::-webkit-scrollbar-thumb": { bgcolor: "divider", borderRadius: 2 },
       }}
     >
       {/* Header */}
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" alignItems="center" gap={1}>
-          <Gavel sx={{ color: "#6c63ff", fontSize: 18 }} />
+          <Gavel sx={{ color: "primary.main", fontSize: 18 }} />
           <Typography
             variant="subtitle2"
-            sx={{ color: "#fff", fontWeight: 700, fontSize: "0.82rem" }}
+            sx={{ color: "text.primary", fontWeight: 700, fontSize: "0.82rem" }}
           >
             Panel Officiels Kumite
           </Typography>
@@ -520,7 +525,7 @@ const ArbitresKumitePanel = ({
         </Alert>
       )}
 
-      <Divider sx={{ bgcolor: "#1e2433" }} />
+      <Divider />
 
       {/* Liste arbitres ou vide */}
       {arbitresSafe.length === 0 ? (
@@ -529,16 +534,17 @@ const ArbitresKumitePanel = ({
           sx={{
             p: 3,
             textAlign: "center",
-            border: "1px dashed #1e2433",
+            border: "1px dashed",
+            borderColor: "divider",
             borderRadius: 3,
           }}
         >
           <Typography
             variant="body2"
-            sx={{ color: "#636b88", fontSize: "0.82rem" }}
+            sx={{ color: "text.secondary", fontSize: "0.82rem" }}
           >
             Aucun officiel affecté au{" "}
-            <strong style={{ color: "#dde1f0" }}>{config.plateau_nom}</strong>
+            <strong style={{ color: T.text }}>{config.plateau_nom}</strong>
           </Typography>
           <Button
             variant="contained"
@@ -552,8 +558,8 @@ const ArbitresKumitePanel = ({
             onClick={chargerArbitresDispos}
             disabled={loadingArbitres}
             sx={{
-              bgcolor: "#6c63ff",
-              "&:hover": { bgcolor: "#5a52d5" },
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark" },
               fontSize: "0.82rem",
             }}
           >
@@ -588,10 +594,10 @@ const ArbitresKumitePanel = ({
             disabled={loadingArbitres}
             sx={{
               mt: 0.5,
-              borderColor: "#1e2433",
-              color: "#636b88",
+              borderColor: "divider",
+              color: "text.secondary",
               fontSize: "0.78rem",
-              "&:hover": { borderColor: "#6c63ff", color: "#6c63ff" },
+              "&:hover": { borderColor: "primary.main", color: "primary.main" },
             }}
           >
             {loadingArbitres ? "Chargement..." : "+ Ajouter au groupe"}
@@ -606,9 +612,10 @@ const ArbitresKumitePanel = ({
         onClose={() => setAnchorEl(null)}
         PaperProps={{
           sx: {
-            bgcolor: "#0e1118",
-            border: "1px solid #1e2433",
-            color: "#fff",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            color: "text.primary",
             borderRadius: 2,
             minWidth: 220,
           },
@@ -626,8 +633,8 @@ const ArbitresKumitePanel = ({
               }}
               sx={{
                 fontSize: "0.82rem",
-                "&:hover": { bgcolor: "#1e2433" },
-                color: estPris ? "#636b88" : "#dde1f0",
+                "&:hover": { bgcolor: "action.hover" },
+                color: estPris ? "text.secondary" : "text.primary",
                 gap: 1,
               }}
             >
@@ -649,8 +656,8 @@ const ArbitresKumitePanel = ({
                     ml: "auto",
                     height: 16,
                     fontSize: "0.58rem",
-                    bgcolor: "#1e2433",
-                    color: "#636b88",
+                    bgcolor: "divider",
+                    color: "text.secondary",
                   }}
                 />
               )}

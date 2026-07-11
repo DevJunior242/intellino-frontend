@@ -107,14 +107,14 @@ function StoreAffiliation() {
             mb: 4,
             px: 4,
             py: 1.5,
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.3)",
+            color: "text.primary",
+            borderColor: "divider",
             textTransform: "none",
             borderRadius: 2,
             fontSize: "1rem",
             "&:hover": {
-              borderColor: "#fff",
-              bgcolor: "rgba(255,255,255,0.05)",
+              borderColor: "text.primary",
+              bgcolor: "action.hover",
             },
           }}
           onClick={() => navigate("/dashboard/league/clubs")}

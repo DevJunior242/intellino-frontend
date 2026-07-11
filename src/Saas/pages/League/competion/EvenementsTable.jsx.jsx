@@ -38,17 +38,6 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import Message from "../../Message";
 import ConfigSkeleton from "../../ConfigSkeleton";
 
-const theme = {
-  bg: "#1a1d21",
-  paper: "#212529",
-  card: "#2c3035",
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a",
-  success: "#4caf50",
-  warning: "#f44336",
-};
-
 const SlideUpTransition = React.forwardRef(
   function SlideUpTransition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -580,9 +569,10 @@ const DeleteConfirmDialog = ({
     fullWidth
     PaperProps={{
       sx: {
-        bgcolor: theme.paper,
+        bgcolor: "background.paper",
         borderRadius: 3,
-        border: "1px solid rgba(255,255,255,0.06)",
+        border: "1px solid",
+        borderColor: "divider",
         p: 0.5,
       },
     }}
@@ -592,7 +582,7 @@ const DeleteConfirmDialog = ({
         <Avatar
           sx={{
             bgcolor: "rgba(244,67,54,0.12)",
-            color: theme.warning,
+            color: "error.main",
             width: 40,
             height: 40,
           }}
@@ -602,7 +592,7 @@ const DeleteConfirmDialog = ({
         <Typography
           variant="subtitle1"
           fontWeight={700}
-          sx={{ color: theme.textMain }}
+          sx={{ color: "text.primary" }}
         >
           Supprimer cet événement ?
         </Typography>
@@ -610,9 +600,9 @@ const DeleteConfirmDialog = ({
     </DialogTitle>
 
     <DialogContent sx={{ pt: 0.5 }}>
-      <Typography variant="body2" sx={{ color: theme.textSecondary }}>
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
         Vous êtes sur le point de supprimer{" "}
-        <Box component="span" sx={{ color: theme.textMain, fontWeight: 600 }}>
+        <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>
           {evenement?.nom ?? "cet événement"}
         </Box>
         {evenement?.lieu ? ` (${evenement.lieu})` : ""}. Cette action est
@@ -626,7 +616,7 @@ const DeleteConfirmDialog = ({
         onClick={onClose}
         disabled={deleting}
         sx={{
-          color: theme.textSecondary,
+          color: "text.secondary",
           textTransform: "none",
           borderRadius: 2,
         }}

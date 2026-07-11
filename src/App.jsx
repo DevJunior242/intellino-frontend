@@ -17,7 +17,7 @@ import LayoutMain from "./component/layouts/LayoutMain";
 import DashboardLayout from "./component/layouts/DashboardLayout";
 import DashboardGeneralLayout from "./component/layouts/DashboardGeneralLayout";
 import { AxiosInterceptor } from "./Api/AxiosInterceptor";
-import ConfigSkeleton from "./Saas/pages/ConfigSkeleton.jsx";
+import LoadingScreen from "./component/LoadingScreen.jsx";
 
 // Pages chargées à la demande (un chunk séparé par page, téléchargé au moment de la navigation)
 const Plan = lazy(() => import("./Saas/pages/Plan"));
@@ -201,7 +201,7 @@ const PaymentMethodIndex = lazy(
 const ProtectedRoute = ({ allowedRoles }) => {
   const { auth, activeRole, loading } = UseAuth();
 
-  if (loading) return <ConfigSkeleton />;
+  if (loading) return <LoadingScreen fullscreen />;
   if (!auth?.isLogin) return <Navigate to="/login" />;
 
   // Si aucun rôle n'est requis
@@ -330,6 +330,7 @@ const AppRoutes = () => {
           <Route path="configCategory" element={<SubDisciplinePage />} />
           <Route path="activity" element={<ProgrammeActivites />} />
           <Route path="bureau" element={<BureauRolesFederation />} />
+          <Route path=":examenId/show" element={<ExamenDetails />} />
         </Route>
       </Route>
 
@@ -341,7 +342,7 @@ const AppRoutes = () => {
           <Route path="stage" element={<StageIndex />} />
           {/* programme d'activités */}
           {/* <Route path="activity" element={<ProgrammeActivites />} /> */}
-          <Route path=":examenId/show" element={<ExamenDetails />} />
+          <Route path="examen/:examenId/show" element={<ExamenDetails />} />
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
           <Route path="categories" element={<CategoriesPage />} />
@@ -427,7 +428,7 @@ function App() {
               flexDirection: "column",
             }}
           >
-            <Suspense fallback={<ConfigSkeleton />}>
+            <Suspense fallback={<LoadingScreen fullscreen />}>
               <AppRoutes />
             </Suspense>
             <ScrollToTop />

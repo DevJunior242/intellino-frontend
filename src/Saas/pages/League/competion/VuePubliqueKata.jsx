@@ -11,11 +11,14 @@ import {
 } from "@mui/material";
 import { EmojiEvents } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import { motion, AnimatePresence } from "framer-motion";
 import ErrorBlock from "../../ErrorBlock";
 import echo from "../../../../echo";
 import LoadingKumite from "./LoadingKumite";
+import PublicDisplayThemeProvider from "./PublicDisplayThemeProvider";
+import useCompetitionTheme from "./useCompetitionTheme";
 
 // --- Animations Framer Motion ---
 const fadeIn = {
@@ -115,6 +118,8 @@ const loadingIcon = {
 };
 
 export default function VuePubliqueKata() {
+  const theme = useTheme();
+  const T = useCompetitionTheme();
   const { configId } = useParams();
   const [data, setData] = useState(null);
   const [nextAthlete, setNextAthlete] = useState(null);
@@ -221,23 +226,40 @@ export default function VuePubliqueKata() {
 
   const medailles = ["🥇", "🥈", "🥉"];
 
-  if (loading) return <LoadingKumite />;
+  if (loading)
+    return (
+      <PublicDisplayThemeProvider>
+        <LoadingKumite />
+      </PublicDisplayThemeProvider>
+    );
 
   // Affichage en cas d'erreur
   if (error) {
-    return <ErrorBlock message={error} onRetry={fetchVuePublique} />;
+    return (
+      <PublicDisplayThemeProvider>
+        <ErrorBlock message={error} onRetry={fetchVuePublique} />
+      </PublicDisplayThemeProvider>
+    );
   }
 
+  const isDark = theme.palette.mode === "dark";
+
   return (
+    <PublicDisplayThemeProvider>
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#121217",
+        bgcolor: T.bg,
         p: { xs: 1, sm: 2, md: 3 },
-        background: `
-          linear-gradient(45deg, #121217, #1a1a2e, #121217, #1a1a2e),
-          linear-gradient(90deg, rgba(240,165,0,0.03), rgba(0, 180, 216, 0.03), rgba(240,165,0,0.03))
-        `,
+        background: isDark
+          ? `
+            linear-gradient(45deg, #121217, #1a1a2e, #121217, #1a1a2e),
+            linear-gradient(90deg, rgba(240,165,0,0.03), rgba(0, 180, 216, 0.03), rgba(240,165,0,0.03))
+          `
+          : `
+            linear-gradient(45deg, #fcfcfc, #f0f1f6, #fcfcfc, #f0f1f6),
+            linear-gradient(90deg, rgba(240,165,0,0.05), rgba(0, 180, 216, 0.05), rgba(240,165,0,0.05))
+          `,
         backgroundSize: "400% 400%, 100% 100%",
         animation: `${gradientAnimation} 20s ease infinite`,
       }}
@@ -257,17 +279,18 @@ export default function VuePubliqueKata() {
                   p: 2.5,
                   mb: 3,
                   borderRadius: 3,
-                  bgcolor: "#1e1e30",
+                  bgcolor: T.surfaceHigh,
                   textAlign: "center",
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  border: "1px solid",
+                  borderColor: T.border,
                 }}
               >
-                <Typography variant="h5" fontWeight="bold" color="#f0a500">
+                <Typography variant="h5" fontWeight="bold" color={T.accent}>
                   {enCours?.inscription?.competition?.evenement?.nom ?? "—"} -{" "}
                   {enCours?.inscription?.competition?.evenement?.lieu ?? "—"}
                 </Typography>
-                <Typography variant="h6" color="rgba(255,255,255,0.7)" mt={0.5}>
+                <Typography variant="h6" color={alpha(T.text, 0.7)} mt={0.5}>
                   {enCours?.inscription?.competition?.category?.nom ?? "—"} (
                   {enCours?.inscription?.competition?.category?.sexe ?? "—"})
                 </Typography>
@@ -291,15 +314,25 @@ export default function VuePubliqueKata() {
                     textAlign: "center",
                     position: "relative",
                     overflow: "hidden",
-                    background: `
-                      linear-gradient(
-                        135deg,
-                        #050505 0%,
-                        #111111 25%,
-                        #1a1200 60%,
-                        #3b2a00 100%
-                      )
-                    `,
+                    background: isDark
+                      ? `
+                        linear-gradient(
+                          135deg,
+                          #050505 0%,
+                          #111111 25%,
+                          #1a1200 60%,
+                          #3b2a00 100%
+                        )
+                      `
+                      : `
+                        linear-gradient(
+                          135deg,
+                          #ffffff 0%,
+                          #fffaf0 25%,
+                          #fff3d6 60%,
+                          #ffe6a8 100%
+                        )
+                      `,
                     border: "1px solid rgba(240,165,0,0.45)",
                     boxShadow: `
                       0 0 12px rgba(240,165,0,0.18),
@@ -323,7 +356,7 @@ export default function VuePubliqueKata() {
                 >
                   <Typography
                     variant="caption"
-                    color="#f0a500"
+                    color={T.accent}
                     fontWeight="bold"
                     letterSpacing={2}
                   >
@@ -339,12 +372,12 @@ export default function VuePubliqueKata() {
                       {enCours?.inscription?.athlete?.fullname ?? "—"}
                     </Typography>
                   </motion.div>
-                  <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
+                  <Typography color={alpha(T.text, 0.7)} mt={0.5}>
                     {enCours?.inscription?.organisateur?.name ?? "—"} · Passage
                     N°
                     {enCours?.ordre ?? "—"}
                   </Typography>
-                  <Typography color="rgba(255,255,255,0.7)">
+                  <Typography color={alpha(T.text, 0.7)}>
                     Kata : {enCours.inscription?.kata ?? "—"}
                   </Typography>
                 </Paper>
@@ -355,12 +388,12 @@ export default function VuePubliqueKata() {
                   p: 3,
                   mb: 3,
                   borderRadius: 3,
-                  bgcolor: "#1e1e30",
+                  bgcolor: T.surfaceHigh,
                   textAlign: "center",
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
                 }}
               >
-                <Typography color="rgba(255,255,255,0.5)">
+                <Typography color={alpha(T.text, 0.5)}>
                   En attente du prochain athlète...
                 </Typography>
               </Paper>
@@ -378,15 +411,25 @@ export default function VuePubliqueKata() {
                   textAlign: "center",
                   position: "relative",
                   overflow: "hidden",
-                  background: `
-                    linear-gradient(
-                      135deg,
-                      #001a1a 0%,
-                      #002222 25%,
-                      #003333 60%,
-                      #004444 100%
-                    )
-                  `,
+                  background: isDark
+                    ? `
+                      linear-gradient(
+                        135deg,
+                        #001a1a 0%,
+                        #002222 25%,
+                        #003333 60%,
+                        #004444 100%
+                      )
+                    `
+                    : `
+                      linear-gradient(
+                        135deg,
+                        #ffffff 0%,
+                        #f0fbfd 25%,
+                        #dcf4f9 60%,
+                        #c3ecf5 100%
+                      )
+                    `,
                   border: "1px solid rgba(0, 180, 216, 0.45)",
                   boxShadow: `
                     0 0 12px rgba(0, 180, 216, 0.18),
@@ -416,7 +459,7 @@ export default function VuePubliqueKata() {
                 >
                   <Typography
                     variant="caption"
-                    color="#00b4d8"
+                    color={theme.palette.info.main}
                     fontWeight="bold"
                     letterSpacing={2}
                   >
@@ -426,17 +469,17 @@ export default function VuePubliqueKata() {
                 <Typography
                   variant="h3"
                   fontWeight="900"
-                  color="#00d4ff"
+                  color={theme.palette.info.main}
                   mt={1}
                 >
                   {nextAthlete?.inscription?.athlete?.fullname ?? "—"}
                 </Typography>
-                <Typography color="rgba(255,255,255,0.7)" mt={0.5}>
+                <Typography color={alpha(T.text, 0.7)} mt={0.5}>
                   {nextAthlete?.inscription?.organisateur?.name ?? "—"} ·
                   Passage N°
                   {nextAthlete?.ordre ?? "—"}
                 </Typography>
-                <Typography color="rgba(255,255,255,0.7)">
+                <Typography color={alpha(T.text, 0.7)}>
                   Kata : {nextAthlete.inscription?.kata ?? "—"}
                 </Typography>
               </Paper>
@@ -447,7 +490,7 @@ export default function VuePubliqueKata() {
           <motion.div variants={staggerItem}>
             <Typography
               variant="body2"
-              color="rgba(255,255,255,0.5)"
+              color={alpha(T.text, 0.5)}
               textAlign="center"
               mb={1.5}
             >
@@ -485,23 +528,23 @@ export default function VuePubliqueKata() {
                         borderRadius: 3,
                         textAlign: "center",
                         bgcolor: elimine
-                          ? "rgba(107, 44, 44, 0.8)"
+                          ? alpha(theme.palette.error.main, 0.5)
                           : aNote
-                            ? "rgba(26, 92, 58, 0.8)"
-                            : "#1e1e30",
+                            ? alpha(theme.palette.success.main, 0.5)
+                            : T.surfaceHigh,
                         border: "1px solid",
                         borderColor: elimine
-                          ? "#993c1d"
+                          ? theme.palette.error.main
                           : aNote
-                            ? "#1d9e75"
-                            : "rgba(255, 255, 255, 0.1)",
+                            ? theme.palette.success.main
+                            : T.border,
                         transition: "all 0.3s",
                         boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
                       }}
                     >
                       <Typography
                         variant="caption"
-                        color="rgba(255,255,255,0.6)"
+                        color={alpha(T.text, 0.6)}
                       >
                         Juge {i + 1}
                       </Typography>
@@ -529,7 +572,10 @@ export default function VuePubliqueKata() {
                             </Typography>
                           </motion.div>
                           {elimine && (
-                            <Typography variant="caption" color="#f09595">
+                            <Typography
+                              variant="caption"
+                              color={theme.palette.error.light}
+                            >
                               éliminé
                             </Typography>
                           )}
@@ -537,7 +583,7 @@ export default function VuePubliqueKata() {
                       ) : (
                         <Typography
                           variant="h4"
-                          color="rgba(255,255,255,0.2)"
+                          color={alpha(T.text, 0.2)}
                           mt={1}
                         >
                           —
@@ -558,12 +604,12 @@ export default function VuePubliqueKata() {
                   p: 3,
                   mb: 3,
                   borderRadius: 3,
-                  bgcolor: score ? "#1e1e30" : "#121217",
+                  bgcolor: score ? T.surfaceHigh : T.bg,
                   textAlign: "center",
                   boxShadow: score
                     ? "0 6px 25px rgba(74, 63, 140, 0.5)"
                     : "0 4px 20px rgba(0, 0, 0, 0.3)",
-                  border: score ? "1px solid #4a3f8c" : "none",
+                  border: score ? `1px solid ${T.accentDark}` : "none",
                   transition: "all 0.5s",
                 }}
               >
@@ -571,7 +617,7 @@ export default function VuePubliqueKata() {
                   <>
                     <Typography
                       variant="body2"
-                      color="rgba(255,255,255,0.6)"
+                      color={alpha(T.text, 0.6)}
                       mb={1}
                     >
                       Score final (
@@ -581,12 +627,12 @@ export default function VuePubliqueKata() {
                         .join(" + ")}
                       )
                     </Typography>
-                    <Typography variant="h2" fontWeight="900" color="#f0a500">
+                    <Typography variant="h2" fontWeight="900" color={T.accent}>
                       {score}
                     </Typography>
                   </>
                 ) : (
-                  <Typography color="rgba(255,255,255,0.4)">
+                  <Typography color={alpha(T.text, 0.4)}>
                     Score final — en attente des notes
                   </Typography>
                 )}
@@ -599,7 +645,7 @@ export default function VuePubliqueKata() {
             <motion.div variants={staggerItem}>
               <Typography
                 variant="body2"
-                color="rgba(255,255,255,0.5)"
+                color={alpha(T.text, 0.5)}
                 textAlign="center"
                 mb={1.5}
               >
@@ -624,10 +670,9 @@ export default function VuePubliqueKata() {
                         px: 2.5,
                         py: 1.5,
                         borderRadius: 3,
-                        bgcolor: index === 0 ? "#2a1810" : "#1e1e30",
+                        bgcolor: index === 0 ? alpha(T.accent, 0.12) : T.surfaceHigh,
                         border: "1px solid",
-                        borderColor:
-                          index === 0 ? "#f0a500" : "rgba(255, 255, 255, 0.1)",
+                        borderColor: index === 0 ? T.accent : T.border,
                         boxShadow:
                           index === 0
                             ? "0 6px 20px rgba(218, 165, 32, 0.3)"
@@ -644,12 +689,12 @@ export default function VuePubliqueKata() {
                             {medailles[index] || `${index + 1}.`}
                           </Typography>
                           <Box>
-                            <Typography fontWeight="bold" color="white">
+                            <Typography fontWeight="bold" color={T.text}>
                               {item.athlete}
                             </Typography>
                             <Typography
                               variant="caption"
-                              color="rgba(255,255,255,0.5)"
+                              color={alpha(T.text, 0.5)}
                             >
                               {item.organisateur}
                             </Typography>
@@ -658,7 +703,7 @@ export default function VuePubliqueKata() {
                         <Typography
                           variant="h6"
                           fontWeight="bold"
-                          color={index === 0 ? "#f0a500" : "white"}
+                          color={index === 0 ? T.accent : T.text}
                         >
                           {item.score}
                         </Typography>
@@ -672,5 +717,6 @@ export default function VuePubliqueKata() {
         </motion.div>
       </AnimatePresence>
     </Box>
+    </PublicDisplayThemeProvider>
   );
 }

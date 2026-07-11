@@ -21,6 +21,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import { motion } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { Search, Download, PictureAsPdf } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import ErrorBlock from "../ErrorBlock";
@@ -161,6 +162,7 @@ const exportToutesLicences = async (
 // Composant principal
 // ---------------------------------------------------------------------------
 function LicenceTable() {
+  const theme = useTheme();
   const [licences, setLicences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -236,8 +238,9 @@ function LicenceTable() {
         <Paper
           sx={{
             p: 2,
-            bgcolor: "#22262f",
-            border: "1px solid rgba(255,255,255,0.05)",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <TextField
@@ -258,7 +261,7 @@ function LicenceTable() {
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                bgcolor: "rgba(255,255,255,0.03)",
+                bgcolor: "action.hover",
                 borderRadius: 2,
               },
             }}
@@ -283,9 +286,9 @@ function LicenceTable() {
               getLicences(search, value);
             }}
             style={{
-              background: "#22262f",
-              color: "#e8eaf0",
-              border: "1px solid rgba(255,255,255,0.1)",
+              background: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              border: `1px solid ${theme.palette.divider}`,
               borderRadius: 8,
               padding: "6px 12px",
               fontSize: "0.85rem",
@@ -305,11 +308,11 @@ function LicenceTable() {
             onClick={handleExportAll}
             disabled={exportingAll || loading}
             sx={{
-              borderColor: "rgba(255,255,255,0.2)",
-              color: "#e8eaf0",
+              borderColor: "divider",
+              color: "text.primary",
               textTransform: "none",
               borderRadius: 2,
-              "&:hover": { borderColor: "#e8c84a", color: "#e8c84a" },
+              "&:hover": { borderColor: "primary.main", color: "primary.main" },
             }}
           >
             {exportingAll ? "Export en cours..." : "Exporter tout"}
@@ -320,9 +323,10 @@ function LicenceTable() {
         <TableContainer
           component={Paper}
           sx={{
-            bgcolor: "#22262f",
+            bgcolor: "background.paper",
             borderRadius: 3,
-            border: "1px solid rgba(255,255,255,0.05)",
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <Table>
@@ -330,9 +334,10 @@ function LicenceTable() {
               <TableRow
                 sx={{
                   "& th": {
-                    color: "#555a6b",
+                    color: "text.secondary",
                     fontWeight: 700,
-                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                   },
                 }}
               >
@@ -350,7 +355,7 @@ function LicenceTable() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
-                    <Typography sx={{ color: "#8b90a0" }}>
+                    <Typography sx={{ color: "text.secondary" }}>
                       Chargement...
                     </Typography>
                   </TableCell>
@@ -362,8 +367,9 @@ function LicenceTable() {
                     hover
                     sx={{
                       "& td": {
-                        borderBottom: "1px solid rgba(255,255,255,0.03)",
-                        color: "#e8eaf0",
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                        color: "text.primary",
                       },
                     }}
                   >
@@ -371,16 +377,17 @@ function LicenceTable() {
                       sx={{ display: "flex", alignItems: "center", gap: 2 }}
                     >
                       <Avatar
-                        sx={{
+                        sx={(theme) => ({
                           width: 40,
                           height: 40,
-                          bgcolor: "rgba(232, 200, 74, 0.12)",
-                          color: "#e8c84a",
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          color: "primary.main",
                           fontWeight: 700,
                           fontSize: "0.9rem",
                           borderRadius: 2,
-                          border: "1px solid rgba(232, 200, 74, 0.2)",
-                        }}
+                          border: "1px solid",
+                          borderColor: alpha(theme.palette.primary.main, 0.2),
+                        })}
                       >
                         {(licence.student?.fullname || "??")
                           .substring(0, 2)
@@ -389,7 +396,7 @@ function LicenceTable() {
                       <Typography
                         sx={{
                           fontWeight: 600,
-                          color: "#e8eaf0",
+                          color: "text.primary",
                           fontSize: "0.85rem",
                         }}
                       >
@@ -420,8 +427,8 @@ function LicenceTable() {
                           )
                         }
                         sx={{
-                          color: "#8b90a0",
-                          "&:hover": { color: "#e8c84a" },
+                          color: "text.secondary",
+                          "&:hover": { color: "primary.main" },
                         }}
                       >
                         <PictureAsPdf fontSize="small" />
@@ -432,7 +439,7 @@ function LicenceTable() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
-                    <Typography sx={{ color: "#8b90a0" }}>
+                    <Typography sx={{ color: "text.secondary" }}>
                       Aucune licence trouvée
                     </Typography>
                   </TableCell>

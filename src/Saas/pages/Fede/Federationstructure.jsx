@@ -30,11 +30,8 @@ import {
   AccessTime as AccessTimeIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
-
-const ACCENT = "#3949AB";
-const MUTED = "#6B7280";
-const INK = "#1A1C2A";
 
 // Badge d'affiliation d'un club pour la saison active : à jour (paid),
 // en vérification (declared), ou non affilié (pending / aucune ligne).
@@ -75,6 +72,11 @@ function LeagueSkeletonList() {
 
 export default function FederationStructure() {
   const theme = useTheme();
+  // Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+  // s'adapter au clair/sombre des dashboards ligue/fédération.
+  const ACCENT = theme.palette.primary.main;
+  const MUTED = theme.palette.text.secondary;
+  const INK = theme.palette.text.primary;
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [leagues, setLeagues] = useState([]);
@@ -176,7 +178,7 @@ export default function FederationStructure() {
               <SearchIcon sx={{ fontSize: 18, color: MUTED }} />
             </InputAdornment>
           ),
-          sx: { borderRadius: 2, bgcolor: "#1a1d23" },
+          sx: { borderRadius: 2, bgcolor: "background.paper" },
         }}
       />
 
@@ -188,7 +190,8 @@ export default function FederationStructure() {
             textAlign: "center",
             py: 8,
             color: MUTED,
-            border: "1px dashed #D1D5DB",
+            border: "1px dashed",
+            borderColor: "divider",
             borderRadius: 3,
           }}
         >
@@ -212,7 +215,8 @@ export default function FederationStructure() {
               key={league.id}
               elevation={0}
               sx={{
-                border: "1px solid #E5E7EB",
+                border: "1px solid",
+                borderColor: "divider",
                 borderRadius: 2,
                 mb: 1.5,
                 "&:before": { display: "none" },
@@ -227,7 +231,13 @@ export default function FederationStructure() {
                     width: "100%",
                   }}
                 >
-                  <Avatar sx={{ bgcolor: "#E8EAF6", width: 36, height: 36 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.primary.main, 0.12),
+                      width: 36,
+                      height: 36,
+                    }}
+                  >
                     <AccountBalanceIcon sx={{ color: ACCENT, fontSize: 18 }} />
                   </Avatar>
                   <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -285,11 +295,19 @@ export default function FederationStructure() {
               width: 300,
               flexShrink: 0,
               borderRadius: 3,
-              border: "1px solid #E5E7EB",
+              border: "1px solid",
+              borderColor: "divider",
               overflow: "hidden",
             }}
           >
-            <Box sx={{ px: 2, py: 1.5, borderBottom: "1px solid #F1F2F4" }}>
+            <Box
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }}
+            >
               <Typography
                 variant="caption"
                 sx={{
@@ -313,9 +331,13 @@ export default function FederationStructure() {
                         py: 1.25,
                         borderLeft: "3px solid",
                         borderLeftColor: isSelected ? ACCENT : "transparent",
-                        bgcolor: isSelected ? "#E8EAF6" : "transparent",
+                        bgcolor: isSelected
+                          ? alpha(theme.palette.primary.main, 0.12)
+                          : "transparent",
                         "&:hover": {
-                          bgcolor: isSelected ? "#E8EAF6" : "#FAFAFB",
+                          bgcolor: isSelected
+                            ? alpha(theme.palette.primary.main, 0.12)
+                            : "action.hover",
                         },
                       }}
                     >
@@ -350,7 +372,8 @@ export default function FederationStructure() {
             sx={{
               flexGrow: 1,
               borderRadius: 3,
-              border: "1px solid #E5E7EB",
+              border: "1px solid",
+              borderColor: "divider",
               overflow: "hidden",
               minHeight: 200,
             }}
@@ -359,7 +382,8 @@ export default function FederationStructure() {
               sx={{
                 px: 2.5,
                 py: 1.5,
-                borderBottom: "1px solid #F1F2F4",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",

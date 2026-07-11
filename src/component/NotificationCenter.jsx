@@ -120,11 +120,11 @@ const NotificationCenter = () => {
           borderRadius: 2,
           position: "relative",
           cursor: "pointer",
-          color: "#555",
+          color: "text.secondary",
           transition: "all 0.3s ease",
           "&:hover": {
-            color: "#1976d2",
-            bgcolor: "rgba(0, 0, 0, 0.04)",
+            color: "primary.main",
+            bgcolor: "action.hover",
           },
         }}
       >
@@ -190,7 +190,7 @@ const NotificationCenter = () => {
               <ListItem
                 key={notif.id}
                 disablePadding
-                sx={{ borderBottom: "1px solid #f0f0f0" }}
+                sx={{ borderBottom: "1px solid", borderColor: "divider" }}
               >
                 <Box
                   sx={{

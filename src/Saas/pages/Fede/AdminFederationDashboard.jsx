@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
 import { PieChart } from "@mui/x-charts/PieChart";
 import {
   CorporateFare,
@@ -36,6 +37,7 @@ const cardVariants = {
 };
 
 export default function AdminFederationDashboard() {
+  const theme = useTheme();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function AdminFederationDashboard() {
           height: "60vh",
         }}
       >
-        <CircularProgress sx={{ color: "#e8c84a" }} />
+        <CircularProgress sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -133,34 +135,39 @@ export default function AdminFederationDashboard() {
         sx={{
           p: 3,
           mb: 4,
-          bgcolor: "#22262f",
+          bgcolor: "background.paper",
           borderRadius: 3,
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid",
+          borderColor: "divider",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "#e8eaf0" }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 700, color: "text.primary" }}
+          >
             Tableau de Bord National
           </Typography>
-          <Typography variant="body2" sx={{ color: "#8b90a0", mt: 0.5 }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
             Vue analytique globale de vos structures et pratiquants au Burkina
             Faso.
           </Typography>
         </Box>
         <Box
           sx={{
-            bgcolor: "rgba(232, 200, 74, 0.1)",
-            border: "1px solid rgba(232, 200, 74, 0.2)",
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            border: "1px solid",
+            borderColor: alpha(theme.palette.primary.main, 0.2),
             px: 2,
             py: 1,
             borderRadius: 2,
           }}
         >
           <Typography
-            sx={{ color: "#e8c84a", fontWeight: 700, fontSize: "0.85rem" }}
+            sx={{ color: "primary.main", fontWeight: 700, fontSize: "0.85rem" }}
           >
             Saison :{" "}
             {data?.saison ? data?.saison?.libele : "Aucune saison active"}
@@ -187,8 +194,9 @@ export default function AdminFederationDashboard() {
             <Card
               onClick={card.onClick}
               sx={{
-                bgcolor: "#22262f",
-                border: "1px solid rgba(255,255,255,0.05)",
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
                 borderRadius: 3,
                 height: "100%",
                 cursor: card.onClick ? "pointer" : "default",
@@ -204,7 +212,7 @@ export default function AdminFederationDashboard() {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#8b90a0",
+                        color: "text.secondary",
                         fontWeight: 600,
                         textTransform: "uppercase",
                       }}
@@ -213,7 +221,7 @@ export default function AdminFederationDashboard() {
                     </Typography>
                     <Typography
                       variant="h5"
-                      sx={{ color: "#e8eaf0", fontWeight: 700, mt: 1 }}
+                      sx={{ color: "text.primary", fontWeight: 700, mt: 1 }}
                     >
                       {card.value}
                     </Typography>
@@ -245,8 +253,9 @@ export default function AdminFederationDashboard() {
         >
           <Card
             sx={{
-              bgcolor: "#22262f",
-              border: "1px solid rgba(255,255,255,0.05)",
+              bgcolor: "background.paper",
+              border: "1px solid",
+              borderColor: "divider",
               borderRadius: 3,
               height: "100%",
             }}
@@ -258,17 +267,17 @@ export default function AdminFederationDashboard() {
                 alignItems="center"
                 sx={{ mb: 2 }}
               >
-                <Wc sx={{ color: "#e8c84a" }} />
+                <Wc sx={{ color: "primary.main" }} />
                 <Typography
                   variant="subtitle1"
-                  sx={{ color: "#e8eaf0", fontWeight: 700 }}
+                  sx={{ color: "text.primary", fontWeight: 700 }}
                 >
                   Démographie par Genre
                 </Typography>
               </Stack>
               <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
                 {(stats?.hommes || 0) + (stats?.femmes || 0) === 0 ? (
-                  <Typography variant="body2" sx={{ color: "#8b90a0" }}>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
                     Aucun licencié pour le moment.
                   </Typography>
                 ) : (

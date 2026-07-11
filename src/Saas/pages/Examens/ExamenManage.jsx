@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Grid,
@@ -36,8 +36,7 @@ import ReportExamenModal from "./ReportExamenModal";
 import ConfigSkeleton from "../ConfigSkeleton";
 
 function ExamenManage({ examen, fetchExamenData }) {
-  console.log(examen);
-  const [openModal, setOpenModal] = useState(false);
+   const [openModal, setOpenModal] = useState(false);
   const [openReportModal, setOpenReportModal] = useState(false);
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
@@ -47,6 +46,7 @@ function ExamenManage({ examen, fetchExamenData }) {
   const { activeId } = UseAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [confirmSubmitting, setConfirmSubmitting] = useState(false);
 
   const handleOpenReportModal = () => {
     setOpenReportModal(true);
@@ -81,9 +81,14 @@ function ExamenManage({ examen, fetchExamenData }) {
   };
 
   const handleConfirmFinal = async (e) => {
-    if (pendingAction === "start") await handleStart(e);
-    if (pendingAction === "stop") await handleStop(e);
-    setConfirmOpen(false);
+    setConfirmSubmitting(true);
+    try {
+      if (pendingAction === "start") await handleStart(e);
+      if (pendingAction === "stop") await handleStop(e);
+    } finally {
+      setConfirmSubmitting(false);
+      setConfirmOpen(false);
+    }
   };
   const handleStart = async (e) => {
     e.preventDefault();
@@ -170,9 +175,9 @@ function ExamenManage({ examen, fetchExamenData }) {
                   startIcon={<PlayArrow />}
                   onClick={() => triggerConfirm("start")}
                   sx={{ py: 2, borderRadius: 2 }}
-                  disabled={examen.status !== 0}
+                  disabled={examen.status !== 0 || confirmSubmitting}
                 >
-                  {confirmOpen && pendingAction === "start" ? (
+                  {confirmSubmitting && pendingAction === "start" ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
                     "Démarrer"
@@ -188,9 +193,9 @@ function ExamenManage({ examen, fetchExamenData }) {
                   startIcon={<Stop />}
                   onClick={() => triggerConfirm("stop")}
                   sx={{ py: 2, borderRadius: 2 }}
-                  disabled={examen.status !== 1}
+                  disabled={examen.status !== 1 || confirmSubmitting}
                 >
-                  {confirmOpen && pendingAction === "stop" ? (
+                  {confirmSubmitting && pendingAction === "stop" ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
                     "Terminer"
@@ -377,7 +382,7 @@ function ExamenManage({ examen, fetchExamenData }) {
 
       <Dialog
         open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        onClose={() => !confirmSubmitting && setConfirmOpen(false)}
         sx={{
           "& .MuiDialog-paper": {
             p: 3,
@@ -388,26 +393,40 @@ function ExamenManage({ examen, fetchExamenData }) {
       >
         <DialogTitle sx={{ fontWeight: "bold" }}>
           {pendingAction === "start"
-            ? "Démarrer la examen ?"
-            : "Terminer la examen ?"}
+            ? "Démarrer l'examen ?"
+            : "Terminer l'examen ?"}
         </DialogTitle>
         <DialogContent>
           <Typography>
             {pendingAction === "start"
               ? "Le cours va être marqué comme 'En cours' et l'heure de début sera enregistrée."
-              : "Attention : Terminer la examen verrouillera les listes de présences. Cette action est irréversible."}
+              : "Attention : Terminer l'examen verrouillera les listes de présences. Cette action est irréversible."}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setConfirmOpen(false)} color="inherit">
+          <Button
+            onClick={() => setConfirmOpen(false)}
+            color="inherit"
+            disabled={confirmSubmitting}
+          >
             Annuler
           </Button>
           <Button
             variant="contained"
             color={pendingAction === "start" ? "success" : "warning"}
             onClick={handleConfirmFinal}
+            disabled={confirmSubmitting}
+            startIcon={
+              confirmSubmitting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : pendingAction === "start" ? (
+                <PlayArrow />
+              ) : (
+                <Stop />
+              )
+            }
           >
-            {confirmOpen ? "Confirmer" : "Annuler"}
+            {confirmSubmitting ? "Traitement..." : "Confirmer"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -15,6 +15,7 @@ import {
   Badge,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import {
   Star,
   FiberManualRecord,
@@ -32,29 +33,36 @@ import echo from "../../../../echo";
 import SeanceAdminPanelKumite from "./SeanceAdminPanelKumite";
 
 // ─── Skeleton sidebar ─────────────────────────────────────────────────────────
-const SidebarSkeleton = () => (
-  <Stack spacing={1.5} sx={{ p: 1 }}>
-    {[1, 2, 3].map((i) => (
-      <Box key={i} sx={{ p: 2, borderRadius: 3, bgcolor: "#141720" }}>
-        <Skeleton
-          variant="text"
-          width="70%"
-          sx={{ bgcolor: "#1e2433", mb: 1 }}
-        />
-        <Skeleton
-          variant="text"
-          width="50%"
-          sx={{ bgcolor: "#1e2433", mb: 1 }}
-        />
-        <Skeleton
-          variant="rectangular"
-          height={20}
-          sx={{ bgcolor: "#1e2433", borderRadius: 1 }}
-        />
-      </Box>
-    ))}
-  </Stack>
-);
+const SidebarSkeleton = () => {
+  const theme = useTheme();
+
+  return (
+    <Stack spacing={1.5} sx={{ p: 1 }}>
+      {[1, 2, 3].map((i) => (
+        <Box
+          key={i}
+          sx={{ p: 2, borderRadius: 3, bgcolor: theme.palette.background.paper }}
+        >
+          <Skeleton
+            variant="text"
+            width="70%"
+            sx={{ bgcolor: theme.palette.action.hover, mb: 1 }}
+          />
+          <Skeleton
+            variant="text"
+            width="50%"
+            sx={{ bgcolor: theme.palette.action.hover, mb: 1 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={20}
+            sx={{ bgcolor: theme.palette.action.hover, borderRadius: 1 }}
+          />
+        </Box>
+      ))}
+    </Stack>
+  );
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatHeure = (dt) =>
@@ -83,7 +91,8 @@ const ConfigCard = ({
   onClick,
   onShowRepartition,
 }) => {
-  const isKumite = config.discipline?.toLowerCase() === "kumite";
+  const theme = useTheme();
+  const isKumite = config.subDiscipline?.toLowerCase() === "kumite";
   const lienPublic = isKumite
     ? `${window.location.origin}/public/tatami/${config.id}/kumite`
     : `${window.location.origin}/public/tatami/${config.id}`;
@@ -97,19 +106,19 @@ const ConfigCard = ({
         p: 2,
         borderRadius: 3,
         cursor: "pointer",
-        bgcolor: estSelecte ? "rgba(108, 99, 255, 0.12)" : "#141720",
+        bgcolor: estSelecte ? alpha(theme.palette.primary.main, 0.12) : theme.palette.background.paper,
         border: "1.5px solid",
-        borderColor: estSelecte ? "#6c63ff" : "#1e2433",
+        borderColor: estSelecte ? theme.palette.primary.main : theme.palette.divider,
         transition: "all 0.2s",
         "&:hover": {
-          borderColor: estSelecte ? "#6c63ff" : "#2e3550",
-          bgcolor: estSelecte ? "rgba(108, 99, 255, 0.15)" : "#181c28",
+          borderColor: estSelecte ? theme.palette.primary.main : theme.palette.action.hover,
+          bgcolor: estSelecte ? alpha(theme.palette.primary.main, 0.15) : theme.palette.action.hover,
         },
         position: "relative",
         overflow: "hidden",
       }}
     >
-      <Typography variant="caption" sx={{ color: "#636b88" }}>
+      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
         {formatDateCourte(config?.date_debut)} ·
         {formatHeure(config?.heure_debut_prevu)}
       </Typography>
@@ -121,19 +130,19 @@ const ConfigCard = ({
         gap={0.5}
       >
         <Chip
-          label={config.discipline}
+          label={config.subDiscipline}
           size="small"
           sx={{
             height: 18,
             fontSize: "0.62rem",
-            bgcolor: isKumite ? "#ef444420" : "#00e5c020",
-            color: isKumite ? "#ef4444" : "#00e5c0",
+            bgcolor: isKumite ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2),
+            color: isKumite ? theme.palette.error.main : theme.palette.success.main,
             fontWeight: 700,
           }}
         />
         <Typography
           variant="caption"
-          sx={{ color: "#636b88", fontSize: "0.62rem" }}
+          sx={{ color: theme.palette.text.secondary, fontSize: "0.62rem" }}
         >
           {isKumite ? config.format : `${config.juges_option || "N/A"} juges`}
         </Typography>
@@ -144,8 +153,8 @@ const ConfigCard = ({
             sx={{
               height: 16,
               fontSize: "0.58rem",
-              bgcolor: "#22c55e20",
-              color: "#22c55e",
+              bgcolor: alpha(theme.palette.success.main, 0.2),
+              color: theme.palette.success.main,
               fontWeight: 700,
             }}
           />
@@ -164,12 +173,12 @@ const ConfigCard = ({
             mt: 1,
             fontSize: "0.62rem",
             height: 20,
-            borderColor: "#6c63ff",
-            color: "#6c63ff",
-            "&:hover": { bgcolor: "rgba(108, 99, 255, 0.1)" },
+            borderColor: theme.palette.primary.main,
+            color: theme.palette.primary.main,
+            "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
           }}
         />
-        <Typography variant="body2" fontWeight="bold" color="white" noWrap>
+        <Typography variant="body2" fontWeight="bold" color={theme.palette.text.primary} noWrap>
           {config.plateau_nom}
         </Typography>
       </Stack>
@@ -189,9 +198,9 @@ const ConfigCard = ({
             mt: 1,
             fontSize: "0.62rem",
             height: 20,
-            borderColor: "#1e2433",
-            color: "#636b88",
-            "&:hover": { borderColor: "#6c63ff", color: "#6c63ff" },
+            borderColor: theme.palette.divider,
+            color: theme.palette.text.secondary,
+            "&:hover": { borderColor: theme.palette.primary.main, color: theme.palette.primary.main },
           }}
         />
       </Link>
@@ -208,96 +217,101 @@ const SidebarContent = ({
   onClose,
   isMobile,
   onShowRepartition,
-}) => (
-  <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-    <Box
-      sx={{
-        p: 2,
-        bgcolor: "#ffb547",
-        color: "#000",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexShrink: 0,
-      }}
-    >
-      <Stack direction="row" alignItems="center" gap={1}>
-        <Star fontSize="small" />
-        <Typography fontWeight="bold" fontSize="0.85rem">
-          JUGE PRINCIPAL
-        </Typography>
-      </Stack>
-      {isMobile && (
-        <IconButton size="small" onClick={onClose} sx={{ color: "#000" }}>
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      )}
-    </Box>
+}) => {
+  const theme = useTheme();
 
-    <Box
-      sx={{
-        px: 2,
-        py: 1,
-        bgcolor: "#0e1118",
-        borderBottom: "1px solid #1e2433",
-        flexShrink: 0,
-      }}
-    >
-      <Stack direction="row" gap={1}>
-        <Chip
-          label={`${configs.length} plateau${configs.length > 1 ? "x" : ""}`}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: "0.65rem",
-            bgcolor: "#1e2433",
-            color: "#8b90a0",
-          }}
-        />
-        <Chip
-          label={`${configs.filter((c) => c.est_valide).length} actifs`}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: "0.65rem",
-            bgcolor: "#22c55e20",
-            color: "#22c55e",
-          }}
-        />
-      </Stack>
-    </Box>
-
-    <Box
-      sx={{
-        flex: 1,
-        overflowY: "auto",
-        p: 1.5,
-        "&::-webkit-scrollbar": { width: 4 },
-        "&::-webkit-scrollbar-thumb": { bgcolor: "#1e2433", borderRadius: 2 },
-      }}
-    >
-      {loadingInitial ? (
-        <SidebarSkeleton />
-      ) : (
-        <Stack spacing={1.5}>
-          {configs.map((config) => (
-            <ConfigCard
-              key={config.id}
-              config={config}
-              estSelecte={configSelectee?.id === config.id}
-              data={tatamiData[config.id]}
-              onClick={() => {
-                choisirConfig(config);
-                if (isMobile && onClose) onClose();
-              }}
-              onShowRepartition={onShowRepartition}
-            />
-          ))}
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <Box
+        sx={{
+          p: 2,
+          bgcolor: theme.palette.warning.main,
+          color: theme.palette.getContrastText(theme.palette.warning.main),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <Stack direction="row" alignItems="center" gap={1}>
+          <Star fontSize="small" />
+          <Typography fontWeight="bold" fontSize="0.85rem">
+            JUGE PRINCIPAL
+          </Typography>
         </Stack>
-      )}
+        {isMobile && (
+          <IconButton size="small" onClick={onClose} sx={{ color: theme.palette.getContrastText(theme.palette.warning.main) }}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+
+      <Box
+        sx={{
+          px: 2,
+          py: 1,
+          bgcolor: theme.palette.background.default,
+          borderBottom: "1px solid",
+          borderColor: theme.palette.divider,
+          flexShrink: 0,
+        }}
+      >
+        <Stack direction="row" gap={1}>
+          <Chip
+            label={`${configs.length} plateau${configs.length > 1 ? "x" : ""}`}
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: "0.65rem",
+              bgcolor: theme.palette.action.hover,
+              color: theme.palette.text.secondary,
+            }}
+          />
+          <Chip
+            label={`${configs.filter((c) => c.est_valide).length} actifs`}
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: "0.65rem",
+              bgcolor: alpha(theme.palette.success.main, 0.16),
+              color: theme.palette.success.main,
+            }}
+          />
+        </Stack>
+      </Box>
+
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          p: 1.5,
+          "&::-webkit-scrollbar": { width: 4 },
+          "&::-webkit-scrollbar-thumb": { bgcolor: theme.palette.divider, borderRadius: 2 },
+        }}
+      >
+        {loadingInitial ? (
+          <SidebarSkeleton />
+        ) : (
+          <Stack spacing={1.5}>
+            {configs.map((config) => (
+              <ConfigCard
+                key={config.id}
+                config={config}
+                estSelecte={configSelectee?.id === config.id}
+                data={tatamiData[config.id]}
+                onClick={() => {
+                  choisirConfig(config);
+                  if (isMobile && onClose) onClose();
+                }}
+                onShowRepartition={onShowRepartition}
+              />
+            ))}
+          </Stack>
+        )}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function JugePrincipalDashboard({ configs }) {
@@ -350,7 +364,6 @@ export default function JugePrincipalDashboard({ configs }) {
             nextAthlete: nextAthleteData,
           };
         } catch (error) {
-          console.error("Erreur pour le tatami", config.id, error);
           results[config.id] = {
             enCours: null,
             arbitres: [],
@@ -518,7 +531,8 @@ export default function JugePrincipalDashboard({ configs }) {
   const renderRightPanel = () => {
     if (!configSelectee || !tatamiData[configSelectee.id]) return null;
     const dataActive = tatamiData[configSelectee.id];
-    const isKumite = configSelectee.discipline?.toLowerCase() === "kumite";
+    const isKumite = configSelectee.subDiscipline?.toLowerCase() === "kumite";
+    console.log("RenderRightPanel", { configSelectee, dataActive, isKumite });
 
     if (showRepartition) {
       return (
@@ -580,8 +594,8 @@ export default function JugePrincipalDashboard({ configs }) {
       sx={{
         display: "flex",
         height: "100vh",
-        bgcolor: "#080a0f",
-        color: "#dde1f0",
+        bgcolor: muiTheme.palette.background.default,
+        color: muiTheme.palette.text.primary,
         position: "relative",
         overflow: "hidden",
       }}
@@ -600,7 +614,7 @@ export default function JugePrincipalDashboard({ configs }) {
           <Box
             sx={{
               height: "100%",
-              bgcolor: "#ffb547",
+              bgcolor: muiTheme.palette.warning.main,
               animation: "pollingBar 1s ease-in-out infinite",
               "@keyframes pollingBar": {
                 "0%,100%": { opacity: 0.4 },
@@ -616,7 +630,8 @@ export default function JugePrincipalDashboard({ configs }) {
           sx={{
             width: 270,
             flexShrink: 0,
-            borderRight: "1px solid #1e2433",
+            borderRight: "1px solid",
+            borderColor: "divider",
             height: "100%",
             overflow: "hidden",
           }}
@@ -641,8 +656,9 @@ export default function JugePrincipalDashboard({ configs }) {
           PaperProps={{
             sx: {
               width: 280,
-              bgcolor: "#080a0f",
-              borderRight: "1px solid #1e2433",
+              bgcolor: muiTheme.palette.background.default,
+              borderRight: "1px solid",
+              borderColor: muiTheme.palette.divider,
             },
           }}
         >
@@ -676,15 +692,16 @@ export default function JugePrincipalDashboard({ configs }) {
               gap: 1.5,
               px: 2,
               py: 1.5,
-              bgcolor: "#0e1118",
-              borderBottom: "1px solid #1e2433",
+              bgcolor: muiTheme.palette.background.paper,
+              borderBottom: "1px solid",
+              borderColor: muiTheme.palette.divider,
               flexShrink: 0,
             }}
           >
             <IconButton
               size="small"
               onClick={() => setDrawerOpen(true)}
-              sx={{ color: "#ffb547", bgcolor: "#ffb54715", borderRadius: 2 }}
+              sx={{ color: muiTheme.palette.warning.main, bgcolor: alpha(muiTheme.palette.warning.main, 0.1), borderRadius: 2 }}
             >
               <Badge
                 badgeContent={configs.filter((c) => c.est_valide).length}
@@ -700,18 +717,18 @@ export default function JugePrincipalDashboard({ configs }) {
                   <Typography
                     variant="body2"
                     fontWeight="bold"
-                    color="white"
+                    color={muiTheme.palette.text.primary}
                     noWrap
                   >
                     {configSelectee.plateau_nom}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#636b88" }}>
-                    {configSelectee.discipline} ·{" "}
+                  <Typography variant="caption" sx={{ color: muiTheme.palette.text.secondary }}>
+                    {configSelectee.subDiscipline} ·{" "}
                     {formatHeure(configSelectee?.heure_debut_prevu)}
                   </Typography>
                 </>
               ) : (
-                <Typography variant="body2" sx={{ color: "#636b88" }}>
+                <Typography variant="body2" sx={{ color: muiTheme.palette.text.secondary }}>
                   Choisir un plateau
                 </Typography>
               )}
@@ -720,7 +737,7 @@ export default function JugePrincipalDashboard({ configs }) {
               <FiberManualRecord
                 sx={{
                   fontSize: 10,
-                  color: configSelectee.est_valide ? "#22c55e" : "#636b88",
+                  color: configSelectee.est_valide ? muiTheme.palette.success.main : muiTheme.palette.text.secondary,
                 }}
               />
             )}
@@ -739,8 +756,8 @@ export default function JugePrincipalDashboard({ configs }) {
                 gap: 2,
               }}
             >
-              <CircularProgress sx={{ color: "#ffb547" }} />
-              <Typography variant="body2" sx={{ color: "#636b88" }}>
+              <CircularProgress sx={{ color: muiTheme.palette.warning.main }} />
+              <Typography variant="body2" sx={{ color: muiTheme.palette.text.secondary }}>
                 Chargement des plateaux...
               </Typography>
             </Box>
@@ -755,10 +772,10 @@ export default function JugePrincipalDashboard({ configs }) {
                 gap: 2,
               }}
             >
-              <CircularProgress sx={{ color: "#6c63ff" }} size={32} />
-              <Typography variant="body2" sx={{ color: "#636b88" }}>
+              <CircularProgress sx={{ color: muiTheme.palette.primary.main }} size={32} />
+              <Typography variant="body2" sx={{ color: muiTheme.palette.text.secondary }}>
                 Chargement de{" "}
-                <strong style={{ color: "#dde1f0" }}>
+                <strong style={{ color: muiTheme.palette.text.primary }}>
                   {configSelectee?.plateau_nom}
                 </strong>
                 ...
@@ -785,23 +802,23 @@ export default function JugePrincipalDashboard({ configs }) {
                   width: 64,
                   height: 64,
                   borderRadius: "50%",
-                  bgcolor: "#141720",
+                  bgcolor: "action.hover",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Star sx={{ color: "#ffb547", fontSize: 32 }} />
+                <Star sx={{ color: "warning.main", fontSize: 32 }} />
               </Box>
               <Typography
                 variant="h6"
-                sx={{ color: "#dde1f0", fontWeight: 600, textAlign: "center" }}
+                sx={{ color: muiTheme.palette.text.primary, fontWeight: 600, textAlign: "center" }}
               >
                 Sélectionnez un plateau
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: "#636b88", textAlign: "center", maxWidth: 280 }}
+                sx={{ color: muiTheme.palette.text.secondary, textAlign: "center", maxWidth: 280 }}
               >
                 {isMobile
                   ? "Appuyez sur le menu pour voir les plateaux disponibles"
@@ -814,8 +831,8 @@ export default function JugePrincipalDashboard({ configs }) {
                     mt: 1,
                     px: 3,
                     py: 1.5,
-                    bgcolor: "#ffb547",
-                    color: "#000",
+                    bgcolor: muiTheme.palette.warning.main,
+                    color: muiTheme.palette.getContrastText(muiTheme.palette.warning.main),
                     borderRadius: 3,
                     fontWeight: "bold",
                     fontSize: "0.85rem",

@@ -9,6 +9,7 @@ import {
   Grid,
   Typography,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import { Update, EventNote, AccessTime } from "@mui/icons-material";
 import ErrorGlobal from "../../../component/ErrorGlobal";
@@ -157,14 +158,20 @@ const ReportSessionModal = ({
           </DialogContent>
 
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={onClose} color="inherit">
+            <Button onClick={onClose} color="inherit" disabled={reportLoading}>
               Annuler
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={reportLoading || !newData.session_date}
-              startIcon={<EventNote />}
+              startIcon={
+                reportLoading ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <EventNote />
+                )
+              }
             >
               {reportLoading ? "Mise à jour..." : "Confirmer le report"}
             </Button>

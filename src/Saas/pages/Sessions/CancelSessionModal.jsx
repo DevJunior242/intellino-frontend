@@ -10,6 +10,7 @@ import {
   Box,
   Alert,
   Stack,
+  CircularProgress,
 } from "@mui/material";
 import { WarningAmber, ErrorOutline } from "@mui/icons-material";
 import { Instance } from "../../../Api/Axios";
@@ -132,16 +133,21 @@ const CancelSessionModal = ({
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={onClose} color="inherit">
+          <Button onClick={onClose} color="inherit" disabled={cancelLoading}>
             Ignorer
           </Button>
           <Button
             type="submit"
-            onClick={handleSubmit}
             variant="contained"
             color="error"
             disabled={cancelLoading || formData.cancel_reason.trim().length < 5}
-            startIcon={<ErrorOutline />}
+            startIcon={
+              cancelLoading ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <ErrorOutline />
+              )
+            }
           >
             {cancelLoading ? "Annulation..." : "Confirmer l'annulation"}
           </Button>

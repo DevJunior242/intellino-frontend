@@ -15,8 +15,11 @@ import {
   Typography,
 } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
-import { useState } from "react";
+import { ThemeProvider, alpha, createTheme, useTheme } from "@mui/material/styles";
+import { Suspense, useMemo, useState } from "react";
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
+import LoadingScreen from "../LoadingScreen";
+import { dashboardSettingTheme } from "../../theme";
 
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -54,6 +57,14 @@ export default function DashboardLayout() {
   const location = useLocation();
   const { allowAccess } = useAllowAccess();
   const { logout, activeRole, auth, activeType, activeId } = UseAuth();
+
+  // Habillage aux couleurs de la FBK réservé aux dashboards (en clair
+  // uniquement — le mode sombre garde le thème par défaut de l'app).
+  const outerTheme = useTheme();
+  const dashboardTheme = useMemo(
+    () => createTheme(dashboardSettingTheme(outerTheme.palette.mode)),
+    [outerTheme.palette.mode],
+  );
 
   const isSuperAdmin = activeRole === "super_admin";
 
@@ -320,7 +331,7 @@ export default function DashboardLayout() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#1a1d23",
+        backgroundColor: "background.paper",
         overflowX: "hidden",
       }}
     >
@@ -332,7 +343,8 @@ export default function DashboardLayout() {
           px: collapsed ? 0 : 1.5,
           py: 1.5,
           justifyContent: collapsed ? "center" : "space-between",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           minHeight: 64,
           transition: "padding 0.25s",
         }}
@@ -352,6 +364,7 @@ export default function DashboardLayout() {
                 width: 34,
                 height: 34,
                 bgcolor: deepPurple[500],
+                color: "#fff",
                 fontSize: 14,
                 flexShrink: 0,
                 cursor: "pointer",
@@ -365,16 +378,13 @@ export default function DashboardLayout() {
                 sx={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#fff",
+                  color: "text.primary",
                   lineHeight: 1.2,
                 }}
               >
                 {auth?.user?.fullname}
               </Typography>
-              <Typography
-                noWrap
-                sx={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}
-              >
+              <Typography noWrap sx={{ fontSize: 11, color: "text.secondary" }}>
                 {activeRole?.replace("_", " ")}
               </Typography>
             </Box>
@@ -389,6 +399,7 @@ export default function DashboardLayout() {
                 width: 34,
                 height: 34,
                 bgcolor: deepPurple[500],
+                color: "#fff",
                 fontSize: 14,
                 cursor: "pointer",
               }}
@@ -403,8 +414,11 @@ export default function DashboardLayout() {
             size="small"
             onClick={() => setCollapsed(true)}
             sx={{
-              color: "rgba(255,255,255,0.4)",
-              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.07)" },
+              color: "text.secondary",
+              "&:hover": {
+                color: "text.primary",
+                bgcolor: (theme) => alpha(theme.palette.text.primary, 0.07),
+              },
             }}
           >
             <ChevronLeftIcon fontSize="small" />
@@ -432,7 +446,7 @@ export default function DashboardLayout() {
                     fontWeight: 600,
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.28)",
+                    color: "text.disabled",
                     px: 2,
                     pt: 1.5,
                     pb: 0.5,
@@ -452,26 +466,30 @@ export default function DashboardLayout() {
                         navigate(item.to);
                         setMobileOpen(false);
                       }}
-                      sx={{
+                      sx={(theme) => ({
                         minHeight: 40,
                         px: collapsed ? 0 : 1.5,
                         justifyContent: collapsed ? "center" : "flex-start",
                         borderLeft: isActive
-                          ? "3px solid #ff6900"
+                          ? `3px solid ${theme.palette.primary.main}`
                           : "3px solid transparent",
                         backgroundColor: isActive
-                          ? "rgba(255,105,0,0.10)"
+                          ? alpha(theme.palette.primary.main, 0.1)
                           : "transparent",
-                        color: isActive ? "#ff6900" : "rgba(255,255,255,0.65)",
+                        color: isActive
+                          ? theme.palette.primary.main
+                          : alpha(theme.palette.text.primary, 0.65),
                         borderRadius: 0,
                         "&:hover": {
                           backgroundColor: isActive
-                            ? "rgba(255,105,0,0.15)"
-                            : "rgba(255,255,255,0.06)",
-                          color: isActive ? "#ff6900" : "#fff",
+                            ? alpha(theme.palette.primary.main, 0.15)
+                            : alpha(theme.palette.text.primary, 0.06),
+                          color: isActive
+                            ? theme.palette.primary.main
+                            : theme.palette.text.primary,
                         },
                         transition: "background 0.15s, color 0.15s",
-                      }}
+                      })}
                     >
                       <ListItemIcon
                         sx={{
@@ -510,11 +528,7 @@ export default function DashboardLayout() {
                 })}
               </List>
 
-              {!collapsed && (
-                <Divider
-                  sx={{ borderColor: "rgba(255,255,255,0.06)", my: 0.5 }}
-                />
-              )}
+              {!collapsed && <Divider sx={{ my: 0.5 }} />}
             </Box>
           );
         })}
@@ -523,7 +537,7 @@ export default function DashboardLayout() {
       </Box>
 
       {/* Footer: bouton expand + logout */}
-      <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+      <Box sx={{ borderTop: "1px solid", borderColor: "divider" }}>
         {/* Bouton expand quand collapsed */}
         {collapsed && (
           <Tooltip title="Agrandir le menu" placement="right" arrow>
@@ -532,9 +546,12 @@ export default function DashboardLayout() {
               sx={{
                 width: "100%",
                 borderRadius: 0,
-                color: "rgba(255,255,255,0.4)",
+                color: "text.secondary",
                 py: 1,
-                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.06)" },
+                "&:hover": {
+                  color: "text.primary",
+                  bgcolor: (theme) => alpha(theme.palette.text.primary, 0.06),
+                },
               }}
             >
               <ChevronRightIcon fontSize="small" />
@@ -596,6 +613,7 @@ export default function DashboardLayout() {
   );
 
   return (
+    <ThemeProvider theme={dashboardTheme}>
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
 
@@ -657,7 +675,9 @@ export default function DashboardLayout() {
           minHeight: "100vh",
         }}
       >
-        <Outlet />
+        <Suspense fallback={<LoadingScreen />}>
+          <Outlet />
+        </Suspense>
       </Box>
 
       {/* BOUTON MENU MOBILE */}
@@ -677,5 +697,6 @@ export default function DashboardLayout() {
         <MenuIcon />
       </IconButton>
     </Box>
+    </ThemeProvider>
   );
 }

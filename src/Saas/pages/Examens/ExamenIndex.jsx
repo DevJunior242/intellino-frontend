@@ -190,6 +190,7 @@ function ExamenIndex() {
 
             // On vérifie si c'est la Ligue ou un Club
             const isLeague = examen.organisateur_type === "Ligue";
+            const isFederation = examen.organisateur_type === "Federation";
 
             return (
               <Grid
@@ -220,9 +221,12 @@ function ExamenIndex() {
                   data-aos="fade-up"
                   data-aos-delay={index * 100}
                   onClick={() => {
-                    const routePrefix = isLigueUser
-                      ? "/dashboard/league"
-                      : "/dashboard/examen";
+                    const routePrefix = isFederation
+                      ? "/dashboard/federation/examen"
+                      : isLigueUser
+                        ? "/dashboard/league/examen"
+                        : "/dashboard/examen";
+
                     navigate(`${routePrefix}/${examen.id}/show`);
                   }}
                 >

@@ -167,7 +167,7 @@ const SeanceAdminPanelKumite = ({
         flexDirection: "column",
         overflowY: "auto",
         "&::-webkit-scrollbar": { width: 4 },
-        "&::-webkit-scrollbar-thumb": { bgcolor: "#1e2433", borderRadius: 2 },
+        "&::-webkit-scrollbar-thumb": { bgcolor: "divider", borderRadius: 2 },
       }}
     >
       {loading && <LoadingKumite />}
@@ -222,12 +222,12 @@ const SeanceAdminPanelKumite = ({
           <Typography
             variant="h6"
             fontWeight="bold"
-            color="white"
+            color="text.primary"
             sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
           >
             {config.evenement_nom}
           </Typography>
-          <Typography variant="body2" sx={{ color: "#8b90a0" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {config.plateau_nom}
           </Typography>
         </Box>

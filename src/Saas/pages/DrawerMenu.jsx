@@ -8,9 +8,9 @@ export default function DrawerMenu() {
   const navigate = useNavigate();
 
   return (
-    <List sx={{ width: "100%", bgcolor: "#1a1d23", color: "white" }}>
+    <List sx={{ width: "100%" }}>
       <ListItemButton onClick={() => setOpenStats(!openStats)}>
-        <ListItemText primary="Statistiques" color="white" />
+        <ListItemText primary="Statistiques" />
         {openStats ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
 

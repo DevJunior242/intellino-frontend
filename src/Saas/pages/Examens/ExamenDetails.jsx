@@ -108,15 +108,11 @@ function ExamenDetails() {
             mb: 2,
             display: "flex",
             gap: 2,
-            backgroundColor: "#020224",
+            backgroundColor: "background.paper",
           }}
         >
           {loading ? (
-            <Skeleton
-              variant="rectangular"
-              height={48}
-              sx={{ bgcolor: "rgba(255,255,255,0.05)", borderRadius: 1 }}
-            />
+            <Skeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
           ) : (
             <Tabs
               value={tab}
@@ -132,11 +128,11 @@ function ExamenDetails() {
                 },
                 "& .MuiTabs-indicator": { height: 3 },
                 "& .MuiTab-root": {
-                  color: "rgba(255,255,255,0.7)",
+                  color: "text.secondary",
                   fontWeight: 500,
                 },
                 "& .MuiTab-root.Mui-selected": {
-                  color: "#fff",
+                  color: "text.primary",
                 },
               }}
             >

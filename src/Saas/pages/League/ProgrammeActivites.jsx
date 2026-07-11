@@ -11,28 +11,33 @@ import {
   IconButton,
 } from "@mui/material";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
-// --- COULEURS DU THÈME EXACT (Dark Mode de l'image) ---
-const theme = {
-  bg: "#1a1d21", // Fond principal
-  paper: "#212529", // Fond des cartes stats et colonnes
-  card: "#2c3035", // Fond des cartes d'activité (Kanban)
-  textMain: "#ffffff",
-  textSecondary: "#8b90a0",
-  accent: "#e8c84a", // Jaune Karaté
-  success: "#4caf50", // Vert
-  info: "#2196f3", // Bleu
-  warning: "#f44336", // Rouge
+// Couleurs dérivées du thème actif (au lieu de valeurs fixes) pour
+// s'adapter au clair/sombre des dashboards ligue/fédération.
+const useLocalTheme = () => {
+  const muiTheme = useTheme();
+  return {
+    bg: muiTheme.palette.background.default,
+    paper: muiTheme.palette.background.paper,
+    card: muiTheme.palette.background.paper,
+    textMain: muiTheme.palette.text.primary,
+    textSecondary: muiTheme.palette.text.secondary,
+    accent: muiTheme.palette.primary.main,
+    success: muiTheme.palette.success.main,
+    info: muiTheme.palette.info.main,
+    warning: muiTheme.palette.error.main,
+  };
 };
 
-const CATEGORY_COLUMN = {
+const getCategoryColumn = (theme) => ({
   realisee: { title: "RÉALISÉES", color: theme.success },
   en_cours: { title: "EN COURS", color: theme.accent },
   planifiee: { title: "PLANIFIÉES", color: theme.info },
-};
+});
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -55,141 +60,152 @@ function computeProgress(activite) {
 }
 
 // --- COMPOSANT : Carte d'Activité (Kanban Card) ---
-const ActivityCard = ({ title, date, category, progress, isLate }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2,
-      mb: 1.5,
-      bgcolor: theme.card,
-      borderRadius: 2,
-      border: "1px solid rgba(255,255,255,0.03)",
-      cursor: "pointer",
-      transition: "all 0.2s",
-      position: "relative",
-      overflow: "hidden",
-      "&:hover": { bgcolor: "#32363b" },
-    }}
-  >
-    {/* Barre latérale rouge pour retard */}
-    {isLate && (
-      <Box
-        sx={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 3,
-          bgcolor: theme.warning,
-        }}
-      />
-    )}
-
-    <Stack spacing={0.5} sx={{ pl: isLate ? 1 : 0 }}>
-      <Typography
-        variant="subtitle2"
-        sx={{ color: theme.textMain, fontWeight: 600, lineHeight: 1.3 }}
-      >
-        {title}
-      </Typography>
-      <Typography
-        variant="caption"
-        sx={{
-          color: isLate ? theme.warning : theme.textSecondary,
-          display: "block",
-        }}
-      >
-        {date} {category && `• ${category}`}
-      </Typography>
-      {isLate && (
-        <Typography
-          variant="caption"
-          sx={{ color: theme.warning, fontWeight: 700 }}
-        >
-          Échéance dépassée
-        </Typography>
-      )}
-    </Stack>
-
-    {/* Barre de progression jaune fine (pour "En cours") */}
-    {progress !== undefined && (
-      <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          sx={{
-            flexGrow: 1,
-            bgcolor: "#1a1d21",
-            height: 4,
-            borderRadius: 2,
-            "& .MuiLinearProgress-bar": {
-              bgcolor: theme.accent,
-              borderRadius: 2,
-            },
-          }}
-        />
-      </Box>
-    )}
-  </Paper>
-);
-
-// --- COMPOSANT : Colonne Kanban ---
-const KanbanColumn = ({ title, count, color, children, isEmpty }) => (
-  <Grid item xs={12} md={4}>
-    <Stack
-      direction="row"
-      justifyContent="space-between"
-      alignItems="center"
-      sx={{ mb: 2, px: 0.5 }}
-    >
-      <Typography
-        sx={{
-          color: color,
-          fontWeight: 700,
-          fontSize: "0.75rem",
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-        }}
-      >
-        {title}
-      </Typography>
-      <Chip
-        label={count}
-        size="small"
-        sx={{
-          bgcolor: theme.paper,
-          color: color,
-          fontWeight: 700,
-          fontSize: "0.7rem",
-          border: "1px solid rgba(255,255,255,0.05)",
-        }}
-      />
-    </Stack>
-    <Box
+const ActivityCard = ({ title, date, category, progress, isLate }) => {
+  const theme = useLocalTheme();
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        p: 1.5,
-        bgcolor: theme.paper,
-        borderRadius: 4,
-        minHeight: "500px",
-        border: "1px solid rgba(255,255,255,0.05)",
+        p: 2,
+        mb: 1.5,
+        bgcolor: theme.card,
+        borderRadius: 2,
+        border: "1px solid",
+        borderColor: "divider",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        position: "relative",
+        overflow: "hidden",
+        "&:hover": { bgcolor: "action.hover" },
       }}
     >
-      {isEmpty ? (
-        <Typography
-          variant="body2"
-          sx={{ color: theme.textSecondary, textAlign: "center", py: 4 }}
-        >
-          Aucune activité
-        </Typography>
-      ) : (
-        children
+      {/* Barre latérale rouge pour retard */}
+      {isLate && (
+        <Box
+          sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            bgcolor: theme.warning,
+          }}
+        />
       )}
-    </Box>
-  </Grid>
-);
+
+      <Stack spacing={0.5} sx={{ pl: isLate ? 1 : 0 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ color: theme.textMain, fontWeight: 600, lineHeight: 1.3 }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            color: isLate ? theme.warning : theme.textSecondary,
+            display: "block",
+          }}
+        >
+          {date} {category && `• ${category}`}
+        </Typography>
+        {isLate && (
+          <Typography
+            variant="caption"
+            sx={{ color: theme.warning, fontWeight: 700 }}
+          >
+            Échéance dépassée
+          </Typography>
+        )}
+      </Stack>
+
+      {/* Barre de progression jaune fine (pour "En cours") */}
+      {progress !== undefined && (
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              flexGrow: 1,
+              bgcolor: "divider",
+              height: 4,
+              borderRadius: 2,
+              "& .MuiLinearProgress-bar": {
+                bgcolor: theme.accent,
+                borderRadius: 2,
+              },
+            }}
+          />
+        </Box>
+      )}
+    </Paper>
+  );
+};
+
+// --- COMPOSANT : Colonne Kanban ---
+const KanbanColumn = ({ title, count, color, children, isEmpty }) => {
+  const theme = useLocalTheme();
+  return (
+    <Grid item xs={12} md={4}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2, px: 0.5 }}
+      >
+        <Typography
+          sx={{
+            color: color,
+            fontWeight: 700,
+            fontSize: "0.75rem",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+          }}
+        >
+          {title}
+        </Typography>
+        <Chip
+          label={count}
+          size="small"
+          sx={{
+            bgcolor: theme.paper,
+            color: color,
+            fontWeight: 700,
+            fontSize: "0.7rem",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        />
+      </Stack>
+      <Box
+        sx={{
+          p: 1.5,
+          bgcolor: theme.paper,
+          borderRadius: 4,
+          minHeight: "500px",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        {isEmpty ? (
+          <Typography
+            variant="body2"
+            sx={{ color: theme.textSecondary, textAlign: "center", py: 4 }}
+          >
+            Aucune activité
+          </Typography>
+        ) : (
+          children
+        )}
+      </Box>
+    </Grid>
+  );
+};
 
 // --- COMPOSANT PRINCIPAL : Page Programme d'activités ---
 export default function ProgrammeActivites() {
+  const theme = useLocalTheme();
+  const CATEGORY_COLUMN = getCategoryColumn(theme);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -295,7 +311,8 @@ export default function ProgrammeActivites() {
                 p: 3,
                 bgcolor: theme.paper,
                 borderRadius: 4,
-                border: "1px solid rgba(255,255,255,0.05)",
+                border: "1px solid",
+                borderColor: "divider",
               }}
             >
               <Typography

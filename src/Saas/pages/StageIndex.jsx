@@ -287,7 +287,6 @@ function StagePaymentLotCard({ lot, onConfirm, onReject, processing }) {
       sx={{
         borderRadius: 3,
         border: "1px solid rgba(255,255,255,0.08)",
-        bgcolor: "#1A1D29",
       }}
     >
       <CardContent>
@@ -657,7 +656,10 @@ export default function StageIndex() {
         mb={3}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: INK }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 800, color: "text.primary" }}
+          >
             Stages
           </Typography>
           <Typography variant="body2" sx={{ color: MUTED }}>

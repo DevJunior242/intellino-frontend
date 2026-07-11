@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import LoadingScreen from "../LoadingScreen";
 import {
   Box,
   Typography,
@@ -10,6 +11,7 @@ import {
   Badge,
   ThemeProvider,
   createTheme,
+  useTheme,
   useMediaQuery,
   Drawer,
   IconButton,
@@ -18,6 +20,9 @@ import {
   ListItem,
   Tooltip,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { dashboardSettingTheme } from "../../theme";
+import ThemeToggle from "../../ThemeToggle";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Settings from "@mui/icons-material/Settings";
@@ -43,30 +48,6 @@ import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import { BusinessOutlined } from "@mui/icons-material";
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    background: { default: "#1a1d23", paper: "#22262f" },
-    primary: { main: "#e8c84a" },
-    text: { primary: "#e8eaf0", secondary: "#8b90a0" },
-  },
-  typography: {
-    fontFamily: "'Sora', 'Segoe UI', sans-serif",
-  },
-  shape: { borderRadius: 12 },
-  components: {
-    MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          backgroundImage: "none",
-          backgroundColor: "#1e2229",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
-        },
-      },
-    },
-  },
-});
 
 // ─── Nav Config ───────────────────────────────────────────────────────────────
 const getNavSections = (activeType) => {
@@ -251,6 +232,7 @@ function SidebarContent({
   contextOrganisation,
 }) {
   const normalizedType = activeType?.toLowerCase();
+  const theme = useTheme();
   let itemIndex = 0;
 
   return (
@@ -263,7 +245,7 @@ function SidebarContent({
         overflowY: "auto",
         "&::-webkit-scrollbar": { width: 4 },
         "&::-webkit-scrollbar-thumb": {
-          bgcolor: "rgba(255,255,255,0.1)",
+          bgcolor: alpha(theme.palette.text.primary, 0.1),
           borderRadius: 2,
         },
       }}
@@ -275,7 +257,8 @@ function SidebarContent({
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           justifyContent: isCollapsed ? "center" : "flex-start", // Centrer si réduit
         }}
       >
@@ -285,7 +268,7 @@ function SidebarContent({
               width: 36,
               height: 36,
               borderRadius: 2,
-              bgcolor: "#e8c84a",
+              bgcolor: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -293,7 +276,11 @@ function SidebarContent({
             }}
           >
             <Typography
-              sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
+              sx={{
+                color: "primary.contrastText",
+                fontWeight: 900,
+                fontSize: "1rem",
+              }}
             >
               ★
             </Typography>
@@ -302,10 +289,12 @@ function SidebarContent({
         {!isCollapsed && (
           <Box sx={{ flex: 1 }}>
             <Typography
-              sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e8eaf0" }}
+              sx={{ fontWeight: 700, fontSize: "0.9rem", color: "text.primary" }}
             >
               Karaté
-              <span style={{ color: "#e8c84a" }}>{contextOrganisation}</span>
+              <span style={{ color: theme.palette.primary.main }}>
+                {contextOrganisation}
+              </span>
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Ligue Nationale
@@ -318,14 +307,18 @@ function SidebarContent({
               width: 36,
               height: 36,
               borderRadius: 2,
-              bgcolor: "#e8c84a",
+              bgcolor: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
             <Typography
-              sx={{ color: "#1a1d23", fontWeight: 900, fontSize: "1rem" }}
+              sx={{
+                color: "primary.contrastText",
+                fontWeight: 900,
+                fontSize: "1rem",
+              }}
             >
               ★
             </Typography>
@@ -364,7 +357,7 @@ function SidebarContent({
                     px: 2.5,
                     py: 1,
                     display: "block",
-                    color: "#555a6b",
+                    color: "text.disabled",
                     fontWeight: 700,
                     fontSize: "0.65rem",
                     letterSpacing: "0.08em",
@@ -391,18 +384,22 @@ function SidebarContent({
                         if (item.to) navigate(item.to);
                         if (onClose) onClose();
                       }}
-                      sx={{
+                      sx={(theme) => ({
                         mx: 1,
                         borderRadius: 2,
                         mb: 0.3,
                         py: 0.8,
                         justifyContent: isCollapsed ? "center" : "flex-start", // Centrer si réduit
                         "&.Mui-selected": {
-                          bgcolor: "rgba(232,200,74,0.12)",
-                          "&:hover": { bgcolor: "rgba(232,200,74,0.18)" },
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          "&:hover": {
+                            bgcolor: alpha(theme.palette.primary.main, 0.18),
+                          },
                         },
-                        "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
-                      }}
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.text.primary, 0.04),
+                        },
+                      })}
                     >
                       <ListItemIcon
                         sx={{
@@ -420,7 +417,9 @@ function SidebarContent({
                             fontSize: "0.82rem",
                             fontWeight: activeItem === item.label ? 600 : 400,
                             color:
-                              activeItem === item.label ? "#e8c84a" : "#c0c4d0",
+                              activeItem === item.label
+                                ? theme.palette.primary.main
+                                : theme.palette.text.secondary,
                           }}
                         />
                       )}
@@ -432,7 +431,7 @@ function SidebarContent({
           );
         })}
       </Box>
-      <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.07)", mt: "auto" }}>
+      <Box sx={{ borderTop: "1px solid", borderColor: "divider", mt: "auto" }}>
         {/* Bouton de déconnexion */}
         <List disablePadding>
           <ListItem disablePadding>
@@ -493,7 +492,15 @@ export default function DashboardGeneralLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const { activeType, auth, activeRole, logout } = UseAuth();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Habillage aux couleurs de la FBK réservé aux dashboards (en clair
+  // uniquement — le mode sombre garde le thème dashboard existant).
+  const outerTheme = useTheme();
+  const dashboardTheme = useMemo(
+    () => createTheme(dashboardSettingTheme(outerTheme.palette.mode)),
+    [outerTheme.palette.mode],
+  );
+  const isMobile = useMediaQuery(outerTheme.breakpoints.down("md"));
   const [isCollapsed, setIsCollapsed] = useState(false);
   if (!auth?.isLogin) return <Navigate to="/login" replace />;
 
@@ -525,12 +532,12 @@ export default function DashboardGeneralLayout() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={dashboardTheme}>
       <Box
         sx={{
           display: "flex",
           height: "100vh",
-          bgcolor: "#1a1d23",
+          bgcolor: "background.default",
           fontFamily: "'Sora', sans-serif",
           overflow: "hidden",
           margin: 0,
@@ -548,8 +555,9 @@ export default function DashboardGeneralLayout() {
             <Box
               sx={{
                 width: isCollapsed ? 64 : 240, // Largeur réduite ou normale
-                bgcolor: "#1e2229",
-                borderRight: "1px solid rgba(255,255,255,0.06)",
+                bgcolor: "background.paper",
+                borderRight: "1px solid",
+                borderColor: "divider",
                 height: "100vh",
                 display: "flex",
                 flexDirection: "column",
@@ -567,12 +575,14 @@ export default function DashboardGeneralLayout() {
               >
                 <IconButton
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  sx={{
-                    color: "#e8eaf0",
-                    bgcolor: "rgba(255,255,255,0.06)",
+                  sx={(theme) => ({
+                    color: "text.primary",
+                    bgcolor: alpha(theme.palette.text.primary, 0.06),
                     borderRadius: 1.5,
-                    "&:hover": { bgcolor: "rgba(232,200,74,0.12)" },
-                  }}
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.12),
+                    },
+                  })}
                 >
                   {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                 </IconButton>
@@ -633,8 +643,9 @@ export default function DashboardGeneralLayout() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-                bgcolor: "#1a1d23",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                bgcolor: "background.default",
                 gap: 1,
               }}
             >
@@ -644,12 +655,14 @@ export default function DashboardGeneralLayout() {
                   <IconButton
                     size="small"
                     onClick={() => setMobileOpen(true)}
-                    sx={{
-                      color: "#e8eaf0",
-                      bgcolor: "rgba(255,255,255,0.06)",
+                    sx={(theme) => ({
+                      color: "text.primary",
+                      bgcolor: alpha(theme.palette.text.primary, 0.06),
                       borderRadius: 1.5,
-                      "&:hover": { bgcolor: "rgba(232,200,74,0.12)" },
-                    }}
+                      "&:hover": {
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                      },
+                    })}
                   >
                     <MenuIcon fontSize="small" />
                   </IconButton>
@@ -662,7 +675,7 @@ export default function DashboardGeneralLayout() {
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    color: "#e8c84a",
+                    color: "primary.main",
                   }}
                 >
                   {activeItem}
@@ -682,27 +695,30 @@ export default function DashboardGeneralLayout() {
                   label={isMobile ? "2025–2026" : "Saison 2025–2026"}
                   variant="outlined"
                   size="small"
-                  sx={{
-                    borderColor: "rgba(232,200,74,0.4)",
-                    color: "#e8c84a",
+                  sx={(theme) => ({
+                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    color: "primary.main",
                     fontWeight: 600,
                     fontSize: "0.72rem",
-                  }}
+                  })}
                 />
+                <ThemeToggle />
                 <Badge badgeContent={3} color="error">
                   <Box
-                    sx={{
+                    sx={(theme) => ({
                       width: 34,
                       height: 34,
                       borderRadius: 2,
-                      bgcolor: "rgba(255,255,255,0.07)",
+                      bgcolor: alpha(theme.palette.text.primary, 0.07),
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
-                      "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
+                      "&:hover": {
+                        bgcolor: alpha(theme.palette.text.primary, 0.12),
+                      },
                       transition: "background 0.2s",
-                    }}
+                    })}
                   >
                     <Typography>🔔</Typography>
                   </Box>
@@ -713,16 +729,16 @@ export default function DashboardGeneralLayout() {
 
           {/* Scrollable body */}
           <Box
-            sx={{
+            sx={(theme) => ({
               flex: 1,
               overflowY: "auto",
               p: { xs: 2, md: 3 },
               "&::-webkit-scrollbar": { width: 4 },
               "&::-webkit-scrollbar-thumb": {
-                bgcolor: "rgba(255,255,255,0.1)",
+                bgcolor: alpha(theme.palette.text.primary, 0.1),
                 borderRadius: 2,
               },
-            }}
+            })}
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -732,7 +748,9 @@ export default function DashboardGeneralLayout() {
                 animate="visible"
                 exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
               >
-                <Outlet />
+                <Suspense fallback={<LoadingScreen />}>
+                  <Outlet />
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </Box>

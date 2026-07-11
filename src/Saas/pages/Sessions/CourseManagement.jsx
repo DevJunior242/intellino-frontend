@@ -50,6 +50,7 @@ function CourseManagement({ sessionId }) {
   const { activeId } = UseAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [confirmSubmitting, setConfirmSubmitting] = useState(false);
 
   const handleOpenReportModal = () => {
     setOpenReportModal(true);
@@ -121,9 +122,14 @@ function CourseManagement({ sessionId }) {
   };
 
   const handleConfirmFinal = async (e) => {
-    if (pendingAction === "start") await handleStart(e);
-    if (pendingAction === "stop") await handleStop(e);
-    setConfirmOpen(false);
+    setConfirmSubmitting(true);
+    try {
+      if (pendingAction === "start") await handleStart(e);
+      if (pendingAction === "stop") await handleStop(e);
+    } finally {
+      setConfirmSubmitting(false);
+      setConfirmOpen(false);
+    }
   };
   const handleStart = async (e) => {
     e.preventDefault();
@@ -210,11 +216,15 @@ function CourseManagement({ sessionId }) {
                   color="success"
                   size="large"
                   startIcon={<PlayArrow />}
-                  disabled={session.status !== 0}
+                  disabled={session.status !== 0 || confirmSubmitting}
                   onClick={() => triggerConfirm("start")}
                   sx={{ py: 2, borderRadius: 2 }}
                 >
-                  Démarrer
+                  {confirmSubmitting && pendingAction === "start" ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Démarrer"
+                  )}
                 </Button>
               </Grid>
               <Grid item xs={6}>
@@ -224,11 +234,15 @@ function CourseManagement({ sessionId }) {
                   color="warning"
                   size="large"
                   startIcon={<Stop />}
-                  disabled={session.status === 0 || session.status === 2}
+                  disabled={session.status !== 1 || confirmSubmitting}
                   onClick={() => triggerConfirm("stop")}
                   sx={{ py: 2, borderRadius: 2 }}
                 >
-                  Terminer
+                  {confirmSubmitting && pendingAction === "stop" ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Terminer"
+                  )}
                 </Button>
               </Grid>
             </Grid>
@@ -417,7 +431,10 @@ function CourseManagement({ sessionId }) {
         setReportLoading={setReportLoading}
       />
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => !confirmSubmitting && setConfirmOpen(false)}
+      >
         <DialogTitle sx={{ fontWeight: "bold" }}>
           {pendingAction === "start"
             ? "Démarrer la session ?"
@@ -431,15 +448,29 @@ function CourseManagement({ sessionId }) {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setConfirmOpen(false)} color="inherit">
+          <Button
+            onClick={() => setConfirmOpen(false)}
+            color="inherit"
+            disabled={confirmSubmitting}
+          >
             Annuler
           </Button>
           <Button
             variant="contained"
             color={pendingAction === "start" ? "success" : "warning"}
             onClick={handleConfirmFinal}
+            disabled={confirmSubmitting}
+            startIcon={
+              confirmSubmitting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : pendingAction === "start" ? (
+                <PlayArrow />
+              ) : (
+                <Stop />
+              )
+            }
           >
-            Confirmer
+            {confirmSubmitting ? "Traitement..." : "Confirmer"}
           </Button>
         </DialogActions>
       </Dialog>

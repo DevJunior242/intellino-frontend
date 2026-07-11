@@ -71,14 +71,14 @@ export default function CategoriesPage() {
             mb: 4,
             px: 4,
             py: 1.5,
-            color: "#fff",
-            borderColor: "rgba(255,255,255,0.3)",
+            color: "text.primary",
+            borderColor: "divider",
             textTransform: "none",
             borderRadius: 2,
             fontSize: "1rem",
             "&:hover": {
-              borderColor: "#fff",
-              bgcolor: "rgba(255,255,255,0.05)",
+              borderColor: "text.primary",
+              bgcolor: "action.hover",
             },
           }}
           onClick={() =>
@@ -94,15 +94,16 @@ export default function CategoriesPage() {
       {/* Conteneur de la Table */}
       <Paper
         sx={{
-          bgcolor: "#22262f",
+          bgcolor: "background.paper",
           borderRadius: 4,
           p: 3,
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography
           variant="h6"
-          sx={{ color: "#e8eaf0", mb: 3, fontWeight: 600 }}
+          sx={{ color: "text.primary", mb: 3, fontWeight: 600 }}
         >
           Catégories d'âge
         </Typography>
@@ -113,8 +114,9 @@ export default function CategoriesPage() {
               <TableRow
                 sx={{
                   "& th": {
-                    color: "#555a6b",
-                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    color: "text.secondary",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                     fontWeight: 700,
                     fontSize: "0.85rem",
                   },
@@ -133,14 +135,18 @@ export default function CategoriesPage() {
                   sx={{
                     "&:last-child td, &:last-child th": { border: 0 },
                     "& td": {
-                      borderBottom: "1px solid rgba(255,255,255,0.03)",
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
                       py: 2.5,
-                      color: "#c0c4d0",
+                      color: "text.secondary",
                     },
                   }}
                 >
                   <TableCell
-                    sx={{ fontWeight: 600, color: "#e8eaf0 !important" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: (theme) => `${theme.palette.text.primary} !important`,
+                    }}
                   >
                     {row.nom}({row.sexe})
                   </TableCell>
@@ -158,7 +164,7 @@ export default function CategoriesPage() {
                   </TableCell>
                   <TableCell
                     align="right"
-                    sx={{ fontWeight: 500, color: "red" }}
+                    sx={{ fontWeight: 500, color: "text.primary" }}
                   >
                     {row.licencies_count || 0}
                   </TableCell>
