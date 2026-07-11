@@ -33,8 +33,26 @@ Instance.interceptors.request.use(
 );
 
 //////////////////////////////////////////////////////////////////////////////////
-// 2. INTERCEPTEUR DE RÉPONSE (Sécurité Anti-Fraude / Expulsion de l'ancien Admin)
+// 2. INTERCEPTEUR DE RÉPONSE
 //////////////////////////////////////////////////////////////////////////////////
+// Le backend renvoie ce code sur N'IMPORTE QUELLE route protégée par le middleware
+// 'verified'. Le composant qui a déclenché l'appel (créer compétition, déclarer un
+// paiement...) n'a aucune raison de savoir gérer ce cas particulier : on l'intercepte
+// ici, une seule fois, et on prévient l'app via un event global plutôt que de compter
+// sur chaque écran pour reconnaître ce message.
+Instance.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    if (error.response?.data?.code === "EMAIL_NOT_VERIFIED") {
+      window.dispatchEvent(new CustomEvent("email-not-verified"));
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 // Instance.interceptors.response.use(
 //   function (response) {
 //     // Si la requête réussit, on laisse passer normalement

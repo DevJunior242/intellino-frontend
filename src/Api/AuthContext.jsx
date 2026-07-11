@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { Instance } from "./Axios";
+import EmailVerificationBanner from "../component/EmailVerificationBanner";
 
 const AuthContext = createContext();
 
@@ -51,6 +52,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.getItem("activeType") || "Club",
   );
   const [loading, setLoading] = useState(true);
+  const [emailVerificationRequired, setEmailVerificationRequired] =
+    useState(false);
+
+  // Signal global émis par l'interceptor axios (Axios.jsx) sur n'importe quelle
+  // route protégée par le middleware 'verified' : le composant appelant n'a pas
+  // besoin de savoir gérer ce cas, on l'affiche une seule fois ici pour toute l'app.
+  useEffect(() => {
+    const handler = () => setEmailVerificationRequired(true);
+    window.addEventListener("email-not-verified", handler);
+    return () => window.removeEventListener("email-not-verified", handler);
+  }, []);
 
   //  ////////////////////////////////////////////////////////////////////////////////
   //   EFFECTS TO INITIALIZE ACTIVE ROLE AND CLUB ID
@@ -584,6 +596,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
+      {emailVerificationRequired && (
+        <EmailVerificationBanner
+          onClose={() => setEmailVerificationRequired(false)}
+        />
+      )}
       {!loading && children}
     </AuthContext.Provider>
   );
