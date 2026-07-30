@@ -6,6 +6,8 @@ import {
   FormHelperText,
   TextField,
   Typography,
+  Autocomplete,
+  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -18,17 +20,24 @@ import ErrorGlobal from "../../component/ErrorGlobal";
 import { UseAuth } from "../../Api/AuthContext";
 import Message from "./Message";
 import ConfigSkeleton from "./ConfigSkeleton";
-import { Key, ArrowBack } from "@mui/icons-material";
+import {
+  Groups,
+  Key,
+  PeopleAlt,
+  Settings,
+  ArrowBack,
+} from "@mui/icons-material";
 
 function ClubStore() {
   const [step, setStep] = useState(1); // Étape 1 : Infos, Étape 2 : Clé d'activation
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const { switchPortal, updateAuth } = UseAuth();
+  const { switchPortal, updateAuth, setAuthData } = UseAuth();
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    discipline_id: "",
     logo: "",
     country_id: "",
     city: "",
@@ -40,12 +49,14 @@ function ClubStore() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
 
-  // Pas de choix de discipline côté frontend : cette version ne gère que le
-  // Karaté, la discipline est résolue directement côté backend (ClubController::store).
+  // Une seule discipline utilisable pour le moment (Karaté) : pas de choix à
+  // faire, on la sélectionne automatiquement mais discipline_id reste requis
+  // côté backend (voir ClubStoreRequest).
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const countriesResponse = await Instance.get("/api/countries");
+
       setCountries(countriesResponse.data || []);
     } catch (error) {
       console.log(error);
@@ -98,7 +109,7 @@ function ClubStore() {
       );
 
       if (response?.data?.success) {
-        const { user, clubs, new_club } = response.data;
+        const { user, clubs, new_club, leagues } = response.data;
 
         const extractedRoles = user.clubs[0].roles.map((r) => r.name);
 
@@ -112,14 +123,14 @@ function ClubStore() {
         localStorage.setItem("activeRole", new_club.role?.[0] || "admin");
         switchPortal(new_club.id, new_club.type, new_club.role);
 
-        setFormData({
+        setFormData((prev) => ({
           name: "",
           logo: "",
           country_id: "",
           city: "",
           address: "",
           activation_key: "",
-        });
+        }));
         setSuccess(
           "Votre club a été créé avec succès. Rendez-vous dans le dashboard pour y accéder.",
         );
@@ -185,6 +196,9 @@ function ClubStore() {
                 required
               />
             </Box>
+            {hasError("name") && (
+              <FormHelperText error>{getError("name")}</FormHelperText>
+            )}
 
             {/* ── SECTION 2 ── */}
             <Typography sx={{ fontWeight: "bold", mt: 2, mb: 1 }}>
