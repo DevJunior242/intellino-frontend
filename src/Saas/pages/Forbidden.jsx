@@ -1,12 +1,14 @@
 import React from "react";
 import { Box, Typography, Button, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import LockIcon from "@mui/icons-material/Lock";
 
 function Forbidden() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const message = location.state?.message;
 
   return (
     <Box
@@ -85,8 +87,8 @@ function Forbidden() {
             mb: 4,
           }}
         >
-          Vous n'avez pas la permission d'accéder à cette page.
-          Veuillez contacter l'administrateur si vous pensez qu'il s'agit d'une erreur.
+          {message ||
+            "Vous n'avez pas la permission d'accéder à cette page. Veuillez contacter l'administrateur si vous pensez qu'il s'agit d'une erreur."}
         </Typography>
       </motion.div>
 

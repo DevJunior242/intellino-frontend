@@ -26,7 +26,8 @@ export const AxiosInterceptor = () => {
           return;
         }
 
-        if (status === 403) navigate("/403");
+        if (status === 403)
+          navigate("/403", { state: { message: error.response?.data?.message } });
         if (status === 404) navigate("/404");
 
         return Promise.reject(error);
