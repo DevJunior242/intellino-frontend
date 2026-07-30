@@ -28,7 +28,7 @@ const AccountSettings = () => {
   const authorized = activeRole?.toLowerCase() === "admin";
   const isFederation = activeType?.toLowerCase() === "federation";
 
-  const authorizedToAccessSaisons = authorized && isFederation;
+  const authorizedToAccessSaisons = authorized;
   // 1. Gestion des onglets
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
