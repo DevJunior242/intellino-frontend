@@ -63,6 +63,7 @@ function StoreExamen({ open, handleClose }) {
     end_date: null,
     start_time: null,
     end_time: null,
+    price: 0,
   });
 
   useEffect(() => {
@@ -277,6 +278,21 @@ function StoreExamen({ open, handleClose }) {
                 margin="dense"
               />
             </Box>
+            <TextField
+              error={hasError("price")}
+              helperText={
+                getError("price") ||
+                "Frais d'inscription par candidat. Laisser à 0 pour un examen gratuit."
+              }
+              fullWidth
+              type="number"
+              name="price"
+              label="Prix d'inscription (FCFA)"
+              inputProps={{ min: 0, step: 100 }}
+              value={formData.price}
+              onChange={handleChange}
+              margin="normal"
+            />
             <Button
               disabled={submitting}
               type="submit"

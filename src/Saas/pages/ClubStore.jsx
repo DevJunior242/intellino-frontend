@@ -6,8 +6,6 @@ import {
   FormHelperText,
   TextField,
   Typography,
-  Autocomplete,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -20,26 +18,17 @@ import ErrorGlobal from "../../component/ErrorGlobal";
 import { UseAuth } from "../../Api/AuthContext";
 import Message from "./Message";
 import ConfigSkeleton from "./ConfigSkeleton";
-import {
-  Groups,
-  Key,
-  PeopleAlt,
-  Settings,
-  ArrowBack,
-} from "@mui/icons-material";
+import { Key, ArrowBack } from "@mui/icons-material";
 
 function ClubStore() {
   const [step, setStep] = useState(1); // Étape 1 : Infos, Étape 2 : Clé d'activation
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
-  const { switchPortal, updateAuth, setAuthData } = UseAuth();
-  const [disciplines, setDisciplines] = useState([]);
+  const { switchPortal, updateAuth } = UseAuth();
   const [countries, setCountries] = useState([]);
-  const [selectDiscipline, setSelectDiscipline] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    discipline_id: "",
     logo: "",
     country_id: "",
     city: "",
@@ -51,14 +40,12 @@ function ClubStore() {
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
 
+  // Pas de choix de discipline côté frontend : cette version ne gère que le
+  // Karaté, la discipline est résolue directement côté backend (ClubController::store).
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [disciplinesResponse, countriesResponse] = await Promise.all([
-        Instance.get("/api/disciplines"),
-        Instance.get("/api/countries"),
-      ]);
-      setDisciplines(disciplinesResponse.data || []);
+      const countriesResponse = await Instance.get("/api/countries");
       setCountries(countriesResponse.data || []);
     } catch (error) {
       console.log(error);
@@ -80,12 +67,6 @@ function ClubStore() {
     }
   };
 
-  useEffect(() => {
-    if (selectDiscipline) {
-      setFormData((prev) => ({ ...prev, discipline_id: selectDiscipline.id }));
-    }
-  }, [selectDiscipline]);
-
   // Étape 1 validée -> Passage à l'étape de la clé
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -105,7 +86,6 @@ function ClubStore() {
     formDataInitial.append("city", formData.city);
     formDataInitial.append("address", formData.address);
     formDataInitial.append("country_id", formData.country_id);
-    formDataInitial.append("discipline_id", formData.discipline_id);
     formDataInitial.append("activation_key", formData.activation_key);
 
     try {
@@ -118,7 +98,7 @@ function ClubStore() {
       );
 
       if (response?.data?.success) {
-        const { user, clubs, new_club, leagues } = response.data;
+        const { user, clubs, new_club } = response.data;
 
         const extractedRoles = user.clubs[0].roles.map((r) => r.name);
 
@@ -132,10 +112,8 @@ function ClubStore() {
         localStorage.setItem("activeRole", new_club.role?.[0] || "admin");
         switchPortal(new_club.id, new_club.type, new_club.role);
 
-        setSelectDiscipline(null);
         setFormData({
           name: "",
-          discipline_id: "",
           logo: "",
           country_id: "",
           city: "",
@@ -206,35 +184,6 @@ function ClubStore() {
                 onChange={handleChange}
                 required
               />
-
-              <FormControl fullWidth error={hasError("discipline_id")} required>
-                <InputLabel>Discipline</InputLabel>
-                <Select
-                  label="Discipline"
-                  value={formData.discipline_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, discipline_id: e.target.value })
-                  }
-                  MenuProps={{
-                    PaperProps: {
-                      sx: { backgroundColor: "background.default" },
-                    },
-                  }}
-                >
-                  {disciplines.length > 0 ? (
-                    disciplines.map((disp) => (
-                      <MenuItem key={disp.id} value={disp.id}>
-                        {disp.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>Aucune discipline</MenuItem>
-                  )}
-                </Select>
-                {hasError("discipline_id") && (
-                  <FormHelperText>{getError("discipline_id")}</FormHelperText>
-                )}
-              </FormControl>
             </Box>
 
             {/* ── SECTION 2 ── */}

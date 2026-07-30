@@ -15,7 +15,12 @@ import {
   Typography,
 } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
-import { ThemeProvider, alpha, createTheme, useTheme } from "@mui/material/styles";
+import {
+  ThemeProvider,
+  alpha,
+  createTheme,
+  useTheme,
+} from "@mui/material/styles";
 import { Suspense, useMemo, useState } from "react";
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 import LoadingScreen from "../LoadingScreen";
@@ -172,12 +177,12 @@ export default function DashboardLayout() {
           to: "/dashboard/users",
           role: ["super_admin"],
         },
-        {
-          title: "Karateka",
-          icon: <PeopleAlt fontSize="small" />,
-          to: "/dashboard/karateka/list",
-          role: ["super_admin"],
-        },
+        // {
+        //   title: "Karateka",
+        //   icon: <PeopleAlt fontSize="small" />,
+        //   to: "/dashboard/karateka/list",
+        //   role: ["super_admin"],
+        // },
         {
           title: "Élèves",
           icon: <SchoolIcon fontSize="small" />,
@@ -285,6 +290,12 @@ export default function DashboardLayout() {
           title: "examens",
           to: "/dashboard/examen",
           role: ["admin", "instructeur"],
+        },
+        {
+          icon: <FactCheckIcon />,
+          title: "S'inscrire à un examen",
+          to: "/dashboard/examens/disponibles",
+          role: ["admin", "instructeur", "secretaire", "karateka"],
         },
       ],
     },
@@ -614,89 +625,89 @@ export default function DashboardLayout() {
 
   return (
     <ThemeProvider theme={dashboardTheme}>
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
 
-      <TopBar />
+        <TopBar />
 
-      {/* DRAWER MOBILE */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            width: DRAWER_EXPANDED,
-            border: "none",
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
+        {/* DRAWER MOBILE */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": {
+              width: DRAWER_EXPANDED,
+              border: "none",
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
 
-      {/* DRAWER DESKTOP */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: "none", md: "block" },
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            border: "none",
-            overflowX: "hidden",
+        {/* DRAWER DESKTOP */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: "none", md: "block" },
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              border: "none",
+              overflowX: "hidden",
+              transition: (theme) =>
+                theme.transitions.create("width", {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+            },
+          }}
+          open
+        >
+          {drawerContent}
+        </Drawer>
+
+        {/* CONTENT */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 2,
+            mt: { xs: 7, md: 9 },
+            ml: { md: `${drawerWidth}px` },
+            width: { md: `calc(100% - ${drawerWidth}px)` },
             transition: (theme) =>
-              theme.transitions.create("width", {
+              theme.transitions.create(["margin", "width"], {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,
               }),
-          },
-        }}
-        open
-      >
-        {drawerContent}
-      </Drawer>
+            overflowX: "auto",
+            minHeight: "100vh",
+          }}
+        >
+          <Suspense fallback={<LoadingScreen />}>
+            <Outlet />
+          </Suspense>
+        </Box>
 
-      {/* CONTENT */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 2,
-          mt: { xs: 7, md: 9 },
-          ml: { md: `${drawerWidth}px` },
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          transition: (theme) =>
-            theme.transitions.create(["margin", "width"], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
-          overflowX: "auto",
-          minHeight: "100vh",
-        }}
-      >
-        <Suspense fallback={<LoadingScreen />}>
-          <Outlet />
-        </Suspense>
+        {/* BOUTON MENU MOBILE */}
+        <IconButton
+          onClick={() => setMobileOpen(true)}
+          sx={{
+            color: "primary.main",
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            display: { xs: "flex", md: "none" },
+            bgcolor: "background.paper",
+            boxShadow: 3,
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
       </Box>
-
-      {/* BOUTON MENU MOBILE */}
-      <IconButton
-        onClick={() => setMobileOpen(true)}
-        sx={{
-          color: "primary.main",
-          position: "fixed",
-          top: 16,
-          left: 16,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          display: { xs: "flex", md: "none" },
-          bgcolor: "background.paper",
-          boxShadow: 3,
-        }}
-      >
-        <MenuIcon />
-      </IconButton>
-    </Box>
     </ThemeProvider>
   );
 }

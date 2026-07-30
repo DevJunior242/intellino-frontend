@@ -27,6 +27,7 @@ import { useAllowAccess } from "../../../Hook/useAllowAccess";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 import StoreExamen from "./StoreExamen";
+import ExamenPaymentsToVerify from "./ExamenPaymentsToVerify";
 
 function ExamenIndex() {
   const [examens, setExamens] = useState([]);
@@ -179,6 +180,8 @@ function ExamenIndex() {
           />
         )}
       </Box>
+
+      <ExamenPaymentsToVerify />
 
       {loading ? (
         <ConfigSkeleton />

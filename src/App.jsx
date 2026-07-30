@@ -175,6 +175,9 @@ const StageIndex = lazy(() => import("./Saas/pages/StageIndex.jsx"));
 const StageSubscribeIndex = lazy(
   () => import("./Saas/pages/StageSubscribeIndex.jsx"),
 );
+const ExamenSubscribeIndex = lazy(
+  () => import("./Saas/pages/Examens/ExamenSubscribeIndex.jsx"),
+);
 const CreateFederationForm = lazy(
   () => import("./Saas/pages/Fede/CreateFederationForm.jsx"),
 );
@@ -293,6 +296,7 @@ const AppRoutes = () => {
           <Route path="payment/factures" element={<PaymentIndex />} />
           <Route path="grades-history" element={<StudentsGradesOverview />} />
           <Route path="examen" element={<ExamenIndex />} />
+          <Route path="examens/disponibles" element={<ExamenSubscribeIndex />} />
           <Route path="competition" element={<InscriptionPage />} />
         </Route>
         <Route
