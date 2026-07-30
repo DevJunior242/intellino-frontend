@@ -22,13 +22,22 @@ import { UseAuth } from "../../Api/AuthContext";
 const AccountSettings = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
-  const { activeRole, activeType } = UseAuth();
+  const { activeRole, activeType, currentClub, currentLeague } = UseAuth();
 
-  //seul type Federation peut accéder à la gestion des saisons
   const authorized = activeRole?.toLowerCase() === "admin";
-  const isFederation = activeType?.toLowerCase() === "federation";
 
-  const authorizedToAccessSaisons = authorized;
+  // Un club rattaché à une ligue, ou une ligue rattachée à une fédération,
+  // hérite automatiquement de la saison de son parent (voir
+  // ResolvesActiveSaison côté backend) — seule l'entité indépendante peut
+  // gérer ses propres saisons.
+  const isIndependentOrg =
+    activeType === "Club"
+      ? !currentClub?.league_id
+      : activeType === "Ligue"
+        ? !currentLeague?.federation_id
+        : true; // Federation : toujours indépendante
+
+  const authorizedToAccessSaisons = authorized && isIndependentOrg;
   // 1. Gestion des onglets
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
