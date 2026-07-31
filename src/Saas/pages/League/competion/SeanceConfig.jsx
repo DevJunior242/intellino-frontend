@@ -12,7 +12,7 @@ function SeanceConfig({
   onAthleteSuivant,
   loading,
 }) {
-  const estKata = config?.discipline?.toLowerCase() === "kata";
+  const estKata = config?.subDiscipline?.toLowerCase() === "kata";
   return estKata ? (
     <SeanceAdminPanel
       config={config}

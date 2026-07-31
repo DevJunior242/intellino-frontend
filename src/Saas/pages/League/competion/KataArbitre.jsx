@@ -953,20 +953,20 @@ export default function KataArbitre({ config }) {
               {config?.plateau_nom ?? "Tatami"}
             </Typography>
             <Typography sx={{ color: T.textMuted, fontSize: "0.72rem" }}>
-              {config?.discipline} · {config?.juges_option} juges ·{" "}
+              {config?.subDiscipline} · {config?.juges_option} juges ·{" "}
               {config?.niveau}
             </Typography>
           </Box>
           <Chip
-            label={config?.discipline?.toUpperCase()}
+            label={config?.subDiscipline?.toUpperCase()}
             size="small"
             sx={{
               bgcolor:
-                config?.discipline?.toLowerCase() === "kumite"
+                config?.subDiscipline?.toLowerCase() === "kumite"
                   ? "#ef444420"
                   : "#00e5c020",
               color:
-                config?.discipline?.toLowerCase() === "kumite"
+                config?.subDiscipline?.toLowerCase() === "kumite"
                   ? "#ef4444"
                   : "#00e5c0",
               fontWeight: 700,
