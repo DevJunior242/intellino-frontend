@@ -13,6 +13,7 @@ import {
   ListItemIcon,
   ListItemText,
   Chip,
+  Autocomplete,
 } from "@mui/material";
 import { motion } from "motion/react";
 import { Instance } from "../../../../Api/Axios";
@@ -31,6 +32,7 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [students, setStudents] = useState([]);
   const [category, setCategory] = useState(null);
+  const [katas, setKatas] = useState([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState({});
   const [expanded, setExpanded] = useState(false);
@@ -44,7 +46,7 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
       if (next[student.id]) {
         delete next[student.id];
       } else {
-        next[student.id] = { poids_declare: "", kata: "" };
+        next[student.id] = { poids_declare: "", kata_id: null };
       }
       return next;
     });
@@ -112,6 +114,15 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
     getInitialData();
   }, [getInitialData]);
 
+  // Catalogue officiel WKF des katas actifs (Art. 5.1) — utilisé pour le
+  // menu déroulant plutôt qu'un champ texte libre.
+  useEffect(() => {
+    if (subdiscipline !== "Kata") return;
+    Instance.get("/api/katas/katas")
+      .then((res) => setKatas(res.data || []))
+      .catch(() => setKatas([]));
+  }, [subdiscipline]);
+
   useEffect(() => {
     setExpanded(false);
   }, [search]);
@@ -133,7 +144,7 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
         ([athlete_id, champs]) => ({
           athlete_id,
           poids_declare: champs.poids_declare || null,
-          kata: champs.kata || null,
+          kata_id: champs.kata_id || null,
         }),
       );
 
@@ -276,18 +287,29 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
                         />
                       )}
                       {isChecked && subdiscipline === "Kata" && (
-                        <TextField
+                        <Autocomplete
                           size="small"
-                          label="Kata"
-                          value={selected[student.id]?.kata || ""}
-                          onChange={(e) =>
+                          options={katas}
+                          getOptionLabel={(option) => option.nom || ""}
+                          isOptionEqualToValue={(option, value) =>
+                            option.id === value.id
+                          }
+                          value={
+                            katas.find(
+                              (k) => k.id === selected[student.id]?.kata_id,
+                            ) || null
+                          }
+                          onChange={(_, newValue) =>
                             updateChampAthlete(
                               student.id,
-                              "kata",
-                              e.target.value,
+                              "kata_id",
+                              newValue?.id || null,
                             )
                           }
-                          sx={{ width: { xs: "100%", sm: 180 } }}
+                          renderInput={(params) => (
+                            <TextField {...params} label="Kata" />
+                          )}
+                          sx={{ width: { xs: "100%", sm: 220 } }}
                         />
                       )}
                     </ListItem>

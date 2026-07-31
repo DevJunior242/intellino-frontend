@@ -24,7 +24,7 @@ export default function InscribedAthletesTable({
   loading,
   onDelete,
 }) {
-  const isKata = epreuve.discipline?.nom?.toLowerCase() === "kata";
+  const isKata = epreuve.sub_discipline?.nom?.toLowerCase() === "kata";
 
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -71,6 +71,14 @@ export default function InscribedAthletesTable({
       width: 110,
       hide: isKata,
       flex: 1,
+    },
+    {
+      field: "kata",
+      headerName: "Kata",
+      width: 160,
+      hide: !isKata,
+      flex: 1,
+      valueGetter: (value, row) => row?.kata?.nom || "—",
     },
     {
       field: "status",
@@ -141,6 +149,7 @@ export default function InscribedAthletesTable({
         autoPageSize
         columnVisibilityModel={{
           poids_declare: !isKata,
+          kata: isKata,
         }}
         sx={{
           "& .MuiDataGrid-columnHeader": {
