@@ -102,6 +102,26 @@ export default function SeanceAdminPanel({
     }
   };
 
+  // Athlète absent à l'appel ou qui abandonne (WKF Art. 6.4) : disqualifié
+  // de cette catégorie, on passe directement au suivant.
+  const handleKiken = async () => {
+    if (!window.confirm(`${enCours?.inscription?.athlete?.fullname ?? "Cet athlète"} est absent et sera disqualifié (Kiken). Confirmer ?`)) {
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data } = await Instance.post(
+        `/api/seances/configs/${config.id}/kiken`,
+      );
+      initSeance();
+      onAthleteSuivant(data.suivant);
+    } catch (err) {
+      console.error("Erreur lors de la déclaration Kiken:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Affichage du skeleton pendant le chargement initial
   if (isInitialLoadRef && loading) {
     return (
@@ -320,6 +340,32 @@ export default function SeanceAdminPanel({
             )}
           </Button>
         </motion.div>
+
+        {enCours && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={slideUp}
+            transition={{ delay: 0.25 }}
+          >
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              disabled={submitting}
+              onClick={handleKiken}
+              sx={{
+                mt: 1,
+                py: 1,
+                fontSize: "0.85rem",
+                textTransform: "none",
+                borderRadius: 2,
+              }}
+            >
+              Athlète absent (Kiken)
+            </Button>
+          </motion.div>
+        )}
       </AnimatePresence>
     </Box>
   );
