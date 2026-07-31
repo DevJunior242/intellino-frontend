@@ -321,13 +321,28 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
 };
 
 // ─── Zone saisie note ─────────────────────────────────────────────────────────
+// Échelle officielle WKF Kata Competition Rules, Art. 5.5.3 : 10 Parfait,
+// 9-9.9 Excellent, 8-8.9 Très bien, 7-7.9 Bien, 6-6.9 Acceptable,
+// 5-5.9 Insuffisant, 0 Disqualifié (rien d'autre n'est une note valide).
+const libelleNote = (valeur) => {
+  if (valeur === 0) return "Disqualifié";
+  if (valeur >= 10) return "Parfait";
+  if (valeur >= 9) return "Excellent";
+  if (valeur >= 8) return "Très bien";
+  if (valeur >= 7) return "Bien";
+  if (valeur >= 6) return "Acceptable";
+  return "Insuffisant";
+};
+
 const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
   const T = useCompetitionTheme();
+  const disqualifie = valeur === 0;
+
   const getColor = () => {
-    if (valeur >= 8.5) return T.success;
+    if (disqualifie) return T.danger;
+    if (valeur >= 9) return T.success;
     if (valeur >= 7) return T.accent;
-    if (valeur >= 5) return T.warning;
-    return T.danger;
+    return T.warning;
   };
 
   const noteColor = getColor();
@@ -397,82 +412,109 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
               textTransform: "uppercase",
             }}
           >
-            {valeur >= 8.5
-              ? "Excellent"
-              : valeur >= 7
-                ? "Bien"
-                : valeur >= 5
-                  ? "Moyen"
-                  : "Insuffisant"}
+            {libelleNote(valeur)}
           </Typography>
         </Box>
 
-        {/* Slider */}
-        <Box sx={{ px: 1, mb: 2.5 }}>
-          <Slider
-            value={valeur}
-            onChange={(_, v) => setValeur(v)}
-            min={0}
-            max={10}
-            step={0.1}
-            sx={{
-              color: noteColor,
-              "& .MuiSlider-thumb": {
-                width: 20,
-                height: 20,
-                boxShadow: `0 0 8px ${noteColor}80`,
-              },
-              "& .MuiSlider-rail": { bgcolor: "action.hover", height: 5 },
-              "& .MuiSlider-track": { height: 5 },
-            }}
-          />
-          <Stack direction="row" justifyContent="space-between">
-            {["0", "2.5", "5", "7.5", "10"].map((v) => (
-              <Typography
-                key={v}
-                sx={{ fontSize: "0.6rem", color: T.textMuted }}
-              >
-                {v}
-              </Typography>
-            ))}
+        {disqualifie ? (
+          <Stack alignItems="center" gap={1.5} sx={{ mb: 2.5 }}>
+            <Typography sx={{ color: T.textMuted, fontSize: "0.8rem", textAlign: "center" }}>
+              Cette prestation sera enregistrée comme disqualifiée (0).
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => setValeur(7.0)}
+              sx={{ borderColor: T.border, color: T.textMuted }}
+            >
+              Annuler la disqualification
+            </Button>
           </Stack>
-        </Box>
+        ) : (
+          <>
+            {/* Slider — l'échelle valide va de 5.0 à 10.0 (Art. 5.4.1) */}
+            <Box sx={{ px: 1, mb: 2.5 }}>
+              <Slider
+                value={valeur}
+                onChange={(_, v) => setValeur(v)}
+                min={5}
+                max={10}
+                step={0.1}
+                sx={{
+                  color: noteColor,
+                  "& .MuiSlider-thumb": {
+                    width: 20,
+                    height: 20,
+                    boxShadow: `0 0 8px ${noteColor}80`,
+                  },
+                  "& .MuiSlider-rail": { bgcolor: "action.hover", height: 5 },
+                  "& .MuiSlider-track": { height: 5 },
+                }}
+              />
+              <Stack direction="row" justifyContent="space-between">
+                {["5", "6.25", "7.5", "8.75", "10"].map((v) => (
+                  <Typography
+                    key={v}
+                    sx={{ fontSize: "0.6rem", color: T.textMuted }}
+                  >
+                    {v}
+                  </Typography>
+                ))}
+              </Stack>
+            </Box>
 
-        {/* Boutons rapides */}
-        <Stack
-          direction="row"
-          flexWrap="wrap"
-          gap={0.8}
-          justifyContent="center"
-          mb={2.5}
-        >
-          {[5.0, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0].map((v) => {
-            const isSelected = Math.abs(valeur - v) < 0.05;
-            return (
-              <motion.div key={v} whileTap={{ scale: 0.92 }}>
-                <Box
-                  onClick={() => setValeur(v)}
-                  sx={{
-                    px: 1.5,
-                    py: 0.6,
-                    borderRadius: 2,
-                    cursor: "pointer",
-                    bgcolor: isSelected ? noteColor : "action.hover",
-                    border: `1px solid ${isSelected ? noteColor : T.border}`,
-                    color: isSelected ? "#000" : T.textMuted,
-                    fontSize: "0.82rem",
-                    fontWeight: isSelected ? 800 : 500,
-                    transition: "all 0.15s",
-                    boxShadow: isSelected ? `0 0 10px ${noteColor}50` : "none",
-                    "&:hover": { borderColor: noteColor, color: noteColor },
-                  }}
-                >
-                  {v.toFixed(1)}
-                </Box>
-              </motion.div>
-            );
-          })}
-        </Stack>
+            {/* Boutons rapides */}
+            <Stack
+              direction="row"
+              flexWrap="wrap"
+              gap={0.8}
+              justifyContent="center"
+              mb={1.5}
+            >
+              {[5.0, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0].map((v) => {
+                const isSelected = Math.abs(valeur - v) < 0.05;
+                return (
+                  <motion.div key={v} whileTap={{ scale: 0.92 }}>
+                    <Box
+                      onClick={() => setValeur(v)}
+                      sx={{
+                        px: 1.5,
+                        py: 0.6,
+                        borderRadius: 2,
+                        cursor: "pointer",
+                        bgcolor: isSelected ? noteColor : "action.hover",
+                        border: `1px solid ${isSelected ? noteColor : T.border}`,
+                        color: isSelected ? "#000" : T.textMuted,
+                        fontSize: "0.82rem",
+                        fontWeight: isSelected ? 800 : 500,
+                        transition: "all 0.15s",
+                        boxShadow: isSelected ? `0 0 10px ${noteColor}50` : "none",
+                        "&:hover": { borderColor: noteColor, color: noteColor },
+                      }}
+                    >
+                      {v.toFixed(1)}
+                    </Box>
+                  </motion.div>
+                );
+              })}
+            </Stack>
+
+            <Stack alignItems="center" sx={{ mb: 2.5 }}>
+              <Box
+                onClick={() => setValeur(0)}
+                sx={{
+                  cursor: "pointer",
+                  fontSize: "0.72rem",
+                  color: T.danger,
+                  textDecoration: "underline",
+                  "&:hover": { opacity: 0.8 },
+                }}
+              >
+                Disqualifier cette prestation
+              </Box>
+            </Stack>
+          </>
+        )}
 
         {erreur && (
           <Alert
