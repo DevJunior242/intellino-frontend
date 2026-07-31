@@ -368,9 +368,18 @@ export default function SeanceAdminPanel({
             fullWidth
             variant="contained"
             disabled={submitting || (enCours && !toutesNotees)}
-            onClick={() => {
+            onClick={async () => {
               if (!enCours) {
-                handleLaunchSeance(config?.id);
+                setSubmitting(true);
+                try {
+                  await handleLaunchSeance(config?.id);
+                  // Ne pas dépendre uniquement du websocket (peut être
+                  // déconnecté/expiré) pour rafraîchir l'état côté
+                  // initiateur — on re-fetch directement après le lancement.
+                  await getEnCours();
+                } finally {
+                  setSubmitting(false);
+                }
               } else if (enCours && toutesNotees) {
                 handleSuivant();
               }
