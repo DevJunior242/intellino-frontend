@@ -8,6 +8,7 @@ import {
   Stack,
   Chip,
   Alert,
+  Collapse,
   CircularProgress,
   Skeleton,
 } from "@mui/material";
@@ -17,6 +18,8 @@ import {
   HowToVote,
   Person,
   Tag,
+  InfoOutlined,
+  ExpandMore,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { alpha } from "@mui/material/styles";
@@ -324,6 +327,20 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
 // Échelle officielle WKF Kata Competition Rules, Art. 5.5.3 : 10 Parfait,
 // 9-9.9 Excellent, 8-8.9 Très bien, 7-7.9 Bien, 6-6.9 Acceptable,
 // 5-5.9 Insuffisant, 0 Disqualifié (rien d'autre n'est une note valide).
+// Critères d'évaluation officiels WKF Kata Competition Rules, Art. 5.6.
+const CRITERES_EVALUATION = [
+  "Positions",
+  "Techniques",
+  "Mouvements de transition",
+  "Rythme et synchronisation",
+  "Respiration correcte",
+  "Concentration (Kime)",
+  "Conformité au Kihon",
+  "Force",
+  "Vitesse",
+  "Équilibre",
+];
+
 const libelleNote = (valeur) => {
   if (valeur === 0) return "Disqualifié";
   if (valeur >= 10) return "Parfait";
@@ -337,6 +354,7 @@ const libelleNote = (valeur) => {
 const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
   const T = useCompetitionTheme();
   const disqualifie = valeur === 0;
+  const [criteresOuverts, setCriteresOuverts] = useState(false);
 
   const getColor = () => {
     if (disqualifie) return T.danger;
@@ -361,19 +379,76 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
           border: `1px solid ${T.border}`,
         }}
       >
-        <Typography
-          sx={{
-            fontWeight: 700,
-            textAlign: "center",
-            color: T.textMuted,
-            fontSize: "0.7rem",
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            mb: 2,
-          }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          gap={0.6}
+          onClick={() => setCriteresOuverts((v) => !v)}
+          sx={{ cursor: "pointer", mb: criteresOuverts ? 1 : 2 }}
         >
-          Votre évaluation
-        </Typography>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              textAlign: "center",
+              color: T.textMuted,
+              fontSize: "0.7rem",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+            }}
+          >
+            Votre évaluation
+          </Typography>
+          <InfoOutlined sx={{ fontSize: 14, color: T.textMuted }} />
+          <ExpandMore
+            sx={{
+              fontSize: 16,
+              color: T.textMuted,
+              transition: "transform 0.2s",
+              transform: criteresOuverts ? "rotate(180deg)" : "none",
+            }}
+          />
+        </Stack>
+
+        <Collapse in={criteresOuverts}>
+          <Box
+            sx={{
+              mb: 2,
+              p: 1.5,
+              borderRadius: 2,
+              bgcolor: "action.hover",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.65rem",
+                color: T.textMuted,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                mb: 1,
+                textAlign: "center",
+              }}
+            >
+              Critères d'évaluation (WKF)
+            </Typography>
+            <Stack direction="row" flexWrap="wrap" gap={0.6} justifyContent="center">
+              {CRITERES_EVALUATION.map((critere) => (
+                <Chip
+                  key={critere}
+                  label={critere}
+                  size="small"
+                  sx={{
+                    bgcolor: T.surface,
+                    color: T.textMuted,
+                    border: `1px solid ${T.border}`,
+                    fontSize: "0.68rem",
+                    height: 22,
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
+        </Collapse>
 
         {/* Note en grand avec glow */}
         <Box sx={{ textAlign: "center", mb: 2, position: "relative" }}>
