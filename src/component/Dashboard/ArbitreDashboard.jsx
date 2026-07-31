@@ -256,6 +256,7 @@ export default function ArbitreDashboard() {
     global: g,
     qualite: q,
     roles: r,
+    kata_duel: kd,
     par_annee = [],
     derniere_comp: dc,
   } = stats;
@@ -539,6 +540,29 @@ export default function ArbitreDashboard() {
           </Box>
         </Stack>
       </SCard>
+
+      {/* ── Décisions de superviseur (duel Kata, Art. 5.11/3.5 WKF) ── */}
+      {(r?.superviseur ?? 0) > 0 && (
+        <>
+          <SectionLabel>Décisions en tant que superviseur (Kata)</SectionLabel>
+          <Stack direction="row" gap={1.25} flexWrap="wrap">
+            <MetricCard
+              icon={Gavel}
+              label="Hantei tranchés"
+              value={kd?.hantei_tranches ?? 0}
+              sub="égalités de vote"
+              color={AMBER}
+            />
+            <MetricCard
+              icon={Gavel}
+              label="Disqualifications Bunkai"
+              value={kd?.disqualifications_bunkai ?? 0}
+              sub="finales d'équipe"
+              color="#f87171"
+            />
+          </Stack>
+        </>
+      )}
 
       {/* ── Activité par année ── */}
       {par_annee.length > 0 && (
