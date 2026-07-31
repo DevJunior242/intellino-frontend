@@ -6,10 +6,10 @@ import useCompetitionTheme from "./useCompetitionTheme";
 const CORNER = { aka: "#ef4444", ao: "#3b82f6" };
 
 // Le capitaine d'une équipe Kata garde un athlete_id (contrainte BDD), donc
-// kataTeam prime sur athlete ici, sinon une équipe s'affiche sous le nom de
+// kata_team prime sur athlete ici, sinon une équipe s'affiche sous le nom de
 // son capitaine.
 function nomInscription(inscription) {
-  return inscription?.kataTeam?.nom ?? inscription?.athlete?.fullname ?? "—";
+  return inscription?.kata_team?.nom ?? inscription?.athlete?.fullname ?? "—";
 }
 
 /**

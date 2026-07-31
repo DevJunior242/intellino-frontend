@@ -173,7 +173,6 @@ export default function ConfigNotationCardDetails() {
         `/api/seances/configs/${configActive.id}/connecter-tablette`,
         { code_acces: pin },
       );
-      console.log("connexion tablette", res);
       if (res.data.success) {
         localStorage.setItem("poste", res.data.poste);
         //localStorage.setItem("config_active_id", configActive.id);

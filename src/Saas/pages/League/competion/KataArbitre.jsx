@@ -308,7 +308,7 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
           />
           {enCours?.kata?.nom && (
             <Chip
-              label={enCours.kata.nom}
+              label={enCours.kata?.nom}
               size="small"
               sx={{
                 bgcolor: `${T.warning}12`,
@@ -433,7 +433,12 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
             >
               Critères d'évaluation (WKF)
             </Typography>
-            <Stack direction="row" flexWrap="wrap" gap={0.6} justifyContent="center">
+            <Stack
+              direction="row"
+              flexWrap="wrap"
+              gap={0.6}
+              justifyContent="center"
+            >
               {CRITERES_EVALUATION.map((critere) => (
                 <Chip
                   key={critere}
@@ -495,7 +500,13 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
 
         {disqualifie ? (
           <Stack alignItems="center" gap={1.5} sx={{ mb: 2.5 }}>
-            <Typography sx={{ color: T.textMuted, fontSize: "0.8rem", textAlign: "center" }}>
+            <Typography
+              sx={{
+                color: T.textMuted,
+                fontSize: "0.8rem",
+                textAlign: "center",
+              }}
+            >
               Cette prestation sera enregistrée comme disqualifiée (0).
             </Typography>
             <Button
@@ -565,7 +576,9 @@ const ZoneSaisie = ({ valeur, setValeur, onSoumettre, submitting, erreur }) => {
                         fontSize: "0.82rem",
                         fontWeight: isSelected ? 800 : 500,
                         transition: "all 0.15s",
-                        boxShadow: isSelected ? `0 0 10px ${noteColor}50` : "none",
+                        boxShadow: isSelected
+                          ? `0 0 10px ${noteColor}50`
+                          : "none",
                         "&:hover": { borderColor: noteColor, color: noteColor },
                       }}
                     >
@@ -892,8 +905,7 @@ export default function KataArbitre({ config }) {
       fetchEnCours();
     } catch (err) {
       setDqErreur(
-        err.response?.data?.message ||
-          "Erreur lors de la disqualification",
+        err.response?.data?.message || "Erreur lors de la disqualification",
       );
     } finally {
       setDqSubmitting(false);
@@ -1029,7 +1041,11 @@ export default function KataArbitre({ config }) {
                         <GavelIcon sx={{ fontSize: 16 }} />
                       )
                     }
-                    sx={{ borderRadius: 2, fontWeight: 700, fontSize: "0.75rem" }}
+                    sx={{
+                      borderRadius: 2,
+                      fontWeight: 700,
+                      fontSize: "0.75rem",
+                    }}
                   >
                     Disqualifier (faute Bunkai)
                   </Button>
