@@ -26,7 +26,9 @@ import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
 import ProchainAthlete from "./ProchainAthlete";
+import DuelKataEnCours from "./DuelKataEnCours";
 import useCompetitionTheme from "./useCompetitionTheme";
+import GavelIcon from "@mui/icons-material/Gavel";
 
 // ─── Skeleton loading ─────────────────────────────────────────────────────────
 const PageSkeleton = () => {
@@ -808,6 +810,8 @@ export default function KataArbitre({ config }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [erreur, setErreur] = useState(null);
+  const [dqSubmitting, setDqSubmitting] = useState(false);
+  const [dqErreur, setDqErreur] = useState(null);
   const enCoursRef = useRef(null);
 
   const fetchEnCours = useCallback(async () => {
@@ -873,6 +877,26 @@ export default function KataArbitre({ config }) {
       setErreur(err.response?.data?.message || "Erreur lors de la saisie");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Faute pendant le Bunkai (finale d'équipe Kata) — réservé au superviseur,
+  // le backend renvoie 403 si le juge connecté ne l'est pas.
+  const handleDisqualifierBunkai = async () => {
+    setDqSubmitting(true);
+    setDqErreur(null);
+    try {
+      await Instance.post(
+        `/api/seances/configs/${config.id}/disqualification-bunkai`,
+      );
+      fetchEnCours();
+    } catch (err) {
+      setDqErreur(
+        err.response?.data?.message ||
+          "Erreur lors de la disqualification",
+      );
+    } finally {
+      setDqSubmitting(false);
     }
   };
 
@@ -968,12 +992,49 @@ export default function KataArbitre({ config }) {
             </motion.div>
           ) : (
             <motion.div key="content">
+              {/* Adversaire / étape / phase Kata ou Bunkai */}
+              <DuelKataEnCours passage={enCours} />
+
               {/* Athlète en cours */}
               <AthleteEnCours
                 enCours={enCours}
                 notes={notes}
                 nbJuges={config?.juges_option}
               />
+
+              {/* Disqualification Bunkai — superviseur uniquement (le
+                  backend rejette avec 403 si le juge connecté ne l'est pas) */}
+              {enCours?.phase === "bunkai" && (
+                <Box sx={{ mb: 2 }}>
+                  {dqErreur && (
+                    <Alert
+                      severity="error"
+                      sx={{ mb: 1, borderRadius: 2, fontSize: "0.8rem" }}
+                      onClose={() => setDqErreur(null)}
+                    >
+                      {dqErreur}
+                    </Alert>
+                  )}
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    disabled={dqSubmitting}
+                    onClick={handleDisqualifierBunkai}
+                    startIcon={
+                      dqSubmitting ? (
+                        <CircularProgress size={14} color="inherit" />
+                      ) : (
+                        <GavelIcon sx={{ fontSize: 16 }} />
+                      )
+                    }
+                    sx={{ borderRadius: 2, fontWeight: 700, fontSize: "0.75rem" }}
+                  >
+                    Disqualifier (faute Bunkai)
+                  </Button>
+                </Box>
+              )}
 
               {/* Prochain athlète */}
               <ProchainAthlete nextAthlete={nextAthlete} compact />

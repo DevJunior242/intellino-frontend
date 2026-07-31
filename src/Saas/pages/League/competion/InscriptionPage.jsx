@@ -32,6 +32,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import InscriptionForm from "./InscriptionForm";
+import KataTeamInscriptionForm from "./KataTeamInscriptionForm";
 import InscribedAthletesTable from "./InscribedAthletesTable";
 import { UseAuth } from "../../../../Api/AuthContext";
 import { Instance } from "../../../../Api/Axios";
@@ -106,12 +107,16 @@ const EpreuveCard = ({ epreuve, selected, onSelect }) => {
         </Stack>
 
         {/* Discipline */}
-        <Chip
-          label={epreuve.sub_discipline?.nom ?? "—"}
-          size="small"
-          color={discColor}
-          sx={{ mb: 1.5 }}
-        />
+        <Stack direction="row" gap={0.5} sx={{ mb: 1.5 }}>
+          <Chip
+            label={epreuve.sub_discipline?.nom ?? "—"}
+            size="small"
+            color={discColor}
+          />
+          {epreuve.est_equipe && (
+            <Chip label="Équipe" size="small" variant="outlined" />
+          )}
+        </Stack>
 
         <Divider sx={{ my: 1 }} />
 
@@ -492,11 +497,18 @@ const InscriptionPage = () => {
             </Box>
           </Stack>
 
-          <InscriptionForm
-            competitionId={selectedEpreuve.id}
-            subdiscipline={selectedEpreuve.sub_discipline?.nom}
-            onSuccess={fetchInscriptions}
-          />
+          {selectedEpreuve.est_equipe ? (
+            <KataTeamInscriptionForm
+              competitionId={selectedEpreuve.id}
+              onSuccess={fetchInscriptions}
+            />
+          ) : (
+            <InscriptionForm
+              competitionId={selectedEpreuve.id}
+              subdiscipline={selectedEpreuve.sub_discipline?.nom}
+              onSuccess={fetchInscriptions}
+            />
+          )}
 
           <Divider sx={{ mb: 3 }} />
 

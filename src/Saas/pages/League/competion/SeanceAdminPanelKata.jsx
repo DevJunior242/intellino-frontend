@@ -19,8 +19,15 @@ import {
   Fade,
   Tooltip,
   ListItemButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import NotesProgress from "./NotesProgress";
 import {
   AddCircle,
@@ -35,6 +42,10 @@ import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
 import ProchainAthlete from "./ProchainAthlete";
 import useCompetitionTheme from "./useCompetitionTheme";
+import DuelKataEnCours from "./DuelKataEnCours";
+import BracketViewer from "./BracketViewer";
+import VainqueurOverlay from "./VainqueurOverlay";
+import echo from "../../../../echo";
 
 const AthleteCard = ({ enCours, config, notes }) => {
   const T = useCompetitionTheme();
@@ -442,6 +453,11 @@ export default function SeanceAdminPanelKata({
   const [arbitreEnCours, setArbitreEnCours] = useState(null);
   const [notes, setNotes] = useState([]);
   const [posteAction, setPostAction] = useState(null);
+  const [formatModalOpen, setFormatModalOpen] = useState(false);
+  const [availableFormats, setAvailableFormats] = useState([]);
+  const [selectedFormat, setSelectedFormat] = useState(null);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [localError, setLocalError] = useState(null);
 
   const { enCours, arbitres, superviseur, nextAthlete } = data;
 
@@ -450,6 +466,76 @@ export default function SeanceAdminPanelKata({
     () => arbitres?.filter((a) => a.actif) ?? [],
     [arbitres],
   );
+
+  // Combat du duel en cours (Aka/Ao) — pour le tableau/vainqueur, distinct de
+  // `enCours` (l'OrdrePassage d'un seul camp que le juge est en train de noter).
+  const [combat, setCombat] = useState(null);
+  const fetchCombat = useCallback(async () => {
+    if (!config?.id || !isValidated) return;
+    try {
+      const res = await Instance.get(
+        `/api/public/configs/${config.id}/combat-en-cours`,
+      );
+      setCombat(res.data?.combat || null);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [config?.id, isValidated]);
+
+  useEffect(() => {
+    fetchCombat();
+  }, [fetchCombat]);
+
+  useEffect(() => {
+    if (!config?.id) return;
+    const channel = echo.channel(`tatami.${config.id}`);
+    const handler = () => fetchCombat();
+    channel.listen(".tatami.updated", handler);
+    return () => channel.stopListening(".tatami.updated", handler);
+  }, [config?.id, fetchCombat]);
+
+  const handleLocalValider = async (id) => {
+    if (!id) return;
+    setLocalSubmitting(true);
+    try {
+      await Instance.post(`/api/seances/configs/${id}/valider`);
+      setLocalError(null);
+      onRefresh?.();
+    } catch (err) {
+      const errData = err.response?.data;
+      if (errData?.error === "missing_kumite_format") {
+        setAvailableFormats(errData.formats || []);
+        setFormatModalOpen(true);
+      } else {
+        const msg =
+          errData?.problemes || errData?.message || "Une erreur est survenue.";
+        setLocalError(msg);
+      }
+    } finally {
+      setLocalSubmitting(false);
+    }
+  };
+
+  const handleConfirmFormat = async () => {
+    if (!selectedFormat || !config?.id) return;
+    setLocalSubmitting(true);
+    try {
+      await Instance.post(`/api/seances/configs/${config.id}/valider`, {
+        kumite_format_id: selectedFormat,
+      });
+      setFormatModalOpen(false);
+      setSelectedFormat(null);
+      setLocalError(null);
+      onRefresh?.();
+    } catch (err) {
+      const errData = err.response?.data;
+      const msg =
+        errData?.problemes || errData?.message || "Erreur lors de la validation";
+      setLocalError(msg);
+    } finally {
+      setLocalSubmitting(false);
+    }
+  };
 
   const chargerArbitresDispos = async () => {
     if (!config?.evenement_id) return;
@@ -625,14 +711,31 @@ export default function SeanceAdminPanelKata({
           )}
         </Alert>
       )}
+      {localError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2, borderRadius: 2 }}
+          onClose={() => setLocalError(null)}
+        >
+          {Array.isArray(localError) ? (
+            localError.map((err, i) => (
+              <p key={i} style={{ margin: 0 }}>
+                {err}
+              </p>
+            ))
+          ) : (
+            <p style={{ margin: 0 }}>{localError}</p>
+          )}
+        </Alert>
+      )}
 
       {/* ── CTA principal ── */}
       {!isValidated ? (
         <Button
           fullWidth
           variant="contained"
-          disabled={submitId !== null}
-          onClick={() => handleValider(config.id)}
+          disabled={submitId !== null || localSubmitting}
+          onClick={() => handleLocalValider(config.id)}
           sx={{
             mb: 3,
             py: 1.5,
@@ -641,7 +744,7 @@ export default function SeanceAdminPanelKata({
             fontSize: { xs: "0.85rem", sm: "1rem" },
           }}
         >
-          {submitId === config.id ? (
+          {submitId === config.id || localSubmitting ? (
             <Stack direction="row" alignItems="center" gap={1}>
               <CircularProgress size={18} color="inherit" />
               <span>Validation en cours...</span>
@@ -674,6 +777,7 @@ export default function SeanceAdminPanelKata({
       {/* ── Athlète en cours ── */}
       {enCours ? (
         <>
+          <DuelKataEnCours passage={enCours} />
           <AthleteCard enCours={enCours} config={config} notes={notes} />
           <NotesProgress
             ordrePassageId={enCours?.id ?? null}
@@ -685,6 +789,7 @@ export default function SeanceAdminPanelKata({
       ) : (
         <Typography color="text.secondary">Aucun athlète en cours</Typography>
       )}
+      <VainqueurOverlay combat={combat} onClose={fetchCombat} />
       {/* ── Prochain athlète ── */}
       <Divider sx={{ my: 2.5 }}>
         <Chip
@@ -697,6 +802,19 @@ export default function SeanceAdminPanelKata({
         <ProchainAthlete nextAthlete={nextAthlete} compact />
       ) : (
         <Typography color="text.secondary">Aucun athlète en attente</Typography>
+      )}
+      {/* ── Tableau éliminatoire ── */}
+      {isValidated && (
+        <>
+          <Divider sx={{ my: 2.5 }}>
+            <Chip
+              label="Tableau"
+              size="small"
+              sx={{ bgcolor: "background.paper", color: "text.secondary", fontSize: "0.65rem" }}
+            />
+          </Divider>
+          <BracketViewer configId={config.id} />
+        </>
       )}
       {/* ── Arbitres ── */}
       <Divider sx={{ my: 2.5 }}>
@@ -817,6 +935,36 @@ export default function SeanceAdminPanelKata({
         arbitresDispos={arbitresDispos}
         onAssigner={assignerArbitre}
       />
+
+      {/* ── Format tableau (poules/éliminatoire, WKF Art. 3.3.1 a/b) ── */}
+      <Dialog open={formatModalOpen} onClose={() => setFormatModalOpen(false)}>
+        <DialogTitle>Choisir le format du tableau</DialogTitle>
+        <DialogContent>
+          <RadioGroup
+            value={selectedFormat}
+            onChange={(e) => setSelectedFormat(e.target.value)}
+          >
+            {availableFormats.map((f) => (
+              <FormControlLabel
+                key={f.id}
+                value={f.id}
+                control={<Radio />}
+                label={f.code}
+              />
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFormatModalOpen(false)}>Annuler</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedFormat || localSubmitting}
+            onClick={handleConfirmFormat}
+          >
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

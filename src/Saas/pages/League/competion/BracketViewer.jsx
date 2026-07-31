@@ -21,7 +21,10 @@ const LIVE = "#00e5c0";
 const ETAPE_ORDER = ["Quart-finale", "Demi-finale", "Finale"];
 
 function nom(inscription) {
-  return inscription?.athlete?.fullname ?? "—";
+  // Le capitaine d'une équipe Kata garde un athlete_id (contrainte BDD),
+  // donc kata_team prime sur athlete ici, sinon une équipe s'affiche sous
+  // le nom de son capitaine.
+  return inscription?.kata_team?.nom ?? inscription?.athlete?.fullname ?? "—";
 }
 
 function typeVictoireLabel(type) {
@@ -231,7 +234,6 @@ function BracketDesktop({ rounds, repechage, finale }) {
         sx={{ minWidth: "max-content", p: 2 }}
       >
         {rounds.map((round, ri) => {
-          const perRound = Math.pow(2, rounds.length - 1 - ri);
           const spacing = Math.pow(2, ri) * (CARD_H + GAP) - GAP;
 
           return (

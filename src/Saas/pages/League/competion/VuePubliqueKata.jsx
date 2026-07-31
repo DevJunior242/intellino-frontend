@@ -19,6 +19,9 @@ import echo from "../../../../echo";
 import LoadingKumite from "./LoadingKumite";
 import PublicDisplayThemeProvider from "./PublicDisplayThemeProvider";
 import useCompetitionTheme from "./useCompetitionTheme";
+import DuelKataEnCours from "./DuelKataEnCours";
+import BracketViewer from "./BracketViewer";
+import VainqueurOverlay from "./VainqueurOverlay";
 
 // --- Animations Framer Motion ---
 const fadeIn = {
@@ -158,6 +161,23 @@ export default function VuePubliqueKata() {
   const [nextAthlete, setNextAthlete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [combat, setCombat] = useState(null);
+
+  const fetchCombat = useCallback(async () => {
+    if (!configId) return;
+    try {
+      const res = await Instance.get(
+        `/api/public/configs/${configId}/combat-en-cours`,
+      );
+      setCombat(res.data?.combat || null);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [configId]);
+
+  useEffect(() => {
+    fetchCombat();
+  }, [fetchCombat]);
 
   const fetchVuePublique = useCallback(async () => {
     // setLoading(true);
@@ -191,6 +211,7 @@ export default function VuePubliqueKata() {
     const channel = echo.channel(`tatami.${configId}`);
     channel.listen(".tatami.updated", () => {
       fetchVuePublique();
+      fetchCombat();
     });
     channel.listen(".note.ajoutee", () => {
       fetchVuePublique();
@@ -198,7 +219,7 @@ export default function VuePubliqueKata() {
     return () => {
       echo.leaveChannel(`tatami.${configId}`);
     };
-  }, [fetchVuePublique, configId]);
+  }, [fetchVuePublique, fetchCombat, configId]);
 
   // Calcul des notes avec statut (éliminées ou non)
   const getNotesAvecStatut = useCallback((notes = [], nbJuges) => {
@@ -433,6 +454,13 @@ export default function VuePubliqueKata() {
               </Paper>
             )}
           </motion.div>
+
+          {/* Duel en cours (adversaire, étape, phase Kata/Bunkai) */}
+          {enCours && (
+            <motion.div variants={staggerItem}>
+              <DuelKataEnCours passage={enCours} />
+            </motion.div>
+          )}
 
           {/* Prochain athlète */}
           {nextAthlete && (
@@ -748,8 +776,14 @@ export default function VuePubliqueKata() {
               </Stack>
             </motion.div>
           )}
+
+          {/* Tableau éliminatoire */}
+          <motion.div variants={staggerItem}>
+            <BracketViewer configId={configId} />
+          </motion.div>
         </motion.div>
       </AnimatePresence>
+      <VainqueurOverlay combat={combat} onClose={fetchCombat} />
     </Box>
     </PublicDisplayThemeProvider>
   );

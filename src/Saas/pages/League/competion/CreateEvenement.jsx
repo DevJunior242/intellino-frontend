@@ -16,6 +16,8 @@ import {
   Chip,
   CircularProgress,
   Box,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -33,6 +35,7 @@ const EPREUVE_VIDE = {
   niveau_id: "",
   heure_debut_prevu: "",
   heure_fin_prevue: "",
+  est_equipe: false,
 };
 
 // ─── couleur discipline ───────────────────────────────────────────────────────
@@ -594,6 +597,27 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                             }
                           />
                         </Grid>
+
+                        {/* Kata par équipe (Art. 3.5 WKF) */}
+                        {discNom?.toLowerCase() === "kata" && (
+                          <Grid item xs={12}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={!!epreuve.est_equipe}
+                                  onChange={(e) =>
+                                    handleEpreuveChange(
+                                      index,
+                                      "est_equipe",
+                                      e.target.checked,
+                                    )
+                                  }
+                                />
+                              }
+                              label="Kata par équipe (3-4 athlètes, Bunkai en finale)"
+                            />
+                          </Grid>
+                        )}
 
                         {/* Résumé horaire */}
                         {epreuve.heure_debut_prevu &&

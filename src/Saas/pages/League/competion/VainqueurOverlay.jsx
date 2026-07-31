@@ -22,19 +22,28 @@ export default function VainqueurOverlay({ combat, onClose }) {
     }
 
     const estAka = combat.vainqueur_id === combat.inscription_aka_id;
+    // Le capitaine d'une équipe Kata garde un athlete_id (contrainte BDD),
+    // donc kata_team prime sur athlete ici.
+    const nomInscription = (inscription) =>
+      inscription?.kata_team?.nom ?? inscription?.athlete?.fullname;
+    // Combat Kata (duel jugé au vote) : votes_aka/ao sont renseignés au lieu
+    // de score_final_aka/ao (toujours 0 pour un combat Kata).
+    const estKata = combat?.votes_aka !== null && combat?.votes_aka !== undefined;
 
     setVainqueurInfo({
       nom: estAka
-        ? combat?.inscription_aka?.athlete?.fullname
-        : combat?.inscription_ao?.athlete?.fullname,
+        ? nomInscription(combat?.inscription_aka)
+        : nomInscription(combat?.inscription_ao),
       club: estAka
         ? combat?.inscription_aka?.organisateur?.name
         : combat?.inscription_ao?.organisateur?.name,
       camp: estAka ? "AKA" : "AO",
       color: estAka ? CORNER.aka : CORNER.ao,
       colorLight: estAka ? alpha(CORNER.aka, 0.19) : alpha(CORNER.ao, 0.19),
-      scoreAka: combat?.score_final_aka ?? 0,
-      scoreAo: combat?.score_final_ao ?? 0,
+      estKata,
+      scoreAka: estKata ? (combat?.votes_aka ?? 0) : (combat?.score_final_aka ?? 0),
+      scoreAo: estKata ? (combat?.votes_ao ?? 0) : (combat?.score_final_ao ?? 0),
+      scoreLabel: estKata ? "Votes" : null,
       typeVictoire: combat?.type_victoire ?? null,
     });
 
@@ -142,6 +151,19 @@ export default function VainqueurOverlay({ combat, onClose }) {
               />
 
               {/* Score final */}
+              {vainqueurInfo.scoreLabel && (
+                <Typography
+                  sx={{
+                    color: T.textMuted,
+                    fontSize: "0.7rem",
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    mb: 0.5,
+                  }}
+                >
+                  {vainqueurInfo.scoreLabel}
+                </Typography>
+              )}
               <Box
                 sx={{
                   display: "flex",
