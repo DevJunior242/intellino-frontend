@@ -74,6 +74,39 @@ const bounceIn = {
   },
 };
 
+// Compte à rebours de 35 secondes entre l'appel de l'athlète et le premier
+// mouvement après le salut (WKF Kata Competition Rules, Art. 6.6).
+const DUREE_APPEL_SECONDES = 35;
+
+function CompteARebours({ departAt }) {
+  const [maintenant, setMaintenant] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setMaintenant(Date.now()), 250);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!departAt) return null;
+
+  const ecouleSecondes = (maintenant - new Date(departAt).getTime()) / 1000;
+  const restant = Math.ceil(DUREE_APPEL_SECONDES - ecouleSecondes);
+
+  if (restant <= 0) return null;
+
+  return (
+    <Typography
+      sx={{
+        mt: 1,
+        fontWeight: 900,
+        fontSize: "1.4rem",
+        color: restant <= 10 ? "#ef4444" : "#f0a500",
+      }}
+    >
+      {restant}s
+    </Typography>
+  );
+}
+
 // Animation de zoom pour le score
 const zoomIn = {
   initial: { scale: 0.8, opacity: 0 },
@@ -378,8 +411,9 @@ export default function VuePubliqueKata() {
                     {enCours?.ordre ?? "—"}
                   </Typography>
                   <Typography color={alpha(T.text, 0.7)}>
-                    Kata : {enCours.inscription?.kata ?? "—"}
+                    Kata : {enCours.kata?.nom ?? "—"}
                   </Typography>
+                  <CompteARebours departAt={enCours.updated_at} />
                 </Paper>
               </motion.div>
             ) : (
@@ -480,7 +514,7 @@ export default function VuePubliqueKata() {
                   {nextAthlete?.ordre ?? "—"}
                 </Typography>
                 <Typography color={alpha(T.text, 0.7)}>
-                  Kata : {nextAthlete.inscription?.kata ?? "—"}
+                  Kata : {nextAthlete.kata?.nom ?? "—"}
                 </Typography>
               </Paper>
             </motion.div>

@@ -304,9 +304,9 @@ const AthleteEnCours = ({ enCours, notes, nbJuges }) => {
               height: 24,
             }}
           />
-          {enCours?.inscription?.kata && (
+          {enCours?.kata?.nom && (
             <Chip
-              label={enCours.inscription.kata ?? enCours.inscription.kata}
+              label={enCours.kata.nom}
               size="small"
               sx={{
                 bgcolor: `${T.warning}12`,

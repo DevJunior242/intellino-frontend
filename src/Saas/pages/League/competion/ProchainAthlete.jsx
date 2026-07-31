@@ -178,7 +178,7 @@ export default function ProchainAthlete({ nextAthlete, compact = false }) {
               </Stack>
 
               {/* Kata */}
-              {nextAthlete?.inscription?.kata && (
+              {nextAthlete?.kata?.nom && (
                 <Stack direction="row" alignItems="center" gap={0.5}>
                   <SportsMartialArts
                     sx={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}
@@ -190,8 +190,7 @@ export default function ProchainAthlete({ nextAthlete, compact = false }) {
                       fontSize: compact ? "0.7rem" : "0.82rem",
                     }}
                   >
-                    {nextAthlete.inscription.kata ??
-                      nextAthlete.inscription.kata}
+                    {nextAthlete.kata.nom}
                   </Typography>
                 </Stack>
               )}
