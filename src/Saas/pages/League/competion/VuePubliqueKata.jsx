@@ -110,25 +110,6 @@ function CompteARebours({ departAt }) {
   );
 }
 
-// Animation de zoom pour le score
-const zoomIn = {
-  initial: { scale: 0.8, opacity: 0 },
-  animate: {
-    scale: 1,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 150, damping: 10 },
-  },
-};
-
-// Animation de défilement pour le classement
-const scrollIn = {
-  initial: { x: -50, opacity: 0 },
-  animate: {
-    x: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100, damping: 10 },
-  },
-};
 
 // Animation de fond (dégradé dynamique)
 const gradientAnimation = keyframes`
@@ -221,64 +202,23 @@ export default function VuePubliqueKata() {
     };
   }, [fetchVuePublique, fetchCombat, configId]);
 
-  // Calcul des notes avec statut (éliminées ou non)
-  const getNotesAvecStatut = useCallback((notes = [], nbJuges) => {
-    if (notes.length < nbJuges) {
-      return notes.map((n) => ({ ...n, elimine: false }));
-    }
-
-    const sorted = [...notes].sort((a, b) => a.valeur - b.valeur);
-    const eliminer = nbJuges === 7 ? 2 : 1;
-    const mins = sorted.slice(0, eliminer).map((n) => n.valeur);
-    const maxs = sorted.slice(-eliminer).map((n) => n.valeur);
-
-    let minsLeft = eliminer;
-    let maxsLeft = eliminer;
-
-    return notes.map((n) => {
-      if (minsLeft > 0 && mins.includes(n.valeur)) {
-        minsLeft--;
-        return { ...n, elimine: true };
-      }
-      if (maxsLeft > 0 && maxs.includes(n.valeur)) {
-        maxsLeft--;
-        return { ...n, elimine: true };
-      }
-      return { ...n, elimine: false };
-    });
-  }, []);
 
   // Données mémoïsées
-  const { enCours, score, classement, nbJuges, notesAvecStatut } =
-    useMemo(() => {
-      if (!data) {
-        return {
-          enCours: null,
-          notes: [],
-          score: null,
-          classement: [],
-          nbJuges: 5,
-          eliminer: 1,
-          notesAvecStatut: [],
-        };
-      }
-
-      const nbJuges = data?.config?.juges_option || 5;
-      const eliminer = nbJuges === 7 ? 2 : 1;
-      const notesAvecStatut = getNotesAvecStatut(data?.notes || [], nbJuges);
-
+  const { enCours, nbJuges, notes } = useMemo(() => {
+    if (!data) {
       return {
-        enCours: data?.enCours,
-        notes: data?.notes || [],
-        score: data?.score,
-        classement: data?.classement || [],
-        nbJuges,
-        eliminer,
-        notesAvecStatut,
+        enCours: null,
+        notes: [],
+        nbJuges: 5,
       };
-    }, [data, getNotesAvecStatut]);
+    }
 
-  const medailles = ["🥇", "🥈", "🥉"];
+    return {
+      enCours: data?.enCours,
+      notes: data?.notes || [],
+      nbJuges: data?.config?.juges_option || 5,
+    };
+  }, [data]);
 
   if (loading)
     return (
@@ -567,9 +507,8 @@ export default function VuePubliqueKata() {
               flexWrap="wrap"
             >
               {Array.from({ length: nbJuges }, (_, i) => {
-                const note = notesAvecStatut[i];
+                const note = notes[i];
                 const aNote = !!note;
-                const elimine = note?.elimine;
 
                 return (
                   <motion.div
@@ -589,17 +528,13 @@ export default function VuePubliqueKata() {
                         maxWidth: 140,
                         borderRadius: 3,
                         textAlign: "center",
-                        bgcolor: elimine
-                          ? alpha(theme.palette.error.main, 0.75)
-                          : aNote
-                            ? alpha(theme.palette.success.main, 0.75)
-                            : T.surfaceHigh,
+                        bgcolor: aNote
+                          ? alpha(theme.palette.success.main, 0.75)
+                          : T.surfaceHigh,
                         border: "1px solid",
-                        borderColor: elimine
-                          ? theme.palette.error.main
-                          : aNote
-                            ? theme.palette.success.main
-                            : T.border,
+                        borderColor: aNote
+                          ? theme.palette.success.main
+                          : T.border,
                         transition: "all 0.3s",
                         boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
                       }}
@@ -612,36 +547,20 @@ export default function VuePubliqueKata() {
                       </Typography>
 
                       {aNote ? (
-                        <>
-                          <motion.div
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: i * 0.1 }}
+                        <motion.div
+                          initial={{ scale: 0.8 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: i * 0.1 }}
+                        >
+                          <Typography
+                            variant="h4"
+                            fontWeight="900"
+                            color="white"
+                            sx={{ mt: 1 }}
                           >
-                            <Typography
-                              variant="h4"
-                              fontWeight="900"
-                              color="white"
-                              sx={{
-                                textDecoration: elimine
-                                  ? "line-through"
-                                  : "none",
-                                opacity: elimine ? 0.6 : 1,
-                                mt: 1,
-                              }}
-                            >
-                              {note.valeur.toFixed(1)}
-                            </Typography>
-                          </motion.div>
-                          {elimine && (
-                            <Typography
-                              variant="caption"
-                              color={theme.palette.error.light}
-                            >
-                              éliminé
-                            </Typography>
-                          )}
-                        </>
+                            {note.valeur.toFixed(1)}
+                          </Typography>
+                        </motion.div>
                       ) : (
                         <Typography
                           variant="h4"
@@ -657,125 +576,6 @@ export default function VuePubliqueKata() {
               })}
             </Stack>
           </motion.div>
-
-          {/* Score final */}
-          <motion.div variants={staggerItem}>
-            <motion.div initial="initial" animate="animate" variants={zoomIn}>
-              <Paper
-                sx={{
-                  p: 3,
-                  mb: 3,
-                  borderRadius: 3,
-                  bgcolor: score ? T.surfaceHigh : T.bg,
-                  textAlign: "center",
-                  boxShadow: score
-                    ? "0 6px 25px rgba(74, 63, 140, 0.5)"
-                    : "0 4px 20px rgba(0, 0, 0, 0.3)",
-                  border: score ? `1px solid ${T.accentDark}` : "none",
-                  transition: "all 0.5s",
-                }}
-              >
-                {score ? (
-                  <>
-                    <Typography
-                      variant="body2"
-                      color={alpha(T.text, 0.6)}
-                      mb={1}
-                    >
-                      Score final (
-                      {notesAvecStatut
-                        .filter((n) => !n.elimine)
-                        .map((n) => n.valeur.toFixed(1))
-                        .join(" + ")}
-                      )
-                    </Typography>
-                    <Typography variant="h2" fontWeight="900" color={T.accent}>
-                      {score}
-                    </Typography>
-                  </>
-                ) : (
-                  <Typography color={alpha(T.text, 0.4)}>
-                    Score final — en attente des notes
-                  </Typography>
-                )}
-              </Paper>
-            </motion.div>
-          </motion.div>
-
-          {/* Classement provisoire */}
-          {classement.length > 0 && (
-            <motion.div variants={staggerItem}>
-              <Typography
-                variant="body2"
-                color={alpha(T.text, 0.5)}
-                textAlign="center"
-                mb={1.5}
-              >
-                Classement provisoire
-              </Typography>
-
-              <Stack spacing={1}>
-                {classement.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial="initial"
-                    animate="animate"
-                    variants={scrollIn}
-                    custom={index}
-                    whileHover={{
-                      x: 5,
-                      boxShadow: "0 8px 25px rgba(218, 165, 32, 0.4)",
-                    }}
-                  >
-                    <Paper
-                      sx={{
-                        px: 2.5,
-                        py: 1.5,
-                        borderRadius: 3,
-                        bgcolor: index === 0 ? alpha(T.accent, 0.12) : T.surfaceHigh,
-                        border: "1px solid",
-                        borderColor: index === 0 ? T.accent : T.border,
-                        boxShadow:
-                          index === 0
-                            ? "0 6px 20px rgba(218, 165, 32, 0.3)"
-                            : "0 4px 10px rgba(0, 0, 0, 0.2)",
-                      }}
-                    >
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                      >
-                        <Stack direction="row" alignItems="center" gap={2}>
-                          <Typography fontSize={20}>
-                            {medailles[index] || `${index + 1}.`}
-                          </Typography>
-                          <Box>
-                            <Typography fontWeight="bold" color={T.text}>
-                              {item.athlete}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color={alpha(T.text, 0.5)}
-                            >
-                              {item.organisateur}
-                            </Typography>
-                          </Box>
-                        </Stack>
-                        <Typography
-                          variant="h6"
-                          fontWeight="bold"
-                          color={index === 0 ? T.accent : T.text}
-                        >
-                          {item.score}
-                        </Typography>
-                      </Stack>
-                    </Paper>
-                  </motion.div>
-                ))}
-              </Stack>
-            </motion.div>
-          )}
 
           {/* Tableau éliminatoire */}
           <motion.div variants={staggerItem}>

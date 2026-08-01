@@ -23,7 +23,6 @@ export default function NotesProgress({
   const T = useCompetitionTheme();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [score, setScore] = useState(null);
 
   const fetchNotes = useCallback(async () => {
     if (!ordrePassageId) return;
@@ -35,7 +34,6 @@ export default function NotesProgress({
       const notesData = res?.data?.data || [];
       setNotes(notesData);
       onNotesChange(notesData);
-      setScore(res?.data?.score ?? null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -46,7 +44,6 @@ export default function NotesProgress({
   useEffect(() => {
     setLoading(true);
     setNotes([]);
-    setScore(null);
     fetchNotes();
   }, [ordrePassageId]);
 
@@ -261,13 +258,13 @@ export default function NotesProgress({
         })}
       </Stack>
 
-      {/* Score final */}
+      {/* Confirmation de fin de notation */}
       {toutesRecues && (
         <Fade in timeout={500}>
           <Box
             sx={{
               mt: 2.5,
-              p: { xs: 2, sm: 2.5 },
+              p: { xs: 1.5, sm: 2 },
               background: "linear-gradient(135deg, #22c55e, #16a34a)",
               borderRadius: 3,
               textAlign: "center",
@@ -275,24 +272,12 @@ export default function NotesProgress({
           >
             <Typography
               sx={{
-                color: "rgba(255,255,255,0.8)",
-                fontSize: "0.75rem",
-                mb: 0.5,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Score final (min/max éliminés)
-            </Typography>
-            <Typography
-              sx={{
                 color: "white",
-                fontSize: { xs: "2rem", sm: "2.5rem" },
-                fontWeight: 900,
-                lineHeight: 1,
+                fontSize: "0.85rem",
+                fontWeight: 700,
               }}
             >
-              {score}
+              Toutes les notes reçues
             </Typography>
           </Box>
         </Fade>
