@@ -389,11 +389,6 @@ const AppRoutes = () => {
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
-        <Route path="/public/tatami/:configId" element={<VuePubliqueKata />} />
-        <Route
-          path="/public/tatami/:configId/kumite"
-          element={<VuePubliqueKumite />}
-        />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQSection />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
@@ -407,6 +402,14 @@ const AppRoutes = () => {
         <Route path="/403" element={<Forbidden />} />
         <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/* Écrans publics projetés en salle : pas de Navbar/Footer du site,
+          uniquement le bouton de thème dédié (PublicDisplayThemeProvider). */}
+      <Route path="/public/tatami/:configId" element={<VuePubliqueKata />} />
+      <Route
+        path="/public/tatami/:configId/kumite"
+        element={<VuePubliqueKumite />}
+      />
     </Routes>
   );
 };
