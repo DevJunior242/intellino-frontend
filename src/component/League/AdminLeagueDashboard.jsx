@@ -268,14 +268,14 @@ function AdminLeagueDashboard() {
       <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
         <StatCard
           label="Licenciés actifs"
-          value={stats.total_students || 1000}
+          value={stats.total_students}
           // sub="+12% vs saison préc."
           subColor="#4caf50"
           index={0}
         />
         <StatCard
           label="Clubs affiliés"
-          value={stats.total_afiliation || 30}
+          value={stats.total_afiliation}
           // sub="+3 nouveaux"
           subColor="#4caf50"
           index={1}
@@ -289,8 +289,8 @@ function AdminLeagueDashboard() {
         />
         <StatCard
           label="Recettes stages (encaissées)"
-          value={`${Number(finance.total_encaisse || 1500000).toLocaleString("fr-FR")} F`}
-          sub={`${Number(finance.total_en_attente || 500000).toLocaleString("fr-FR")} F en attente`}
+          value={`${Number(finance.total_encaisse).toLocaleString("fr-FR")} F`}
+          sub={`${Number(finance.total_en_attente).toLocaleString("fr-FR")} F en attente`}
           subColor="#ff9800"
           index={3}
         />
@@ -336,14 +336,14 @@ function AdminLeagueDashboard() {
           <Box sx={{ display: "flex", gap: 2, height: "100%" }}>
             <StatCard
               label="Grades décernés cette saison"
-              value={examStats.grades_decernes || 200}
+              value={examStats.grades_decernes}
               sub="Voir le détail →"
               subColor="#8b90a0"
               index={5}
             />
             <StatCard
               label="Taux de réussite"
-              value={`${examStats.taux_reussite || 50}%`}
+              value={`${examStats.taux_reussite}%`}
               sub="Voir le détail →"
               subColor="#8b90a0"
               index={6}

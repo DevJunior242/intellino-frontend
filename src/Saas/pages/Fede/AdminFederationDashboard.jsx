@@ -103,7 +103,7 @@ export default function AdminFederationDashboard() {
     },
     {
       title: "Recettes Globales",
-      value: `${stats?.total_recettes?.toLocaleString()} F CFA`,
+      value: `${(stats?.total_recettes ?? 0).toLocaleString()} F CFA`,
       icon: <PriceCheck fontSize="large" />,
       color: "#66bb6a",
     },

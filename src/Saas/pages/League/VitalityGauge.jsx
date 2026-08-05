@@ -8,9 +8,9 @@ import { Instance } from "../../../Api/Axios";
 export default function VitalityGauge() {
   const theme = useTheme();
   const [vitalityData, setVitalityData] = useState({
-    vitality_score: 10,
-    nouveaux_dan: 20,
-    taux_reussite: 50,
+    vitality_score: 0,
+    nouveaux_dan: 0,
+    taux_reussite: 0,
   });
   const { activeId, activeType } = UseAuth();
 

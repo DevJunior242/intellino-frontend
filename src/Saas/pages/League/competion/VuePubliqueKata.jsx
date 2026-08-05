@@ -110,7 +110,6 @@ function CompteARebours({ departAt }) {
   );
 }
 
-
 // Animation de fond (dégradé dynamique)
 const gradientAnimation = keyframes`
   0% { background-position: 0% 50%; }
@@ -202,7 +201,6 @@ export default function VuePubliqueKata() {
     };
   }, [fetchVuePublique, fetchCombat, configId]);
 
-
   // Données mémoïsées
   const { enCours, nbJuges, notes } = useMemo(() => {
     if (!data) {
@@ -240,65 +238,174 @@ export default function VuePubliqueKata() {
 
   return (
     <PublicDisplayThemeProvider>
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: T.bg,
-        p: { xs: 1, sm: 2, md: 3 },
-        background: isDark
-          ? `
+      <Box
+        sx={{
+          minHeight: "100vh",
+          bgcolor: T.bg,
+          p: { xs: 1, sm: 2, md: 3 },
+          background: isDark
+            ? `
             linear-gradient(45deg, #121217, #1a1a2e, #121217, #1a1a2e),
             linear-gradient(90deg, rgba(240,165,0,0.03), rgba(0, 180, 216, 0.03), rgba(240,165,0,0.03))
           `
-          : `
+            : `
             linear-gradient(45deg, #fcfcfc, #f0f1f6, #fcfcfc, #f0f1f6),
             linear-gradient(90deg, rgba(240,165,0,0.05), rgba(0, 180, 216, 0.05), rgba(240,165,0,0.05))
           `,
-        backgroundSize: "400% 400%, 100% 100%",
-        animation: `${gradientAnimation} 20s ease infinite`,
-      }}
-    >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="content"
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          {/* Header compétition */}
-          {enCours && (
-            <motion.div variants={staggerItem}>
-              <Paper
-                sx={{
-                  p: 2.5,
-                  mb: 3,
-                  borderRadius: 3,
-                  bgcolor: T.surfaceHigh,
-                  textAlign: "center",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-                  border: "1px solid",
-                  borderColor: T.border,
-                }}
-              >
-                <Typography variant="h5" fontWeight="bold" color={T.accent}>
-                  {enCours?.inscription?.competition?.evenement?.nom ?? "—"} -{" "}
-                  {enCours?.inscription?.competition?.evenement?.lieu ?? "—"}
-                </Typography>
-                <Typography variant="h6" color={alpha(T.text, 0.7)} mt={0.5}>
-                  {enCours?.inscription?.competition?.category?.nom ?? "—"} (
-                  {enCours?.inscription?.competition?.category?.sexe ?? "—"})
-                </Typography>
-              </Paper>
-            </motion.div>
-          )}
+          backgroundSize: "400% 400%, 100% 100%",
+          animation: `${gradientAnimation} 20s ease infinite`,
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="content"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            {/* Header compétition */}
+            {enCours && (
+              <motion.div variants={staggerItem}>
+                <Paper
+                  sx={{
+                    p: 2.5,
+                    mb: 3,
+                    borderRadius: 3,
+                    bgcolor: T.surfaceHigh,
+                    textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                    border: "1px solid",
+                    borderColor: T.border,
+                  }}
+                >
+                  <Typography variant="h5" fontWeight="bold" color={T.accent}>
+                    {enCours?.inscription?.competition?.evenement?.nom ?? "—"} -{" "}
+                    {enCours?.inscription?.competition?.evenement?.lieu ?? "—"}
+                  </Typography>
+                  <Typography variant="h6" color="secondary" mt={0.5}>
+                    {enCours?.inscription?.competition?.category?.nom ?? "—"} (
+                    {enCours?.inscription?.competition?.category?.sexe ?? "—"})
+                  </Typography>
+                </Paper>
+              </motion.div>
+            )}
 
-          {/* Athlète en cours */}
-          <motion.div variants={staggerItem}>
-            {enCours ? (
+            {/* Athlète en cours */}
+            <motion.div variants={staggerItem}>
+              {enCours ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 80 }}
+                >
+                  <Paper
+                    sx={{
+                      p: 3,
+                      mb: 3,
+                      borderRadius: 4,
+                      textAlign: "center",
+                      position: "relative",
+                      overflow: "hidden",
+                      background: isDark
+                        ? `
+                        linear-gradient(
+                          135deg,
+                          #050505 0%,
+                          #111111 25%,
+                          #1a1200 60%,
+                          #3b2a00 100%
+                        )
+                      `
+                        : `
+                        linear-gradient(
+                          135deg,
+                          #ffffff 0%,
+                          #fffaf0 25%,
+                          #fff3d6 60%,
+                          #ffe6a8 100%
+                        )
+                      `,
+                      border: "1px solid rgba(240,165,0,0.45)",
+                      boxShadow: `
+                      0 0 12px rgba(240,165,0,0.18),
+                      0 8px 30px rgba(0,0,0,0.75)
+                    `,
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        inset: 0,
+                        background: `
+                        linear-gradient(
+                          120deg,
+                          transparent 20%,
+                          rgba(255,215,0,0.08) 50%,
+                          transparent 80%
+                        )
+                      `,
+                        pointerEvents: "none",
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color={T.accent}
+                      fontWeight="bold"
+                      letterSpacing={2}
+                    >
+                      EN COURS
+                    </Typography>
+                    <motion.div {...pulse}>
+                      <Typography
+                        variant="h3"
+                        fontWeight="900"
+                        color="primary.main"
+                        mt={1}
+                      >
+                        {enCours?.inscription?.athlete?.fullname ?? "—"}
+                      </Typography>
+                    </motion.div>
+                    <Typography color={alpha(T.text, 0.7)} mt={0.5}>
+                      {enCours?.inscription?.organisateur?.name ?? "—"} ·
+                      Passage N°
+                      {enCours?.ordre ?? "—"}
+                    </Typography>
+                    <Typography color={alpha(T.text, 0.7)}>
+                      Kata : {enCours.kata?.nom ?? "—"}
+                    </Typography>
+                    <CompteARebours departAt={enCours.updated_at} />
+                  </Paper>
+                </motion.div>
+              ) : (
+                <Paper
+                  sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 3,
+                    bgcolor: T.surfaceHigh,
+                    textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                  }}
+                >
+                  <Typography color={alpha(T.text, 0.5)}>
+                    En attente du prochain athlète...
+                  </Typography>
+                </Paper>
+              )}
+            </motion.div>
+
+            {/* Duel en cours (adversaire, étape, phase Kata/Bunkai) */}
+            {enCours && (
+              <motion.div variants={staggerItem}>
+                <DuelKataEnCours passage={enCours} />
+              </motion.div>
+            )}
+
+            {/* Prochain athlète */}
+            {nextAthlete && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 80 }}
+                initial="initial"
+                animate="animate"
+                variants={slideIn}
               >
                 <Paper
                   sx={{
@@ -310,111 +417,6 @@ export default function VuePubliqueKata() {
                     overflow: "hidden",
                     background: isDark
                       ? `
-                        linear-gradient(
-                          135deg,
-                          #050505 0%,
-                          #111111 25%,
-                          #1a1200 60%,
-                          #3b2a00 100%
-                        )
-                      `
-                      : `
-                        linear-gradient(
-                          135deg,
-                          #ffffff 0%,
-                          #fffaf0 25%,
-                          #fff3d6 60%,
-                          #ffe6a8 100%
-                        )
-                      `,
-                    border: "1px solid rgba(240,165,0,0.45)",
-                    boxShadow: `
-                      0 0 12px rgba(240,165,0,0.18),
-                      0 8px 30px rgba(0,0,0,0.75)
-                    `,
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      inset: 0,
-                      background: `
-                        linear-gradient(
-                          120deg,
-                          transparent 20%,
-                          rgba(255,215,0,0.08) 50%,
-                          transparent 80%
-                        )
-                      `,
-                      pointerEvents: "none",
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    color={T.accent}
-                    fontWeight="bold"
-                    letterSpacing={2}
-                  >
-                    EN COURS
-                  </Typography>
-                  <motion.div {...pulse}>
-                    <Typography
-                      variant="h3"
-                      fontWeight="900"
-                      color="primary.main"
-                      mt={1}
-                    >
-                      {enCours?.inscription?.athlete?.fullname ?? "—"}
-                    </Typography>
-                  </motion.div>
-                  <Typography color={alpha(T.text, 0.7)} mt={0.5}>
-                    {enCours?.inscription?.organisateur?.name ?? "—"} · Passage
-                    N°
-                    {enCours?.ordre ?? "—"}
-                  </Typography>
-                  <Typography color={alpha(T.text, 0.7)}>
-                    Kata : {enCours.kata?.nom ?? "—"}
-                  </Typography>
-                  <CompteARebours departAt={enCours.updated_at} />
-                </Paper>
-              </motion.div>
-            ) : (
-              <Paper
-                sx={{
-                  p: 3,
-                  mb: 3,
-                  borderRadius: 3,
-                  bgcolor: T.surfaceHigh,
-                  textAlign: "center",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-                }}
-              >
-                <Typography color={alpha(T.text, 0.5)}>
-                  En attente du prochain athlète...
-                </Typography>
-              </Paper>
-            )}
-          </motion.div>
-
-          {/* Duel en cours (adversaire, étape, phase Kata/Bunkai) */}
-          {enCours && (
-            <motion.div variants={staggerItem}>
-              <DuelKataEnCours passage={enCours} />
-            </motion.div>
-          )}
-
-          {/* Prochain athlète */}
-          {nextAthlete && (
-            <motion.div initial="initial" animate="animate" variants={slideIn}>
-              <Paper
-                sx={{
-                  p: 3,
-                  mb: 3,
-                  borderRadius: 4,
-                  textAlign: "center",
-                  position: "relative",
-                  overflow: "hidden",
-                  background: isDark
-                    ? `
                       linear-gradient(
                         135deg,
                         #001a1a 0%,
@@ -423,7 +425,7 @@ export default function VuePubliqueKata() {
                         #004444 100%
                       )
                     `
-                    : `
+                      : `
                       linear-gradient(
                         135deg,
                         #ffffff 0%,
@@ -432,16 +434,16 @@ export default function VuePubliqueKata() {
                         #c3ecf5 100%
                       )
                     `,
-                  border: "1px solid rgba(0, 180, 216, 0.45)",
-                  boxShadow: `
+                    border: "1px solid rgba(0, 180, 216, 0.45)",
+                    boxShadow: `
                     0 0 12px rgba(0, 180, 216, 0.18),
                     0 8px 30px rgba(0,0,0,0.75)
                   `,
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    inset: 0,
-                    background: `
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      inset: 0,
+                      background: `
                       linear-gradient(
                         120deg,
                         transparent 20%,
@@ -449,142 +451,142 @@ export default function VuePubliqueKata() {
                         transparent 80%
                       )
                     `,
-                    pointerEvents: "none",
-                  },
-                }}
-              >
-                <motion.div
-                  animate={{
-                    opacity: [0.8, 1, 0.8],
+                      pointerEvents: "none",
+                    },
                   }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <Typography
-                    variant="caption"
-                    color={theme.palette.info.main}
-                    fontWeight="bold"
-                    letterSpacing={2}
-                  >
-                    PROCHAIN ATHLÈTE
-                  </Typography>
-                </motion.div>
-                <Typography
-                  variant="h3"
-                  fontWeight="900"
-                  color={theme.palette.info.main}
-                  mt={1}
-                >
-                  {nextAthlete?.inscription?.athlete?.fullname ?? "—"}
-                </Typography>
-                <Typography color={alpha(T.text, 0.7)} mt={0.5}>
-                  {nextAthlete?.inscription?.organisateur?.name ?? "—"} ·
-                  Passage N°
-                  {nextAthlete?.ordre ?? "—"}
-                </Typography>
-                <Typography color={alpha(T.text, 0.7)}>
-                  Kata : {nextAthlete.kata?.nom ?? "—"}
-                </Typography>
-              </Paper>
-            </motion.div>
-          )}
-
-          {/* Notes des juges */}
-          <motion.div variants={staggerItem}>
-            <Typography
-              variant="body2"
-              color={alpha(T.text, 0.5)}
-              textAlign="center"
-              mb={1.5}
-            >
-              Notes des juges
-            </Typography>
-
-            <Stack
-              direction="row"
-              spacing={1.5}
-              mb={3}
-              justifyContent="center"
-              flexWrap="wrap"
-            >
-              {Array.from({ length: nbJuges }, (_, i) => {
-                const note = notes[i];
-                const aNote = !!note;
-
-                return (
                   <motion.div
-                    key={i}
-                    initial="initial"
-                    animate="animate"
-                    variants={bounceIn}
-                    custom={i}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    animate={{
+                      opacity: [0.8, 1, 0.8],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <Paper
-                      sx={{
-                        p: 2,
-                        minWidth: 110,
-                        flex: 1,
-                        maxWidth: 140,
-                        borderRadius: 3,
-                        textAlign: "center",
-                        bgcolor: aNote
-                          ? alpha(theme.palette.success.main, 0.75)
-                          : T.surfaceHigh,
-                        border: "1px solid",
-                        borderColor: aNote
-                          ? theme.palette.success.main
-                          : T.border,
-                        transition: "all 0.3s",
-                        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-                      }}
+                    <Typography
+                      variant="caption"
+                      color={theme.palette.info.main}
+                      fontWeight="bold"
+                      letterSpacing={2}
                     >
-                      <Typography
-                        variant="caption"
-                        color={alpha(T.text, 0.6)}
-                      >
-                        Juge {i + 1}
-                      </Typography>
+                      PROCHAIN ATHLÈTE
+                    </Typography>
+                  </motion.div>
+                  <Typography
+                    variant="h3"
+                    fontWeight="900"
+                    color={theme.palette.info.main}
+                    mt={1}
+                  >
+                    {nextAthlete?.inscription?.athlete?.fullname ?? "—"}
+                  </Typography>
+                  <Typography color={alpha(T.text, 0.7)} mt={0.5}>
+                    {nextAthlete?.inscription?.organisateur?.name ?? "—"} ·
+                    Passage N°
+                    {nextAthlete?.ordre ?? "—"}
+                  </Typography>
+                  <Typography color={alpha(T.text, 0.7)}>
+                    Kata : {nextAthlete.kata?.nom ?? "—"}
+                  </Typography>
+                </Paper>
+              </motion.div>
+            )}
 
-                      {aNote ? (
-                        <motion.div
-                          initial={{ scale: 0.8 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: i * 0.1 }}
+            {/* Notes des juges */}
+            <motion.div variants={staggerItem}>
+              <Typography
+                variant="body2"
+                color={alpha(T.text, 0.5)}
+                textAlign="center"
+                mb={1.5}
+              >
+                Notes des juges
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={1.5}
+                mb={3}
+                justifyContent="center"
+                flexWrap="wrap"
+              >
+                {Array.from({ length: nbJuges }, (_, i) => {
+                  const note = notes[i];
+                  const aNote = !!note;
+
+                  return (
+                    <motion.div
+                      key={i}
+                      initial="initial"
+                      animate="animate"
+                      variants={bounceIn}
+                      custom={i}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Paper
+                        sx={{
+                          p: 2,
+                          minWidth: 110,
+                          flex: 1,
+                          maxWidth: 140,
+                          borderRadius: 3,
+                          textAlign: "center",
+                          bgcolor: aNote
+                            ? alpha(theme.palette.success.main, 0.75)
+                            : T.surfaceHigh,
+                          border: "1px solid",
+                          borderColor: aNote
+                            ? theme.palette.success.main
+                            : T.border,
+                          transition: "all 0.3s",
+                          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color={alpha(T.text, 0.6)}
                         >
+                          Juge {i + 1}
+                        </Typography>
+
+                        {aNote ? (
+                          <motion.div
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                          >
+                            <Typography
+                              variant="h4"
+                              fontWeight="900"
+                              color="white"
+                              sx={{ mt: 1 }}
+                            >
+                              {note.valeur.toFixed(1)}
+                            </Typography>
+                          </motion.div>
+                        ) : (
                           <Typography
                             variant="h4"
-                            fontWeight="900"
-                            color="white"
-                            sx={{ mt: 1 }}
+                            color={alpha(T.text, 0.2)}
+                            mt={1}
                           >
-                            {note.valeur.toFixed(1)}
+                            —
                           </Typography>
-                        </motion.div>
-                      ) : (
-                        <Typography
-                          variant="h4"
-                          color={alpha(T.text, 0.2)}
-                          mt={1}
-                        >
-                          —
-                        </Typography>
-                      )}
-                    </Paper>
-                  </motion.div>
-                );
-              })}
-            </Stack>
-          </motion.div>
+                        )}
+                      </Paper>
+                    </motion.div>
+                  );
+                })}
+              </Stack>
+            </motion.div>
 
-          {/* Tableau éliminatoire */}
-          <motion.div variants={staggerItem}>
-            <BracketViewer configId={configId} />
+            {/* Tableau éliminatoire */}
+            <motion.div variants={staggerItem}>
+              <BracketViewer configId={configId} />
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </AnimatePresence>
-      <VainqueurOverlay combat={combat} onClose={fetchCombat} />
-    </Box>
+        </AnimatePresence>
+        {/* <VainqueurOverlay combat={combat} onClose={fetchCombat} /> */}
+      </Box>
     </PublicDisplayThemeProvider>
   );
 }
