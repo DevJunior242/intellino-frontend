@@ -469,6 +469,7 @@ export default function SeanceAdminPanelKata({
   errors,
   submitId,
   onRefresh,
+  onValidated,
 }) {
   const T = useCompetitionTheme();
   const [openModal, setOpenModal] = useState(false);
@@ -525,6 +526,7 @@ export default function SeanceAdminPanelKata({
     try {
       await Instance.post(`/api/seances/configs/${id}/valider`);
       setLocalError(null);
+      onValidated?.();
       onRefresh?.();
     } catch (err) {
       const errData = err.response?.data;
@@ -551,6 +553,7 @@ export default function SeanceAdminPanelKata({
       setFormatModalOpen(false);
       setSelectedFormat(null);
       setLocalError(null);
+      onValidated?.();
       onRefresh?.();
     } catch (err) {
       const errData = err.response?.data;

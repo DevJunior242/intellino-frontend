@@ -580,6 +580,14 @@ export default function JugePrincipalDashboard({ configs }) {
         errors={error}
         submitId={submitId}
         onRefresh={() => fetchTatamiActif(configSelectee.id, true)}
+        onValidated={() => {
+          setConfigSelectee((prev) =>
+            prev ? { ...prev, est_valide: true } : prev,
+          );
+          configSelecteeRef.current = configSelecteeRef.current
+            ? { ...configSelecteeRef.current, est_valide: true }
+            : configSelecteeRef.current;
+        }}
         onShowRepartition={() => setShowRepartition(false)}
       />
     );
