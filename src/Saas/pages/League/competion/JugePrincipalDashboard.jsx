@@ -575,6 +575,7 @@ export default function JugePrincipalDashboard({ configs }) {
         loadingAction={loadingAction}
         handleValider={handleValider}
         handleDesignerSuperviseur={handleDesignerSuperviseur}
+        handleRetirerSuperviseur={handleRetirerSuperviseur}
         success={success}
         errors={error}
         submitId={submitId}

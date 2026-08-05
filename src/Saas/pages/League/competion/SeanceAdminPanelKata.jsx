@@ -37,6 +37,7 @@ import {
   Star,
   CheckCircle,
   Warning,
+  Close,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { Instance } from "../../../../Api/Axios";
@@ -148,6 +149,7 @@ const ArbitreItem = ({
   loadingAction,
   posteAction,
   onDesignerSuperviseur,
+  onRetirerSuperviseur,
   onLibérerPoste,
   onOuvrirMenuPostes,
 }) => {
@@ -321,6 +323,28 @@ const ArbitreItem = ({
               </Button>
             </Tooltip>
           )}
+          {arbitre.est_superviseur && (
+            <Tooltip title="Retirer le rôle de superviseur">
+              <IconButton
+                size="small"
+                color="warning"
+                onClick={() =>
+                  onRetirerSuperviseur(
+                    config.id,
+                    arbitre.arbitre_competition_id,
+                  )
+                }
+                sx={{ width: 26, height: 26 }}
+                disabled={isLoadingChef}
+              >
+                {isLoadingChef ? (
+                  <CircularProgress size={10} />
+                ) : (
+                  <Close sx={{ fontSize: 14 }} />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
       </Stack>
     </Paper>
@@ -440,6 +464,7 @@ export default function SeanceAdminPanelKata({
   handleValider,
   loadingAction,
   handleDesignerSuperviseur,
+  handleRetirerSuperviseur,
   success,
   errors,
   submitId,
@@ -858,6 +883,7 @@ export default function SeanceAdminPanelKata({
               loadingAction={loadingAction}
               posteAction={posteAction}
               onDesignerSuperviseur={handleDesignerSuperviseur}
+              onRetirerSuperviseur={handleRetirerSuperviseur}
               onLibérerPoste={handleLibérerPoste}
               onOuvrirMenuPostes={handleOuvrirMenuPostes}
             />
