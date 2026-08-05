@@ -541,16 +541,16 @@ export default function ArbitreDashboard() {
         </Stack>
       </SCard>
 
-      {/* ── Décisions de superviseur (duel Kata, Art. 5.11/3.5 WKF) ── */}
+      {/* ── Décisions de superviseur (duel Kata, Art. 10/3.5 WKF) ── */}
       {(r?.superviseur ?? 0) > 0 && (
         <>
           <SectionLabel>Décisions en tant que superviseur (Kata)</SectionLabel>
           <Stack direction="row" gap={1.25} flexWrap="wrap">
             <MetricCard
               icon={Gavel}
-              label="Hantei tranchés"
+              label="Égalités tranchées"
               value={kd?.hantei_tranches ?? 0}
-              sub="égalités de vote"
+              sub="votes des juges à égalité"
               color={AMBER}
             />
             <MetricCard

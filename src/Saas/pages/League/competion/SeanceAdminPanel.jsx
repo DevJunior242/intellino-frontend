@@ -439,7 +439,10 @@ export default function SeanceAdminPanel({
           </motion.div>
         )}
 
-        {/* Vote des juges à égalité — le superviseur tranche (Art. 5.11 WKF) */}
+        {/* Vote des juges à égalité — aucun critère de départage n'existe
+            pour un duel en élimination directe (Annexe 4 WKF), la décision
+            revient au superviseur du tatami (Art. 10 : issue non couverte
+            par le règlement). */}
         {enHantei && (
           <motion.div
             initial="hidden"
@@ -460,7 +463,7 @@ export default function SeanceAdminPanel({
                 borderRadius: 2,
               }}
             >
-              Hantei — trancher l'égalité
+              Égalité des votes — décision du superviseur
             </Button>
           </motion.div>
         )}
@@ -495,9 +498,9 @@ export default function SeanceAdminPanel({
         )}
       </AnimatePresence>
 
-      {/* Dialog Hantei */}
+      {/* Dialog décision du superviseur (égalité des votes, Art. 10) */}
       <Dialog open={hanteiOpen} onClose={() => setHanteiOpen(false)}>
-        <DialogTitle>Trancher le Hantei</DialogTitle>
+        <DialogTitle>Égalité des votes — désigner le vainqueur</DialogTitle>
         <DialogContent>
           <RadioGroup
             value={hanteiCote}
