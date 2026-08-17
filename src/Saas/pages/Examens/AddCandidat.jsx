@@ -9,7 +9,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Stack,
 } from "@mui/material";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Instance } from "../../../Api/Axios";
@@ -18,6 +20,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
 import StudentAutocomplete from "../StudentAutocomplete";
+import StudentForm from "../Students/StudentForm";
 
 function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
   const [error, setError] = useState({});
@@ -31,6 +34,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
   const { activeId, activeType } = UseAuth();
 
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [nouvelAthleteOpen, setNouvelAthleteOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     student_id: "",
@@ -79,6 +83,7 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
   };
 
   return (
+    <>
     <Dialog
       open={open}
       // onClose={handleClose}
@@ -111,14 +116,26 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
             </Typography>
 
             <Divider sx={{ mb: 2 }} />
-            <StudentAutocomplete
-              activeId={activeId}
-              value={selectedStudent}
-              onChange={(val) => setSelectedStudent(val)}
-              hasError={hasError}
-              getError={getError}
-              label="Choisir un élève"
-            />
+            <Stack direction="row" gap={1} alignItems="flex-start">
+              <Box sx={{ flex: 1 }}>
+                <StudentAutocomplete
+                  activeId={activeId}
+                  value={selectedStudent}
+                  onChange={(val) => setSelectedStudent(val)}
+                  hasError={hasError}
+                  getError={getError}
+                  label="Choisir un élève"
+                />
+              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<PersonAddAlt1Icon />}
+                onClick={() => setNouvelAthleteOpen(true)}
+                sx={{ mt: 2, whiteSpace: "nowrap", textTransform: "none" }}
+              >
+                Nouvel athlète
+              </Button>
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Annuler</Button>
@@ -129,6 +146,24 @@ function AddCandidat({ open, handleClose, examenId, fetchExamen }) {
         </form>
       </Box>
     </Dialog>
+
+    {/* Créer un nouvel athlète sans quitter l'écran d'inscription */}
+    <Dialog
+      open={nouvelAthleteOpen}
+      onClose={() => setNouvelAthleteOpen(false)}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>Nouvel athlète</DialogTitle>
+      <DialogContent>
+        <StudentForm
+          onSuccess={() => {
+            setNouvelAthleteOpen(false);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
