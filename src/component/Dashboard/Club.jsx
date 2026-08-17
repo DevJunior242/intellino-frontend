@@ -12,6 +12,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Chip from "@mui/material/Chip";
 import PulseLoader from "react-spinners/PulseLoader";
+import { motion } from "framer-motion";
 import { Instance } from "../../Api/Axios";
 
 function Club() {
@@ -77,14 +78,16 @@ function Club() {
             key={club.id}
           >
             <Paper
+              component={motion.div}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.06 }}
               elevation={3}
               sx={{
                 p: 4,
                 textAlign: "center",
                 bgcolor: "background.default",
               }}
-              data-aos="fade-up"
-              data-aos-delay={index * 200}
             >
               {club.logo && (
                 <Avatar src={club.logo} sx={{ width: 100, height: 100 }} />

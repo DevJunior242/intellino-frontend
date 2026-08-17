@@ -208,6 +208,10 @@ function ExamenIndex() {
                 key={examen.id}
               >
                 <Paper
+                  component={motion.div}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.06 }}
                   elevation={4}
                   sx={{
                     p: 3,
@@ -221,8 +225,6 @@ function ExamenIndex() {
                     transition: "transform 0.2s",
                     "&:hover": { transform: "translateY(-5px)" },
                   }}
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100}
                   onClick={() => {
                     const routePrefix = isFederation
                       ? "/dashboard/federation/examen"

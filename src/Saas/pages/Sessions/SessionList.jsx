@@ -190,6 +190,10 @@ function SessionList() {
                 }}
               >
                 <Paper
+                  component={motion.div}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.06 }}
                   elevation={0}
                   sx={{
                     backgroundColor: "background.default",
@@ -209,8 +213,6 @@ function SessionList() {
                       boxShadow: 4,
                     },
                   }}
-                  data-aos="fade-up"
-                  data-aos-delay={index * 200}
                   onClick={() =>
                     navigate(
                       `/dashboard/session/${session.id}/show?organisateur_id=${session?.course?.organisateur_id}`,
