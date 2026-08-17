@@ -66,6 +66,13 @@ export default function NotesProgress({
   const progression = nbJuges > 0 ? (notes.length / nbJuges) * 100 : 0;
   const toutesRecues = notes.length === nbJuges && nbJuges > 0;
 
+  // Indexées par poste réel (pas par ordre d'arrivée) — sinon "Juge N" ne
+  // désigne pas le même juge que dans les autres écrans (public, etc.).
+  const notesParPoste = {};
+  for (const note of notes) {
+    if (note.poste != null) notesParPoste[note.poste] = note;
+  }
+
   if (loading) {
     return (
       <Paper
@@ -176,7 +183,7 @@ export default function NotesProgress({
       {/* Liste des postes */}
       <Stack spacing={0.75}>
         {Array.from({ length: nbJuges }, (_, i) => {
-          const note = notes[i];
+          const note = notesParPoste[i + 1];
           return (
             <Fade in key={i} timeout={300}>
               <Stack

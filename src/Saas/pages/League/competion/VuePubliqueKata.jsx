@@ -574,6 +574,19 @@ export default function VuePubliqueKata() {
                         >
                           Juge {i + 1}
                         </Typography>
+                        {ligne?.juge && (
+                          <Typography
+                            noWrap
+                            sx={{
+                              fontSize: "0.62rem",
+                              color: alpha(T.text, 0.45),
+                              maxWidth: 105,
+                              mx: "auto",
+                            }}
+                          >
+                            {ligne.juge}
+                          </Typography>
+                        )}
 
                         <Stack spacing={0.3} mt={0.5}>
                           <Typography
