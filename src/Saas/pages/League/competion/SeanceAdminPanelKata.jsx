@@ -46,6 +46,7 @@ import useCompetitionTheme from "./useCompetitionTheme";
 import DuelKataEnCours from "./DuelKataEnCours";
 import BracketViewer from "./BracketViewer";
 import VainqueurOverlay from "./VainqueurOverlay";
+import PodiumViewer from "./PodiumViewer";
 import echo from "../../../../echo";
 
 const AthleteCard = ({ enCours, config, notes }) => {
@@ -829,7 +830,13 @@ export default function SeanceAdminPanelKata({
       {nextAthlete ? (
         <ProchainAthlete nextAthlete={nextAthlete} compact />
       ) : (
-        <Typography color="text.secondary">Aucun athlète en attente</Typography>
+        <>
+          <Typography color="text.secondary">Aucun athlète en attente</Typography>
+          {/* Vainqueur dès qu'il est connu, sans passer par la vue publique —
+              PodiumViewer affiche déjà proprement "aucun résultat" tant que
+              rien n'est encore décidé. */}
+          <PodiumViewer configId={config.id} />
+        </>
       )}
       {/* ── Tableau éliminatoire ── */}
       {isValidated && (

@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import NotesProgress from "./NotesProgress";
 import ProchainAthlete from "./ProchainAthlete";
 import DuelKataEnCours from "./DuelKataEnCours";
+import PodiumViewer from "./PodiumViewer";
 import echo from "../../../../echo";
 
 const COMBAT_STATUS_HANTEI = 3;
@@ -294,9 +295,15 @@ export default function SeanceAdminPanel({
           ) : nextAthlete ? (
             <ProchainAthlete nextAthlete={nextAthlete} compact />
           ) : (
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              Aucun athlète en attente
-            </Typography>
+            <>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                Aucun athlète en attente
+              </Typography>
+              {/* Vainqueur dès qu'il est connu, sans passer par la vue
+                  publique — PodiumViewer affiche déjà proprement "aucun
+                  résultat" tant que rien n'est encore décidé. */}
+              <PodiumViewer configId={config.id} />
+            </>
           )}
         </motion.div>
 

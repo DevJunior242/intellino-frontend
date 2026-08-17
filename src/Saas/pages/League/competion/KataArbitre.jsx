@@ -27,6 +27,7 @@ import { Instance } from "../../../../Api/Axios";
 import echo from "../../../../echo";
 import ProchainAthlete from "./ProchainAthlete";
 import DuelKataEnCours from "./DuelKataEnCours";
+import PodiumViewer from "./PodiumViewer";
 import useCompetitionTheme from "./useCompetitionTheme";
 import GavelIcon from "@mui/icons-material/Gavel";
 
@@ -755,7 +756,12 @@ const NoteConfirmee = ({ valeur }) => {
 };
 
 // ─── Aucune séance active ─────────────────────────────────────────────────────
-const AucuneSeance = () => {
+// S'affiche aussi bien avant le lancement de la séance qu'une fois le
+// tatami terminé — PodiumViewer gère déjà proprement le cas "rien à
+// afficher" (aucun résultat) quand le tournoi n'a pas encore de vainqueur,
+// donc pas besoin de distinguer les deux cas ici : l'arbitre voit le
+// vainqueur dès qu'il existe, sans avoir à ouvrir la vue publique.
+const AucuneSeance = ({ configId }) => {
   const T = useCompetitionTheme();
   return (
     <motion.div
@@ -807,6 +813,9 @@ const AucuneSeance = () => {
           />
         </Box>
       </Box>
+
+      {/* Podium — visible dès qu'un vainqueur existe, sans quitter cet écran */}
+      <PodiumViewer configId={configId} />
     </motion.div>
   );
 };
@@ -1000,7 +1009,7 @@ export default function KataArbitre({ config }) {
             </motion.div>
           ) : !enCours ? (
             <motion.div key="empty">
-              <AucuneSeance />
+              <AucuneSeance configId={config.id} />
             </motion.div>
           ) : (
             <motion.div key="content">
