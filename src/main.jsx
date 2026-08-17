@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import * as Sentry from "@sentry/react";
+import ErrorBoundary from "./component/ErrorBoundary.jsx";
 
 // Un déploiement pendant qu'un onglet est ouvert change les noms de fichiers
 // (hash Vite) : un import dynamique (route en lazy-loading) peut alors
@@ -30,9 +31,11 @@ const root = createRoot(container, {
 });
 root.render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
 );
 sessionStorage.removeItem(RELOAD_FLAG);

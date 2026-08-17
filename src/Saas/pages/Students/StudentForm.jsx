@@ -32,7 +32,14 @@ const StudentForm = ({ onSuccess } = {}) => {
   const [isOwnResponsible, setIsOwnResponsible] = useState(false);
   const [error, setError] = useState({});
   const hasError = (field) => !!error?.[field];
-  const getError = (field) => error?.[field]?.join(", ");
+  // error[field] est stocké comme une chaîne (voir le catch de handleSubmit,
+  // qui prend déjà backErrors[key][0]) — .join() plantait toute la page dès
+  // qu'une erreur de validation arrivait, puisqu'une chaîne n'a pas .join().
+  const getError = (field) => {
+    const val = error?.[field];
+    if (!val) return undefined;
+    return Array.isArray(val) ? val.join(", ") : val;
+  };
   const [success, setSuccess] = useState("");
   // État pour le Parent (affiché seulement si !isOwnResponsible)
   const [parentData, setParentData] = useState({
