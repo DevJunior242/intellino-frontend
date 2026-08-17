@@ -166,6 +166,14 @@ const getNavSections = (activeType) => {
             : "/dashboard/league/athletes/inscription",
           role: ["admin"],
         },
+        {
+          icon: <FactCheckIcon fontSize="small" />,
+          label: "Inscriptions aux épreuves",
+          to: isFederation
+            ? "/dashboard/federation/competition"
+            : "/dashboard/league/competition",
+          role: ["admin"],
+        },
       ],
     },
     {
