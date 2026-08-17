@@ -616,11 +616,12 @@ function PaymentLotCard({ lot, onConfirm, onReject, processing }) {
 function PaymentsToVerifySection({
   lots,
   loading,
+  error,
   onConfirm,
   onReject,
   processingId,
 }) {
-  const { ACCENT, ACCENT_SOFT, TEXT } = useLocalTheme();
+  const { ACCENT, ACCENT_SOFT, TEXT, MUTED, BORDER, SURFACE } = useLocalTheme();
   if (loading) {
     return (
       <Stack spacing={1.5} sx={{ mb: 3 }}>
@@ -629,8 +630,6 @@ function PaymentsToVerifySection({
     );
   }
 
-  if (lots.length === 0) return null;
-
   return (
     <Box sx={{ mb: 4 }}>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
@@ -638,31 +637,62 @@ function PaymentsToVerifySection({
         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: TEXT }}>
           Paiements à vérifier
         </Typography>
-        <Chip
-          label={lots.length}
-          size="small"
-          sx={{
-            bgcolor: ACCENT_SOFT,
-            color: ACCENT,
-            fontWeight: 700,
-            height: 20,
-            fontSize: "0.7rem",
-          }}
-        />
+        {lots.length > 0 && (
+          <Chip
+            label={lots.length}
+            size="small"
+            sx={{
+              bgcolor: ACCENT_SOFT,
+              color: ACCENT,
+              fontWeight: 700,
+              height: 20,
+              fontSize: "0.7rem",
+            }}
+          />
+        )}
       </Stack>
 
-      <Grid container spacing={2}>
-        {lots.map((lot) => (
-          <Grid item xs={12} sm={6} key={lot.id}>
-            <PaymentLotCard
-              lot={lot}
-              onConfirm={onConfirm}
-              onReject={onReject}
-              processing={processingId === lot.id}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      {error ? (
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            border: `1px solid ${BORDER}`,
+            bgcolor: SURFACE,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: "error.main" }}>
+            {error}
+          </Typography>
+        </Box>
+      ) : lots.length === 0 ? (
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            border: `1px solid ${BORDER}`,
+            bgcolor: SURFACE,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: MUTED }}>
+            Aucun paiement en attente de vérification pour le moment. Les
+            paiements déclarés par les clubs apparaîtront ici.
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          {lots.map((lot) => (
+            <Grid item xs={12} sm={6} key={lot.id}>
+              <PaymentLotCard
+                lot={lot}
+                onConfirm={onConfirm}
+                onReject={onReject}
+                processing={processingId === lot.id}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </Box>
   );
 }
@@ -687,6 +717,7 @@ export default function LicenceTypeIndex() {
   // Paiements déclarés en attente de vérification
   const [pendingLots, setPendingLots] = useState([]);
   const [loadingLots, setLoadingLots] = useState(true);
+  const [lotsError, setLotsError] = useState(null);
   const [processingLotId, setProcessingLotId] = useState(null);
 
   const [toast, setToast] = useState({
@@ -713,14 +744,18 @@ export default function LicenceTypeIndex() {
 
   const fetchPendingLots = useCallback(async () => {
     setLoadingLots(true);
+    setLotsError(null);
     try {
       const { data } = await Instance.get("/api/licence-payments", {
         params: { status: "declared" },
       });
       setPendingLots(data.data || []);
-      console.log(data.data);
-    } catch {
-      // silencieux : section secondaire, ne bloque pas le reste de la page
+    } catch (err) {
+      setPendingLots([]);
+      setLotsError(
+        err.response?.data?.message ||
+          "Impossible de charger les paiements à vérifier.",
+      );
     } finally {
       setLoadingLots(false);
     }
@@ -895,6 +930,7 @@ export default function LicenceTypeIndex() {
       <PaymentsToVerifySection
         lots={pendingLots}
         loading={loadingLots}
+        error={lotsError}
         onConfirm={handleConfirmLot}
         onReject={handleRejectLot}
         processingId={processingLotId}
