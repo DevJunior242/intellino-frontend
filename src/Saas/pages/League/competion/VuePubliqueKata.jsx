@@ -57,6 +57,16 @@ const pulse = {
   transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
 };
 
+// Couleurs des coins de combat (Aka rouge / Ao bleu) : identité fixe, indépendante du thème.
+const CORNER = { aka: "#ef4444", ao: "#3b82f6" };
+
+// Le capitaine d'une équipe Kata garde un athlete_id (contrainte BDD), donc
+// kata_team prime sur athlete ici, sinon une équipe s'affiche sous le nom de
+// son capitaine.
+function nomInscriptionCombat(inscription) {
+  return inscription?.kata_team?.nom ?? inscription?.athlete?.fullname ?? "—";
+}
+
 // Animation de glissement pour le prochain athlète
 const slideIn = {
   initial: { x: 100, opacity: 0 },
@@ -578,6 +588,115 @@ export default function VuePubliqueKata() {
                 })}
               </Stack>
             </motion.div>
+
+            {/* Résultat du duel — vote des juges (Art. 5.4.2/5.5.1 WKF : le
+                vainqueur est désigné à la majorité des votes, pas par un
+                score absolu) */}
+            {combat?.votes_aka != null && (
+              <motion.div variants={staggerItem}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 3,
+                    bgcolor: T.surfaceHigh,
+                    textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: alpha(T.text, 0.5),
+                      fontSize: "0.7rem",
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      mb: 1.5,
+                    }}
+                  >
+                    {combat.vainqueur_id
+                      ? "Résultat — vote des juges"
+                      : "Vote des juges à égalité — décision du superviseur en attente"}
+                  </Typography>
+
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={{ xs: 2, sm: 4 }}
+                  >
+                    <Box>
+                      <Typography
+                        sx={{
+                          color: CORNER.aka,
+                          fontWeight: 700,
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          mb: 0.5,
+                        }}
+                      >
+                        {nomInscriptionCombat(combat.inscription_aka)}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: CORNER.aka,
+                          fontWeight: 900,
+                          fontSize: { xs: "2rem", sm: "3rem" },
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {combat.votes_aka}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      sx={{
+                        color: alpha(T.text, 0.25),
+                        fontSize: "1.3rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      —
+                    </Typography>
+                    <Box>
+                      <Typography
+                        sx={{
+                          color: CORNER.ao,
+                          fontWeight: 700,
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          mb: 0.5,
+                        }}
+                      >
+                        {nomInscriptionCombat(combat.inscription_ao)}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: CORNER.ao,
+                          fontWeight: 900,
+                          fontSize: { xs: "2rem", sm: "3rem" },
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {combat.votes_ao}
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  {combat.vainqueur_id && (
+                    <Typography
+                      sx={{
+                        mt: 2,
+                        color: T.text,
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      Vainqueur :{" "}
+                      {combat.vainqueur_id === combat.inscription_aka_id
+                        ? nomInscriptionCombat(combat.inscription_aka)
+                        : nomInscriptionCombat(combat.inscription_ao)}
+                    </Typography>
+                  )}
+                </Paper>
+              </motion.div>
+            )}
 
             {/* Tableau éliminatoire */}
             <motion.div variants={staggerItem}>
