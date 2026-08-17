@@ -132,6 +132,20 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
     setEpreuves((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
+
+      // Une discipline "... équipe" (ex: "Kata équipe") implique
+      // Competition.est_equipe = true côté backend — sinon la logique équipe
+      // (Bunkai, 2 prestations par côté en finale, Art. 3.5 WKF) ne
+      // s'activerait jamais pour ces épreuves. Changer de discipline vers
+      // une variante individuelle réinitialise le indicateur.
+      if (field === "sub_discipline_id") {
+        const discNom = disciplines.find((d) => d.id === value)?.nom ?? "";
+        next[index].est_equipe = discNom.toLowerCase().includes("équipe");
+        // La catégorie choisie n'est plus forcément cohérente avec la
+        // nouvelle discipline — on la vide pour forcer un nouveau choix.
+        next[index].category_id = "";
+      }
+
       return next;
     });
   };
@@ -381,6 +395,17 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                 const hasError = Object.keys(errors).some((k) =>
                   k.startsWith(`ep_${index}`),
                 );
+                // Une catégorie n'est proposée que si elle est rattachée à
+                // la discipline choisie pour cette épreuve (ex: pas de
+                // catégorie "Kata équipe" sous une discipline "Kumite") —
+                // tant qu'aucune discipline n'est choisie, tout est affiché.
+                const categoriesFiltrees = epreuve.sub_discipline_id
+                  ? categories.filter((cat) =>
+                      cat.disciplines?.some(
+                        (d) => d.id === epreuve.sub_discipline_id,
+                      ),
+                    )
+                  : categories;
 
                 return (
                   <Card
@@ -448,13 +473,19 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                             helperText={
                               typeof errors[`ep_${index}_cat`] === "string"
                                 ? errors[`ep_${index}_cat`]
-                                : undefined
+                                : !epreuve.sub_discipline_id
+                                  ? "Choisissez d'abord une discipline"
+                                  : undefined
                             }
                           >
-                            {categories.length === 0 ? (
-                              <MenuItem disabled>Aucune catégorie</MenuItem>
+                            {categoriesFiltrees.length === 0 ? (
+                              <MenuItem disabled>
+                                {epreuve.sub_discipline_id
+                                  ? "Aucune catégorie pour cette discipline"
+                                  : "Aucune catégorie"}
+                              </MenuItem>
                             ) : (
-                              categories.map((cat) => {
+                              categoriesFiltrees.map((cat) => {
                                 const poidsLabel = cat.poids_max
                                   ? cat.poids_min
                                     ? `${Number(cat.poids_min)}-${Number(cat.poids_max)}kg`
@@ -598,7 +629,10 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                           />
                         </Grid>
 
-                        {/* Kata par équipe (Art. 3.5 WKF) */}
+                        {/* Kata par équipe (Art. 3.5 WKF) — case à cocher
+                            seulement pour la discipline "Kata" individuelle ;
+                            pour une discipline "... équipe" c'est déjà
+                            implicite (voir handleEpreuveChange). */}
                         {discNom?.toLowerCase() === "kata" && (
                           <Grid item xs={12}>
                             <FormControlLabel
@@ -615,6 +649,16 @@ export default function CreateEvenement({ open, handleClose, getEvenements }) {
                                 />
                               }
                               label="Kata par équipe (3-4 athlètes, Bunkai en finale)"
+                            />
+                          </Grid>
+                        )}
+                        {discNom?.toLowerCase().includes("équipe") && (
+                          <Grid item xs={12}>
+                            <Chip
+                              label="Épreuve par équipe (implicite pour cette discipline)"
+                              size="small"
+                              color="info"
+                              variant="outlined"
                             />
                           </Grid>
                         )}
