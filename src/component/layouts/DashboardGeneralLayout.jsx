@@ -8,7 +8,6 @@ import {
   ListItemIcon,
   ListItemText,
   Chip,
-  Badge,
   ThemeProvider,
   createTheme,
   useTheme,
@@ -29,6 +28,7 @@ import Settings from "@mui/icons-material/Settings";
 import { motion, AnimatePresence } from "framer-motion";
 import { UseAuth } from "../../Api/AuthContext";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
+import NotificationCenter from "../NotificationCenter";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -711,26 +711,7 @@ export default function DashboardGeneralLayout() {
                   })}
                 />
                 <ThemeToggle />
-                <Badge badgeContent={3} color="error">
-                  <Box
-                    sx={(theme) => ({
-                      width: 34,
-                      height: 34,
-                      borderRadius: 2,
-                      bgcolor: alpha(theme.palette.text.primary, 0.07),
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.text.primary, 0.12),
-                      },
-                      transition: "background 0.2s",
-                    })}
-                  >
-                    <Typography>🔔</Typography>
-                  </Box>
-                </Badge>
+                <NotificationCenter />
               </Box>
             </Box>
           </motion.div>
