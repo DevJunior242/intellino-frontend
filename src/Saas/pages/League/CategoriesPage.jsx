@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -11,6 +11,8 @@ import {
   TableHead,
   TableRow,
   Stack,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import CategoryForm from "./CategoryForm";
 import { UseAuth } from "../../../Api/AuthContext";
@@ -25,12 +27,21 @@ function formatTrancheAge(min, max) {
   return max >= 99 ? `${min} ans et +` : `${min}-${max} ans`;
 }
 
+// Onglets par discipline — "Kata" regroupe aussi "Kata équipe" (idem Kumite),
+// pour ne pas éclater individuel/équipe sur des onglets séparés.
+const TABS = [
+  { label: "Toutes", match: null },
+  { label: "Kata", match: "kata" },
+  { label: "Kumite", match: "kumite" },
+];
+
 export default function CategoriesPage() {
   const { activeId, activeType } = UseAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState(0);
   const handleCloseModal = () => {
     setOpenModal(false);
   };
@@ -59,6 +70,14 @@ export default function CategoriesPage() {
   useEffect(() => {
     if (activeId && activeType) getCategories();
   }, [getCategories, activeId, activeType]);
+
+  const filteredCategories = useMemo(() => {
+    const { match } = TABS[tab];
+    if (!match) return categories;
+    return categories.filter((cat) =>
+      cat.disciplines?.some((d) => d.toLowerCase().includes(match)),
+    );
+  }, [categories, tab]);
 
   if (loading) {
     return <ConfigSkeleton />;
@@ -109,10 +128,20 @@ export default function CategoriesPage() {
       >
         <Typography
           variant="h6"
-          sx={{ color: "text.primary", mb: 3, fontWeight: 600 }}
+          sx={{ color: "text.primary", mb: 1, fontWeight: 600 }}
         >
           Catégories d'âge
         </Typography>
+
+        <Tabs
+          value={tab}
+          onChange={(e, v) => setTab(v)}
+          sx={{ mb: 2, borderBottom: "1px solid", borderColor: "divider" }}
+        >
+          {TABS.map((t, i) => (
+            <Tab key={t.label} label={t.label} value={i} />
+          ))}
+        </Tabs>
 
         <TableContainer>
           <Table sx={{ minWidth: 650 }}>
@@ -135,7 +164,14 @@ export default function CategoriesPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories.map((row) => (
+              {filteredCategories.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ color: "text.secondary", py: 4 }}>
+                    Aucune catégorie {TABS[tab].match ? `pour ${TABS[tab].label}` : ""}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredCategories.map((row) => (
                 <TableRow
                   key={row.id}
                   sx={{
