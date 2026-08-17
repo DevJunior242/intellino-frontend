@@ -2,18 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
-import QuickActions from "../QuickActions";
-import ActivityFeed from "../ActivityFeed";
-import { motion } from "framer-motion";
 import { UseAuth } from "../../../Api/AuthContext";
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
 
 function PromoteCode() {
   const { activeId, invitationCode } = UseAuth();
@@ -75,17 +64,6 @@ function PromoteCode() {
           </Button>
         </Box>
       </Box>
-
-      <motion.div
-        variants={fadeUp}
-        custom={2}
-        initial="hidden"
-        animate="visible"
-      >
-        <ActivityFeed />
-
-        <QuickActions />
-      </motion.div>
     </Box>
   );
 }

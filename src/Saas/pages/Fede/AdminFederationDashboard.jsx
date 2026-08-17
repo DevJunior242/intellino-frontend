@@ -24,6 +24,8 @@ import { Instance } from "../../../Api/Axios";
 import LicenceRevenueChart from "./LicenceRevenueChart";
 import ClubsParLigueChart from "./ClubsParLigueChart";
 import PromoteCode from "./PromoteCode";
+import ActivityFeed from "../ActivityFeed";
+import QuickActions from "../QuickActions";
 
 // Animation de grille fluide
 const containerVariants = {
@@ -174,6 +176,10 @@ export default function AdminFederationDashboard() {
           </Typography>
         </Box>
       </Box>
+      <Box sx={{ m: 2 }}>
+        <PromoteCode />
+      </Box>
+
       {/* Grille Flex/Grid des Cartes KPI */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpiCards.map((card, idx) => (
@@ -329,7 +335,8 @@ export default function AdminFederationDashboard() {
       </Grid>
 
       <Box sx={{ m: 2, mt: 4 }}>
-        <PromoteCode />
+        <ActivityFeed />
+        <QuickActions />
       </Box>
     </Box>
   );
