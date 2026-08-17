@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { alpha, useTheme } from "@mui/material/styles";
 import { Instance } from "../../../Api/Axios";
@@ -297,6 +297,42 @@ export default function SubDisciplinePage() {
     { id: 13, nom: "Kata U14", age_min: 12, age_max: 13, sexe: "M", disciplines: ["Kata"] },
     { id: 14, nom: "Kata U14", age_min: 12, age_max: 13, sexe: "F", disciplines: ["Kata"] },
   ]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [usingSeed, setUsingSeed] = useState(true);
+
+  // Si la fédération a déjà des catégories enregistrées, on charge le vrai
+  // état actuel au lieu du seed — sinon revisiter cet écran pour modifier
+  // une catégorie déjà sauvegardée écraserait silencieusement ses vraies
+  // valeurs par celles du seed à la prochaine soumission. Le seed ne sert
+  // que pour une toute première configuration (aucune catégorie encore
+  // enregistrée pour cette saison).
+  useEffect(() => {
+    if (!activeId || !activeType) return;
+    Instance.get("/api/categories")
+      .then((res) => {
+        const existantes = res.data?.categories || [];
+        if (existantes.length > 0) {
+          setCategories(
+            existantes.map((c) => ({
+              id: c.id,
+              nom: c.nom,
+              age_min: c.age_min,
+              age_max: c.age_max,
+              sexe: c.sexe,
+              disciplines: c.disciplines || [],
+              poids_min: c.poids_min ?? "",
+              poids_max: c.poids_max ?? "",
+            })),
+          );
+          setUsingSeed(false);
+        }
+      })
+      .catch(() => {
+        // Pas de saison active ou erreur réseau : on garde le seed par défaut.
+      })
+      .finally(() => setLoadingCategories(false));
+  }, [activeId, activeType]);
+
   const [catErrors, setCatErrors] = useState({});
   const [newCat, setNewCat] = useState({
     nom: "",
@@ -307,6 +343,8 @@ export default function SubDisciplinePage() {
     poids_min: "",
     poids_max: "",
   });
+  // Catégorie en cours de modification (null = mode "ajout")
+  const [editingId, setEditingId] = useState(null);
 
   // Une catégorie rattachée au Kumite doit avoir des bornes de poids
   const needsPoids = (discNoms) =>
@@ -333,6 +371,20 @@ export default function SubDisciplinePage() {
     setNewDisc("");
   };
 
+  const resetNewCatForm = () => {
+    setNewCat({
+      nom: "",
+      age_min: "",
+      age_max: "",
+      sexe: "",
+      disciplines: [],
+      poids_min: "",
+      poids_max: "",
+    });
+    setEditingId(null);
+    setCatErrors({});
+  };
+
   const addCategory = (e) => {
     e?.preventDefault();
     const errs = {};
@@ -348,21 +400,38 @@ export default function SubDisciplinePage() {
       errs.poids = "Kumite : indiquer au moins un poids min ou max";
     setCatErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    setCategories((cs) => [...cs, { ...newCat, id: Date.now() }]);
+
+    if (editingId) {
+      // Mode modification : on remplace la catégorie en place, sans
+      // perturber sa position dans la liste.
+      setCategories((cs) =>
+        cs.map((c) => (c.id === editingId ? { ...newCat, id: editingId } : c)),
+      );
+    } else {
+      setCategories((cs) => [...cs, { ...newCat, id: Date.now() }]);
+    }
+    resetNewCatForm();
+  };
+
+  const startEditCategory = (cat) => {
     setNewCat({
-      nom: "",
-      age_min: "",
-      age_max: "",
-      sexe: "",
-      disciplines: [],
-      poids_min: "",
-      poids_max: "",
+      nom: cat.nom,
+      age_min: cat.age_min,
+      age_max: cat.age_max,
+      sexe: cat.sexe,
+      disciplines: cat.disciplines,
+      poids_min: cat.poids_min ?? "",
+      poids_max: cat.poids_max ?? "",
     });
+    setEditingId(cat.id);
     setCatErrors({});
   };
 
-  const removeCategory = (id) =>
+  const removeCategory = (id) => {
     setCategories((cs) => cs.filter((c) => c.id !== id));
+    // Si on supprime la catégorie en cours d'édition, on referme le formulaire.
+    if (editingId === id) resetNewCatForm();
+  };
 
   const toggleNewCatDisc = (id) =>
     setNewCat((c) => ({
@@ -610,9 +679,11 @@ export default function SubDisciplinePage() {
                 marginBottom: 12,
               }}
             >
-              Catégories Kata pré-remplies selon le règlement officiel WKF
-              (Annexe 2). Le Kumite n'a pas de catégories pré-remplies —
-              ajoutez les vôtres ci-dessous avec vos classes de poids.
+              {loadingCategories
+                ? "Chargement de vos catégories déjà enregistrées…"
+                : usingSeed
+                  ? "Catégories Kata pré-remplies selon le règlement officiel WKF (Annexe 2). Le Kumite n'a pas de catégories pré-remplies — ajoutez les vôtres ci-dessous avec vos classes de poids."
+                  : "Vos catégories déjà enregistrées. Cliquez « Modifier » sur une catégorie pour l'ajuster, ou ajoutez-en une nouvelle ci-dessous."}
             </div>
             {/* liste existante */}
             <AnimatePresence>
@@ -686,21 +757,39 @@ export default function SubDisciplinePage() {
                       {cat.disciplines.join(", ") || "—"}
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeCategory(cat.id)}
-                    style={{
-                      background: C.dangerDim,
-                      border: "none",
-                      color: C.danger,
-                      borderRadius: 6,
-                      padding: "5px 10px",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    Supprimer
-                  </button>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => startEditCategory(cat)}
+                      style={{
+                        background: editingId === cat.id ? C.accent : C.accentDim,
+                        border: "none",
+                        color: editingId === cat.id ? C.accentContrastText : C.accentLight,
+                        borderRadius: 6,
+                        padding: "5px 10px",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {editingId === cat.id ? "En cours…" : "Modifier"}
+                    </button>
+                    <button
+                      onClick={() => removeCategory(cat.id)}
+                      style={{
+                        background: C.dangerDim,
+                        border: "none",
+                        color: C.danger,
+                        borderRadius: 6,
+                        padding: "5px 10px",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                   <Err msg={error[`categories.${idx}.nom`]?.[0]} />
                   <Err msg={error[`categories.${idx}.sexe`]?.[0]} />
                   <Err msg={error[`categories.${idx}.age_min`]?.[0]} />
@@ -728,7 +817,7 @@ export default function SubDisciplinePage() {
                   marginBottom: 12,
                 }}
               >
-                + Nouvelle catégorie
+                {editingId ? "✎ Modifier la catégorie" : "+ Nouvelle catégorie"}
               </div>
               <div
                 style={{
@@ -851,25 +940,47 @@ export default function SubDisciplinePage() {
                 </div>
               )}
 
-              <motion.button
-                type="button"
-                onClick={addCategory}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  marginTop: 14,
-                  background: C.amberDim,
-                  border: `1px solid ${C.amber}`,
-                  color: C.amber,
-                  borderRadius: 8,
-                  padding: "9px 20px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                Ajouter la catégorie
-              </motion.button>
+              <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+                <motion.button
+                  type="button"
+                  onClick={addCategory}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    background: C.amberDim,
+                    border: `1px solid ${C.amber}`,
+                    color: C.amber,
+                    borderRadius: 8,
+                    padding: "9px 20px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  {editingId
+                    ? "Enregistrer les modifications"
+                    : "Ajouter la catégorie"}
+                </motion.button>
+                {editingId && (
+                  <motion.button
+                    type="button"
+                    onClick={resetNewCatForm}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${C.border}`,
+                      color: C.textMuted,
+                      borderRadius: 8,
+                      padding: "9px 20px",
+                      fontSize: 13,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    Annuler
+                  </motion.button>
+                )}
+              </div>
             </div>
           </SectionCard>
 
