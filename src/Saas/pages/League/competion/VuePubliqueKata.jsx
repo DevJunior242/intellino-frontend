@@ -143,7 +143,13 @@ const loadingIcon = {
   color: "#f0a500",
 };
 
-export default function VuePubliqueKata() {
+// Rendu à l'intérieur de PublicDisplayThemeProvider (voir export default
+// plus bas) — indispensable pour que useTheme()/useCompetitionTheme() lisent
+// bien la palette sombre dédiée à cet écran plutôt que le thème global de
+// l'appli : React résout le contexte selon la position dans l'arbre rendu,
+// pas selon l'ordre du code, donc ces hooks doivent s'exécuter dans un
+// composant enfant du Provider, pas dans celui qui le rend lui-même.
+function VuePubliqueKataContent() {
   const theme = useTheme();
   const T = useCompetitionTheme();
   const { configId } = useParams();
@@ -238,26 +244,17 @@ export default function VuePubliqueKata() {
     return parPoste;
   }, [votesJuges]);
 
-  if (loading)
-    return (
-      <PublicDisplayThemeProvider>
-        <LoadingKumite />
-      </PublicDisplayThemeProvider>
-    );
+  if (loading) return <LoadingKumite />;
 
   // Affichage en cas d'erreur
   if (error) {
-    return (
-      <PublicDisplayThemeProvider>
-        <ErrorBlock message={error} onRetry={fetchVuePublique} />
-      </PublicDisplayThemeProvider>
-    );
+    return <ErrorBlock message={error} onRetry={fetchVuePublique} />;
   }
 
   const isDark = theme.palette.mode === "dark";
 
   return (
-    <PublicDisplayThemeProvider>
+    <>
       <Box
         sx={{
           minHeight: "100vh",
@@ -744,6 +741,14 @@ export default function VuePubliqueKata() {
         </AnimatePresence>
         {/* <VainqueurOverlay combat={combat} onClose={fetchCombat} /> */}
       </Box>
+    </>
+  );
+}
+
+export default function VuePubliqueKata() {
+  return (
+    <PublicDisplayThemeProvider>
+      <VuePubliqueKataContent />
     </PublicDisplayThemeProvider>
   );
 }
