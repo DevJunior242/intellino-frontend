@@ -152,6 +152,7 @@ export default function VuePubliqueKata() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [combat, setCombat] = useState(null);
+  const [votesJuges, setVotesJuges] = useState([]);
 
   const fetchCombat = useCallback(async () => {
     if (!configId) return;
@@ -160,6 +161,7 @@ export default function VuePubliqueKata() {
         `/api/public/configs/${configId}/combat-en-cours`,
       );
       setCombat(res.data?.combat || null);
+      setVotesJuges(res.data?.votes_juges || []);
     } catch (err) {
       console.error(err);
     }
@@ -205,6 +207,7 @@ export default function VuePubliqueKata() {
     });
     channel.listen(".note.ajoutee", () => {
       fetchVuePublique();
+      fetchCombat();
     });
     return () => {
       echo.leaveChannel(`tatami.${configId}`);
@@ -212,21 +215,28 @@ export default function VuePubliqueKata() {
   }, [fetchVuePublique, fetchCombat, configId]);
 
   // Données mémoïsées
-  const { enCours, nbJuges, notes } = useMemo(() => {
+  const { enCours, nbJuges } = useMemo(() => {
     if (!data) {
       return {
         enCours: null,
-        notes: [],
         nbJuges: 5,
       };
     }
 
     return {
       enCours: data?.enCours,
-      notes: data?.notes || [],
       nbJuges: data?.config?.juges_option || 5,
     };
   }, [data]);
+
+  // Détail des votes par juge (AKA/AO côte à côte), indexé par poste.
+  const votesJugesParPoste = useMemo(() => {
+    const parPoste = {};
+    for (const ligne of votesJuges) {
+      if (ligne.poste != null) parPoste[ligne.poste] = ligne;
+    }
+    return parPoste;
+  }, [votesJuges]);
 
   if (loading)
     return (
@@ -500,7 +510,9 @@ export default function VuePubliqueKata() {
               </motion.div>
             )}
 
-            {/* Notes des juges */}
+            {/* Notes des juges — AKA et AO côte à côte pour chaque juge,
+                avec le vote de ce juge (Art. 5.4.2 : comparaison relative
+                de ses deux propres notes), façon feuille de match WKF. */}
             <motion.div variants={staggerItem}>
               <Typography
                 variant="body2"
@@ -519,8 +531,17 @@ export default function VuePubliqueKata() {
                 flexWrap="wrap"
               >
                 {Array.from({ length: nbJuges }, (_, i) => {
-                  const note = notes[i];
-                  const aNote = !!note;
+                  const ligne = votesJugesParPoste[i + 1];
+                  const noteAka = ligne?.note_aka;
+                  const noteAo = ligne?.note_ao;
+                  const vote = ligne?.vote ?? null;
+                  const aUneNote = noteAka != null || noteAo != null;
+                  const voteCouleur =
+                    vote === "aka"
+                      ? CORNER.aka
+                      : vote === "ao"
+                        ? CORNER.ao
+                        : T.border;
 
                   return (
                     <motion.div
@@ -534,19 +555,15 @@ export default function VuePubliqueKata() {
                     >
                       <Paper
                         sx={{
-                          p: 2,
-                          minWidth: 110,
+                          p: 1.5,
+                          minWidth: 100,
                           flex: 1,
-                          maxWidth: 140,
+                          maxWidth: 130,
                           borderRadius: 3,
                           textAlign: "center",
-                          bgcolor: aNote
-                            ? alpha(theme.palette.success.main, 0.75)
-                            : T.surfaceHigh,
-                          border: "1px solid",
-                          borderColor: aNote
-                            ? theme.palette.success.main
-                            : T.border,
+                          bgcolor: aUneNote ? T.surfaceHigh : alpha(T.border, 0.15),
+                          border: "2px solid",
+                          borderColor: voteCouleur,
                           transition: "all 0.3s",
                           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
                         }}
@@ -558,30 +575,38 @@ export default function VuePubliqueKata() {
                           Juge {i + 1}
                         </Typography>
 
-                        {aNote ? (
-                          <motion.div
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: i * 0.1 }}
-                          >
-                            <Typography
-                              variant="h4"
-                              fontWeight="900"
-                              color="white"
-                              sx={{ mt: 1 }}
-                            >
-                              {note.valeur.toFixed(1)}
-                            </Typography>
-                          </motion.div>
-                        ) : (
+                        <Stack spacing={0.3} mt={0.5}>
                           <Typography
-                            variant="h4"
-                            color={alpha(T.text, 0.2)}
-                            mt={1}
+                            fontWeight="900"
+                            sx={{
+                              fontSize: "1.15rem",
+                              color: noteAka != null ? CORNER.aka : alpha(T.text, 0.2),
+                            }}
                           >
-                            —
+                            {noteAka != null ? noteAka.toFixed(1) : "—"}
                           </Typography>
-                        )}
+                          <Typography
+                            fontWeight="900"
+                            sx={{
+                              fontSize: "1.15rem",
+                              color: noteAo != null ? CORNER.ao : alpha(T.text, 0.2),
+                            }}
+                          >
+                            {noteAo != null ? noteAo.toFixed(1) : "—"}
+                          </Typography>
+                        </Stack>
+
+                        {/* Vote de ce juge */}
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            bgcolor: voteCouleur,
+                            mx: "auto",
+                            mt: 1,
+                          }}
+                        />
                       </Paper>
                     </motion.div>
                   );
