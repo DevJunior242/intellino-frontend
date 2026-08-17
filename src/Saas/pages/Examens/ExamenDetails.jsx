@@ -21,6 +21,7 @@ import ExamenManage from "./ExamenManage";
 import ExamenInfos from "./ExamenInfos";
 import { Instance } from "../../../Api/Axios";
 import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
 function ExamenDetails() {
   const { examenId } = useParams();
@@ -35,6 +36,8 @@ function ExamenDetails() {
     let routeRedirect;
     if (activeType === "Ligue") {
       routeRedirect = "/dashboard/league/examen";
+    } else if (activeType === "Federation") {
+      routeRedirect = "/dashboard/federation/examen";
     } else {
       routeRedirect = "/dashboard/examen";
     }

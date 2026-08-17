@@ -5,11 +5,17 @@ import {
   EmojiEventsOutlined,
   GroupOutlined,
   ReceiptLongOutlined,
+  AccountTreeOutlined,
+  CategoryOutlined,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { UseAuth } from "../../Api/AuthContext";
 
 // ─── config des actions ───────────────────────────────────────────────────────
+// `roles` utilise les vraies valeurs d'`activeRole` (admin, instructeur,
+// secretaire, arbitre, super_admin) — pas de rôles fictifs type "admin_club".
+// `orgTypes` restreint chaque action au bon contexte (Club/Ligue/Federation),
+// vu qu'un même compte "admin" peut être actif sur l'un ou l'autre.
 const ACTIONS = [
   {
     key: "add_student",
@@ -18,7 +24,8 @@ const ACTIONS = [
     icon: PersonAddOutlined,
     color: "#1565C0",
     bg: "#E3F2FD",
-    roles: ["admin_club", "instructeur", "secretaire"],
+    orgTypes: ["Club"],
+    roles: ["admin", "super_admin", "instructeur", "secretaire"],
   },
   {
     key: "add_session",
@@ -27,36 +34,9 @@ const ACTIONS = [
     icon: CalendarMonthOutlined,
     color: "#2E7D32",
     bg: "#E8F5E9",
-    roles: ["admin_club", "instructeur"],
+    orgTypes: ["Club"],
+    roles: ["admin", "super_admin", "instructeur"],
   },
-  {
-    key: "add_examen",
-    label: "Examen grade",
-    to: "dashboard/league",
-    icon: EmojiEventsOutlined,
-    color: "#BF360C",
-    bg: "#FBE9E7",
-    roles: ["admin_club", "instructeur"],
-  },
-  {
-    key: "add_examen",
-    label: "Examen grade",
-    to: "/dashboard/league/examen",
-    icon: EmojiEventsOutlined,
-    color: "#BF360C",
-    bg: "#FBE9E7",
-    roles: ["admin_league"],
-  },
-  {
-    key: "competitions",
-    label: "Compétitions",
-    to: "/dashboard/league/competitions",
-    icon: EmojiEventsOutlined,
-    color: "#BF360C",
-    bg: "#FBE9E7",
-    roles: ["admin_league"],
-  },
-
   {
     key: "members",
     label: "Membres",
@@ -64,7 +44,8 @@ const ACTIONS = [
     icon: GroupOutlined,
     color: "#6A1B9A",
     bg: "#F3E5F5",
-    roles: ["admin_club", "instructeur", "secretaire"],
+    orgTypes: ["Club"],
+    roles: ["admin", "super_admin", "instructeur", "secretaire"],
   },
   {
     key: "payments",
@@ -73,7 +54,88 @@ const ACTIONS = [
     icon: ReceiptLongOutlined,
     color: "#E65100",
     bg: "#FFF3E0",
-    roles: ["admin_club", "secretaire"],
+    orgTypes: ["Club"],
+    roles: ["admin", "super_admin", "secretaire"],
+  },
+  {
+    key: "add_examen_club",
+    label: "Examen grade",
+    to: "/dashboard/examen",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    orgTypes: ["Club"],
+    roles: ["admin", "super_admin", "instructeur"],
+  },
+  {
+    key: "add_examen_league",
+    label: "Examen grade",
+    to: "/dashboard/league/examen",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    orgTypes: ["Ligue"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "add_examen_federation",
+    label: "Examen grade",
+    to: "/dashboard/federation/examen",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    orgTypes: ["Federation"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "competitions_league",
+    label: "Compétitions",
+    to: "/dashboard/league/competitions",
+    icon: EmojiEventsOutlined,
+    color: "#BF360C",
+    bg: "#FBE9E7",
+    orgTypes: ["Ligue"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "league_clubs",
+    label: "Clubs",
+    to: "/dashboard/league/clubs",
+    icon: GroupOutlined,
+    color: "#6A1B9A",
+    bg: "#F3E5F5",
+    orgTypes: ["Ligue"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "affiliations_federation",
+    label: "Affiliations",
+    to: "/dashboard/federation/affiliations",
+    icon: GroupOutlined,
+    color: "#6A1B9A",
+    bg: "#F3E5F5",
+    orgTypes: ["Federation"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "structure_federation",
+    label: "Structure",
+    to: "/dashboard/federation/structure",
+    icon: AccountTreeOutlined,
+    color: "#00695C",
+    bg: "#E0F2F1",
+    orgTypes: ["Federation"],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    key: "categories_federation",
+    label: "Catégories",
+    to: "/dashboard/federation/categories",
+    icon: CategoryOutlined,
+    color: "#4527A0",
+    bg: "#EDE7F6",
+    orgTypes: ["Federation"],
+    roles: ["admin", "super_admin"],
   },
 ];
 
@@ -136,11 +198,13 @@ function ActionButton({ action }) {
 
 // ─── composant principal ──────────────────────────────────────────────────────
 function QuickActions({ cols = 3 }) {
-  const { activeRole } = UseAuth();
+  const { activeRole, activeType } = UseAuth();
 
-  // Filtre les actions accessibles au rôle actif
-  const visibleActions = ACTIONS.filter((action) =>
-    action.roles.includes(activeRole),
+  // Filtre les actions accessibles au rôle ET au type d'organisation actifs
+  const visibleActions = ACTIONS.filter(
+    (action) =>
+      action.roles.includes(activeRole) &&
+      action.orgTypes.includes(activeType),
   );
 
   if (visibleActions.length === 0) return null;

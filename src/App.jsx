@@ -334,7 +334,9 @@ const AppRoutes = () => {
           <Route path="configCategory" element={<SubDisciplinePage />} />
           <Route path="activity" element={<ProgrammeActivites />} />
           <Route path="bureau" element={<BureauRolesFederation />} />
-          <Route path=":examenId/show" element={<ExamenDetails />} />
+          <Route path="examen" element={<ExamenIndex />} />
+          <Route path="examen/:examenId/show" element={<ExamenDetails />} />
+          <Route path="examens-stats" element={<ExamenStats />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />
         </Route>
