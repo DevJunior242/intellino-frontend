@@ -60,6 +60,14 @@ function CombatCard({ combat, isWide = true }) {
   const aoWon = combat.vainqueur_id === combat.inscription_ao_id;
   const enCours = combat.status === 1;
   const termine = combat.status === 2;
+  // Combat Kata (duel jugé au vote) : votes_aka/ao sont renseignés au lieu
+  // de score_final_aka/ao, qui restent toujours à 0 pour un combat Kata.
+  const estKata = combat.votes_aka !== null && combat.votes_aka !== undefined;
+  const scoreAka = estKata ? combat.votes_aka : combat.score_final_aka;
+  const scoreAo = estKata ? combat.votes_ao : combat.score_final_ao;
+  // Les votes existent déjà en Hantei (égalité), pas seulement une fois
+  // le combat officiellement clos.
+  const afficherScore = termine || combat.status === 3;
 
   const rowStyle = (won, color) => ({
     px: 1.2,
@@ -104,7 +112,7 @@ function CombatCard({ combat, isWide = true }) {
             {nom(combat.inscription_aka)}
           </Typography>
           <Stack direction="row" alignItems="center" gap={0.4}>
-            {termine && (
+            {afficherScore && (
               <Typography
                 sx={{
                   fontSize: "0.7rem",
@@ -112,7 +120,7 @@ function CombatCard({ combat, isWide = true }) {
                   fontWeight: 700,
                 }}
               >
-                {combat.score_final_aka}
+                {scoreAka}
               </Typography>
             )}
             {akaWon && combat.type_victoire && (
@@ -151,7 +159,7 @@ function CombatCard({ combat, isWide = true }) {
               (combat.type_victoire === "kiken" ? "BYE" : "—")}
           </Typography>
           <Stack direction="row" alignItems="center" gap={0.4}>
-            {termine && (
+            {afficherScore && (
               <Typography
                 sx={{
                   fontSize: "0.7rem",
@@ -159,7 +167,7 @@ function CombatCard({ combat, isWide = true }) {
                   fontWeight: 700,
                 }}
               >
-                {combat.score_final_ao}
+                {scoreAo}
               </Typography>
             )}
             {aoWon && combat.type_victoire && (
@@ -263,7 +271,7 @@ function BracketDesktop({ rounds, repechage, finale }) {
         })}
 
         {/* Finale / Vainqueur */}
-        {finale && (
+        {finale?.vainqueur_id && (
           <Stack alignItems="center" justifyContent="center" sx={{ pt: 4 }}>
             <Typography
               sx={{
