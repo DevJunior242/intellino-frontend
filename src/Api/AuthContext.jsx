@@ -372,21 +372,14 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
   //   FUNCTIONS TO LOGIN USER
   //////////////////////////////////////////////////////////////////////////////////
-  const login = useCallback(
-    async (credentials) => {
-      const res = await Instance.post("api/login", credentials);
-
+  // Factorisé car réutilisé par login() (compte sans 2FA) et verifyTwoFactor()
+  // (étape 2 du login quand la 2FA est active) : les deux endpoints renvoient
+  // exactement la même forme de réponse (voir LoginController::sessionPayload
+  // côté backend).
+  const applySessionData = useCallback(
+    (data) => {
       const { token, user, role, clubs, leagues, federations, roleSuperAdmin } =
-        res.data;
-
-      if (!token) {
-        throw {
-          response: {
-            status: 401,
-            data: { message: "Identifiants incorrects" },
-          },
-        };
-      }
+        data;
 
       const saveRoleSuperAdmin = Array.isArray(roleSuperAdmin)
         ? roleSuperAdmin
@@ -411,9 +404,50 @@ export const AuthProvider = ({ children }) => {
         saveRoleSuperAdmin.length > 0;
       navigate(hasRole ? "/dashboard" : "/");
 
-      return { success: true, user };
+      return user;
     },
     [navigate, setAuthData],
+  );
+
+  const login = useCallback(
+    async (credentials) => {
+      const res = await Instance.post("api/login", credentials);
+
+      if (res.data.two_factor) {
+        // Pas de session ouverte pour l'instant : juste le jeton temporaire
+        // que verifyTwoFactor() devra échanger contre la vraie session.
+        return { success: true, twoFactor: true, challengeToken: res.data.token };
+      }
+
+      if (!res.data.token) {
+        throw {
+          response: {
+            status: 401,
+            data: { message: "Identifiants incorrects" },
+          },
+        };
+      }
+
+      const user = applySessionData(res.data);
+
+      return { success: true, twoFactor: false, user };
+    },
+    [applySessionData],
+  );
+
+  //////////////////////////////////////////////////////////////////////////////////
+  //   FUNCTION TO VERIFY THE 2FA CHALLENGE (ÉTAPE 2 DU LOGIN)
+  //////////////////////////////////////////////////////////////////////////////////
+  const verifyTwoFactor = useCallback(
+    async (challengeToken, credentials) => {
+      const res = await Instance.post("api/2fa/challenge", {
+        token: challengeToken,
+        ...credentials,
+      });
+
+      return applySessionData(res.data);
+    },
+    [applySessionData],
   );
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -559,6 +593,7 @@ export const AuthProvider = ({ children }) => {
       StoreLeagueUser,
       StoreFederationUser,
       login,
+      verifyTwoFactor,
       logout,
       loading,
       refreshUser,
@@ -579,6 +614,7 @@ export const AuthProvider = ({ children }) => {
       StoreLeagueUser,
       StoreFederationUser,
       login,
+      verifyTwoFactor,
       logout,
       loading,
       refreshUser,

@@ -14,6 +14,7 @@ import { Delete, ExitToApp, Save, Security, Update } from "@mui/icons-material";
 import Profile from "../../Saas/pages/Profile";
 import MeClub from "./MeClub";
 import UpdatePassword from "./UpdatePassword";
+import TwoFactorSettings from "./TwoFactorSettings";
 import DeleAccount from "./DeleAccount";
 import StoreSaison from "./StoreSaison";
 import TransferMandateForm from "../../Saas/pages/League/Mandat/TransferMandateForm";
@@ -107,14 +108,15 @@ const AccountSettings = () => {
           sx={{
             display: "flex",
             justifyContent: "center",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: "column",
+            gap: 3,
             pt: 5,
             minHeight: "100px",
             width: "100%",
           }}
         >
           <UpdatePassword />
-
+          <TwoFactorSettings />
           <DeleAccount />
         </Container>
       )}

@@ -129,13 +129,19 @@ export default function Login() {
     email: "",
     password: "",
   });
-  const { login } = UseAuth();
+  const { login, verifyTwoFactor } = UseAuth();
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
   const [submitting, setSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
+
+  // La 2FA se joue en 2 étapes : identifiants d'abord, puis (si le compte
+  // l'a activée) un code TOTP ou un code de récupération à la place.
+  const [challengeToken, setChallengeToken] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
   // const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
@@ -170,7 +176,10 @@ export default function Login() {
         ...formData,
         // captcha_token: captchaToken,
       };
-      await login(dataSend);
+      const result = await login(dataSend);
+      if (result.twoFactor) {
+        setChallengeToken(result.challengeToken);
+      }
     } catch (err) {
       ErrorGlobal({ error: err, setError });
       setTimeout(() => {
@@ -179,6 +188,34 @@ export default function Login() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleTwoFactorSubmit = async (e) => {
+    e.preventDefault();
+    setError({});
+    setSubmitting(true);
+    try {
+      await verifyTwoFactor(
+        challengeToken,
+        useRecoveryCode
+          ? { recovery_code: twoFactorCode }
+          : { code: twoFactorCode },
+      );
+    } catch (err) {
+      ErrorGlobal({ error: err, setError });
+      setTimeout(() => {
+        setError({});
+      }, 3000);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const backToCredentials = () => {
+    setChallengeToken(null);
+    setTwoFactorCode("");
+    setUseRecoveryCode(false);
+    setError({});
   };
 
   return (
@@ -309,7 +346,7 @@ export default function Login() {
             variant="h6"
             sx={{ color: "#fff", fontWeight: 700, mb: 2.5, fontSize: "1.1rem" }}
           >
-            Connexion du compte
+            {challengeToken ? "Vérification" : "Connexion du compte"}
           </Typography>
           {success && <Message text={success} type="success" />}
           {error.general && (
@@ -317,6 +354,74 @@ export default function Login() {
               {error.general}
             </Message>
           )}
+          {challengeToken ? (
+            <form onSubmit={handleTwoFactorSubmit}>
+              <Typography variant="caption" sx={{ color: "#aaa", display: "block", mb: 2 }}>
+                {useRecoveryCode
+                  ? "Entrez l'un de vos codes de récupération."
+                  : "Entrez le code à 6 chiffres généré par votre application d'authentification."}
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <TextField
+                  error={hasError("code") || hasError("recovery_code")}
+                  helperText={getError("code") || getError("recovery_code")}
+                  fullWidth
+                  placeholder={useRecoveryCode ? "Code de récupération" : "Code"}
+                  name="twoFactorCode"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value)}
+                  autoFocus
+                  sx={inputSx}
+                  required
+                />
+              </Box>
+              <Button
+                fullWidth
+                type="submit"
+                sx={{
+                  background: "linear-gradient(135deg, #c8102e 0%, #8b0000 100%)",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: "0.95rem",
+                  letterSpacing: "0.1em",
+                  py: 1.4,
+                  borderRadius: "8px",
+                  textTransform: "uppercase",
+                  boxShadow: "0 4px 24px rgba(200,16,46,0.45)",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #e01535 0%, #a00010 100%)",
+                    boxShadow: "0 6px 32px rgba(200,16,46,0.6)",
+                  },
+                }}
+                disabled={submitting}
+              >
+                {submitting ? "vérification..." : "vérifier"}
+              </Button>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setUseRecoveryCode((v) => !v);
+                    setTwoFactorCode("");
+                    setError({});
+                  }}
+                  sx={{ color: "#c8a84b", textTransform: "none", fontSize: "0.75rem" }}
+                >
+                  {useRecoveryCode
+                    ? "Utiliser le code de mon application"
+                    : "Utiliser un code de récupération"}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={backToCredentials}
+                  sx={{ color: "#777", textTransform: "none", fontSize: "0.75rem" }}
+                >
+                  ← Retour
+                </Button>
+              </Box>
+            </form>
+          ) : (
+          <>
           <form onSubmit={handleSubmit}>
             {/* Email */}
             <Box
@@ -504,6 +609,8 @@ export default function Login() {
               </Typography>
             </Typography>
           </Box>
+          </>
+          )}
         </Box>
       </Box>
     </AnimatePresence>
