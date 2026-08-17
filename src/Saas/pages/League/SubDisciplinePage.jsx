@@ -6,6 +6,12 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
 
+// 99 est une convention interne pour "senior, pas de plafond d'âge" (le
+// règlement n'en fixe pas) — jamais montrer ce chiffre tel quel à l'écran.
+function formatTrancheAge(min, max) {
+  return max >= 99 ? `${min} ans et +` : `${min}–${max} ans`;
+}
+
 // ── Palette & tokens dérivés du thème actif (au lieu de valeurs fixes) pour
 // s'adapter au clair/sombre des dashboards ligue/fédération. ──────────────────
 const useLocalTheme = () => {
@@ -650,7 +656,7 @@ export default function SubDisciplinePage() {
                         borderRadius: 20,
                       }}
                     >
-                      {cat.age_min}–{cat.age_max} ans
+                      {formatTrancheAge(cat.age_min, cat.age_max)}
                     </span>
                     {(cat.poids_min || cat.poids_max) && (
                       <span
@@ -991,7 +997,7 @@ export default function SubDisciplinePage() {
                     return (
                       <RecapRow
                         key={cat.id}
-                        label={`${cat.nom} (${cat.age_min}–${cat.age_max} ans)${poidsLabel}`}
+                        label={`${cat.nom} (${formatTrancheAge(cat.age_min, cat.age_max)})${poidsLabel}`}
                         value={cat.disciplines.join(", ") || "—"}
                       />
                     );

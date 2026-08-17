@@ -19,6 +19,12 @@ import { useNavigate } from "react-router-dom";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
+// 99 est une convention interne pour "senior, pas de plafond d'âge" (le
+// règlement n'en fixe pas) — jamais montrer ce chiffre tel quel à l'écran.
+function formatTrancheAge(min, max) {
+  return max >= 99 ? `${min} ans et +` : `${min}-${max} ans`;
+}
+
 export default function CategoriesPage() {
   const { activeId, activeType } = UseAuth();
   const [categories, setCategories] = useState([]);
@@ -151,7 +157,7 @@ export default function CategoriesPage() {
                     {row.nom}({row.sexe})
                   </TableCell>
                   <TableCell>
-                    {row.age_min}-{row.age_max} ans
+                    {formatTrancheAge(row.age_min, row.age_max)}
                   </TableCell>
                   <TableCell>
                     {row.poids_max
