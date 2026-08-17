@@ -25,7 +25,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
 
-const StudentForm = () => {
+const StudentForm = ({ onSuccess } = {}) => {
   const { activeId, activeType } = UseAuth();
   const estClub = activeType === "Club";
   const [submitting, setSubmitting] = useState(false);
@@ -121,6 +121,7 @@ const StudentForm = () => {
       );
       if (res.data.success) {
         setSuccess(res.data.message || "Inscription réussie !");
+        onSuccess?.(res.data);
 
         setTimeout(() => {
           setSuccess("");

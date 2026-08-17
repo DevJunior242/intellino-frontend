@@ -46,8 +46,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1"; // ─── Theme ────────────────────────────────────────────────────────────────────
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import { BusinessOutlined } from "@mui/icons-material";
 
 // ─── Nav Config ───────────────────────────────────────────────────────────────
@@ -156,14 +155,6 @@ const getNavSections = (activeType) => {
           icon: <WorkspacePremiumIcon fontSize="small" />,
           label: "Grades & examens",
           to: "/dashboard/league/grades",
-          role: ["admin"],
-        },
-        {
-          icon: <PersonAddAlt1Icon fontSize="small" />,
-          label: "Inscrire un athlète",
-          to: isFederation
-            ? "/dashboard/federation/athletes/inscription"
-            : "/dashboard/league/athletes/inscription",
           role: ["admin"],
         },
         {

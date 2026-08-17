@@ -14,7 +14,11 @@ import {
   ListItemText,
   Chip,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { motion } from "motion/react";
 import { Instance } from "../../../../Api/Axios";
 import ErrorGlobal from "../../../../component/ErrorGlobal";
@@ -22,6 +26,7 @@ import Message from "../../Message";
 import PulseLoader from "react-spinners/PulseLoader";
 import ConfigSkeleton from "../../ConfigSkeleton";
 import ErrorBlock from "../../ErrorBlock";
+import StudentForm from "../../Students/StudentForm";
 
 function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
   const [error, setError] = useState({});
@@ -36,6 +41,7 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState({});
   const [expanded, setExpanded] = useState(false);
+  const [nouvelAthleteOpen, setNouvelAthleteOpen] = useState(false);
   const VISIBLE_COUNT = 8;
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
@@ -203,13 +209,23 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
         {error.general && <Message text={error.general} type="error" />}
 
         <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Rechercher un athlète"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Stack direction="row" gap={1} alignItems="flex-start">
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Rechercher un athlète"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<PersonAddAlt1Icon />}
+              onClick={() => setNouvelAthleteOpen(true)}
+              sx={{ mt: 2, whiteSpace: "nowrap", textTransform: "none" }}
+            >
+              Nouvel athlète
+            </Button>
+          </Stack>
           {hasError("student_id") && (
             <FormHelperText error>{getError("student_id")}</FormHelperText>
           )}
@@ -369,6 +385,24 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
           </Button>
         </form>
       </Box>
+
+      {/* Créer un nouvel athlète sans quitter l'écran d'inscription */}
+      <Dialog
+        open={nouvelAthleteOpen}
+        onClose={() => setNouvelAthleteOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Nouvel athlète</DialogTitle>
+        <DialogContent>
+          <StudentForm
+            onSuccess={() => {
+              setNouvelAthleteOpen(false);
+              getInitialData();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 }
