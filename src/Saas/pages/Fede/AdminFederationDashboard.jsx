@@ -174,10 +174,6 @@ export default function AdminFederationDashboard() {
           </Typography>
         </Box>
       </Box>
-      <Box sx={{ m: 2 }}>
-        <PromoteCode />
-      </Box>
-
       {/* Grille Flex/Grid des Cartes KPI */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpiCards.map((card, idx) => (
@@ -331,6 +327,10 @@ export default function AdminFederationDashboard() {
           <ClubsParLigueChart />
         </Grid>
       </Grid>
+
+      <Box sx={{ m: 2, mt: 4 }}>
+        <PromoteCode />
+      </Box>
     </Box>
   );
 }
