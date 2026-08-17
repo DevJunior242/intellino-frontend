@@ -258,43 +258,38 @@ export default function SubDisciplinePage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState({});
   const { activeId, activeType } = UseAuth();
-  // — Disciplines state
+  // — Disciplines state — "Kumite équipe" non pré-sélectionnée : les
+  // catégories pré-remplies ci-dessous ne couvrent que le Kata (Annexe 2 du
+  // règlement WKF Kata 2026, voir plus bas), rien n'est inventé pour Kumite.
   const DISC_PRESETS = ["Kata", "Kumite", "Kumite équipe", "Kata équipe"];
   const [disciplines, setDisciplines] = useState(
-    DISC_PRESETS.map((nom, i) => ({ id: i + 1, nom, selected: i < 2 })),
+    DISC_PRESETS.map((nom, i) => ({ id: i + 1, nom, selected: i !== 2 })),
   );
   const [newDisc, setNewDisc] = useState("");
 
-  // — Categories state
+  // — Categories state — pré-rempli selon les catégories officielles Kata du
+  // règlement WKF 2026 (Annexe 2 : liste des catégories, Art. 8.1.3 : bornes
+  // d'âge exactes de chaque tranche). Seuil senior Kata = 16 ans, à ne pas
+  // confondre avec le seuil senior Kumite = 18 ans (Art. 8.1.2) — volontairement
+  // pas de catégories Kumite ici, faute du texte officiel équivalent (poids
+  // par catégorie) ; la fédération les ajoute elle-même ci-dessous.
+  // age_max=99 est une convention pratique pour "senior, pas de plafond" —
+  // le règlement ne fixe pas de limite haute.
   const [categories, setCategories] = useState([
-    {
-      id: 1,
-      nom: "Poussin",
-      age_min: 6,
-      age_max: 7,
-      sexe: "M",
-      disciplines: ["Kata"],
-    },
-    {
-      id: 2,
-      nom: "Benjamin",
-      age_min: 8,
-      age_max: 9,
-      sexe: "F",
-      disciplines: ["Kata", "Kumite"],
-      poids_min: "",
-      poids_max: 30,
-    },
-    {
-      id: 3,
-      nom: "Senior",
-      age_min: 18,
-      age_max: 34,
-      sexe: "M",
-      disciplines: ["Kata", "Kumite"],
-      poids_min: 60,
-      poids_max: 67,
-    },
+    { id: 1, nom: "Team Kata Senior", age_min: 16, age_max: 99, sexe: "M", disciplines: ["Kata équipe"] },
+    { id: 2, nom: "Team Kata Senior", age_min: 16, age_max: 99, sexe: "F", disciplines: ["Kata équipe"] },
+    { id: 3, nom: "Team Kata Cadet/Junior", age_min: 14, age_max: 17, sexe: "M", disciplines: ["Kata équipe"] },
+    { id: 4, nom: "Team Kata Cadet/Junior", age_min: 14, age_max: 17, sexe: "F", disciplines: ["Kata équipe"] },
+    { id: 5, nom: "Kata Senior", age_min: 16, age_max: 99, sexe: "M", disciplines: ["Kata"] },
+    { id: 6, nom: "Kata Senior", age_min: 16, age_max: 99, sexe: "F", disciplines: ["Kata"] },
+    { id: 7, nom: "Kata U21", age_min: 18, age_max: 20, sexe: "M", disciplines: ["Kata"] },
+    { id: 8, nom: "Kata U21", age_min: 18, age_max: 20, sexe: "F", disciplines: ["Kata"] },
+    { id: 9, nom: "Kata Junior", age_min: 16, age_max: 17, sexe: "M", disciplines: ["Kata"] },
+    { id: 10, nom: "Kata Junior", age_min: 16, age_max: 17, sexe: "F", disciplines: ["Kata"] },
+    { id: 11, nom: "Kata Cadet", age_min: 14, age_max: 15, sexe: "M", disciplines: ["Kata"] },
+    { id: 12, nom: "Kata Cadet", age_min: 14, age_max: 15, sexe: "F", disciplines: ["Kata"] },
+    { id: 13, nom: "Kata U14", age_min: 12, age_max: 13, sexe: "M", disciplines: ["Kata"] },
+    { id: 14, nom: "Kata U14", age_min: 12, age_max: 13, sexe: "F", disciplines: ["Kata"] },
   ]);
   const [catErrors, setCatErrors] = useState({});
   const [newCat, setNewCat] = useState({
@@ -598,6 +593,21 @@ export default function SubDisciplinePage() {
             title="Catégories d'âge"
             subtitle="Définir les tranches d'âge et leurs disciplines"
           >
+            <div
+              style={{
+                fontSize: 12,
+                color: C.textMuted,
+                background: C.surfaceHigh,
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: "8px 12px",
+                marginBottom: 12,
+              }}
+            >
+              Catégories Kata pré-remplies selon le règlement officiel WKF
+              (Annexe 2). Le Kumite n'a pas de catégories pré-remplies —
+              ajoutez les vôtres ci-dessous avec vos classes de poids.
+            </div>
             {/* liste existante */}
             <AnimatePresence>
               {categories.map((cat, idx) => (
