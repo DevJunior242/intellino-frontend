@@ -26,7 +26,8 @@ import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
 
 const StudentForm = () => {
-  const { activeId } = UseAuth();
+  const { activeId, activeType } = UseAuth();
+  const estClub = activeType === "Club";
   const [submitting, setSubmitting] = useState(false);
   const [isOwnResponsible, setIsOwnResponsible] = useState(false);
   const [error, setError] = useState({});
@@ -72,8 +73,12 @@ const StudentForm = () => {
     setSuccess("");
     const formData = new FormData();
 
-    // 1. Infos globales
-    formData.append("club_id", activeId);
+    // 1. Infos globales — une Ligue/Fédération qui inscrit un athlète
+    // manuellement ne force pas de club (athlète indépendant) ; seul un
+    // Club s'auto-affecte comme club de l'élève.
+    if (estClub) {
+      formData.append("club_id", activeId);
+    }
     formData.append("is_own_responsible", isOwnResponsible ? 1 : 0);
 
     // 2. Infos du Parent (uniquement si non responsable lui-même)
@@ -175,6 +180,13 @@ const StudentForm = () => {
         >
           Inscription Élève(s)
         </Typography>
+
+        {!estClub && (
+          <Message
+            text="Inscription en tant qu'athlète indépendant (sans club rattaché) — vous inscrivez directement depuis votre compte Ligue/Fédération."
+            type="info"
+          />
+        )}
 
         {/* SWITCH RESPONSABLE */}
         <FormControlLabel

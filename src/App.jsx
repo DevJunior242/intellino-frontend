@@ -335,6 +335,7 @@ const AppRoutes = () => {
           <Route path="activity" element={<ProgrammeActivites />} />
           <Route path="bureau" element={<BureauRolesFederation />} />
           <Route path=":examenId/show" element={<ExamenDetails />} />
+          <Route path="athletes/inscription" element={<StudentForm />} />
         </Route>
       </Route>
 
@@ -362,6 +363,7 @@ const AppRoutes = () => {
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
           <Route path="payment-methods" element={<PaymentMethodIndex />} />
+          <Route path="athletes/inscription" element={<StudentForm />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>
           <Route path="stats" element={<DashboardLeague />} />
