@@ -50,7 +50,7 @@ const ACTIONS = [
   {
     key: "payments",
     label: "Paiements",
-    to: "/dashboard/payment/store",
+    to: "/dashboard/comptabilite?tab=encaisser",
     icon: ReceiptLongOutlined,
     color: "#E65100",
     bg: "#FFF3E0",

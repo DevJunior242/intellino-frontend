@@ -5,47 +5,47 @@ import {
   Typography,
   Grid,
   TextField,
-  MenuItem,
   Button,
   InputAdornment,
-  Divider,
   Stack,
   CircularProgress,
   Avatar,
   Alert,
   Tooltip,
-  FormControl,
-  InputLabel,
-  Select,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
-import { Save, Receipt, Person, LocalOffer, Event } from "@mui/icons-material";
-import { UseAuth } from "../../Api/AuthContext";
-import { Instance } from "../../Api/Axios";
-import Message from "./Message";
-import ErrorGlobal from "../../component/ErrorGlobal";
-import StudentAutocomplete from "./StudentAutocomplete";
-import { useLocation } from "react-router-dom";
+import { Save, Receipt } from "@mui/icons-material";
+import { UseAuth } from "../../../Api/AuthContext";
+import { Instance } from "../../../Api/Axios";
+import ErrorGlobal from "../../../component/ErrorGlobal";
+import StudentAutocomplete from "../StudentAutocomplete";
 
-const PaymentForm = () => {
+const PAYMENT_METHODS = [
+  { value: "cash", label: "Espèces" },
+  { value: "orange_money", label: "Orange Money" },
+  { value: "moov_money", label: "Moov Money" },
+  { value: "transfer", label: "Virement" },
+];
+
+const EncaisserTab = ({ prefill, onDone }) => {
   const { activeId } = UseAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const location = useLocation();
+  const [error, setError] = useState({});
 
-  const prefillData = location.state?.prefill;
   const [selectedStudent, setSelectedStudent] = useState(
-    prefillData?.student || null,
+    prefill?.student || null,
   );
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(
+    prefill?.pricing_plan_id || "",
+  );
   const [formData, setFormData] = useState({
-    student_id: prefillData?.student?.id || "",
-    pricing_plan_id: prefillData?.pricing_plan_id || "",
-    amount_paid: prefillData?.amount_remaining || "",
+    amount_paid: prefill?.amount_remaining || "",
     payment_method: "cash",
     starts_at: new Date().toISOString().split("T")[0],
-    notes: prefillData ? "Règlement de reliquat" : "",
+    notes: prefill ? "Règlement de reliquat" : "",
   });
 
   const hasError = (field) => !!error?.[field];
@@ -53,18 +53,28 @@ const PaymentForm = () => {
   const [debtInfo, setDebtInfo] = useState({ debt: 0, isNewPurchase: true });
 
   useEffect(() => {
+    if (prefill) {
+      setSelectedStudent(prefill.student || null);
+      setSelectedPlanId(prefill.pricing_plan_id || "");
+      setFormData((prev) => ({
+        ...prev,
+        amount_paid: prefill.amount_remaining || "",
+        notes: "Règlement de reliquat",
+      }));
+    }
+  }, [prefill]);
+
+  useEffect(() => {
     const fetchDebt = async () => {
-      if (formData.student_id && formData.pricing_plan_id) {
+      if (selectedStudent?.id && selectedPlanId) {
         try {
           const res = await Instance.get(
-            `/api/payments/students/${formData.student_id}/debt/${formData.pricing_plan_id}?club_id=${activeId}`,
+            `/api/payments/students/${selectedStudent.id}/debt/${selectedPlanId}?club_id=${activeId}`,
           );
           setDebtInfo({
             debt: res.data.debt,
             isNewPurchase: res.data.is_new_purchase,
           });
-
-          // Si c'est un remboursement de dette, on peut suggérer le montant restant par défaut
           if (!res.data.is_new_purchase) {
             setFormData((prev) => ({ ...prev, amount_paid: res.data.debt }));
           }
@@ -74,75 +84,63 @@ const PaymentForm = () => {
       }
     };
     fetchDebt();
-  }, [formData.student_id, formData.pricing_plan_id]);
+  }, [selectedStudent, selectedPlanId, activeId]);
 
   const remainingAfterInput =
     debtInfo.debt - (parseFloat(formData.amount_paid) || 0);
 
   useEffect(() => {
-    if (selectedStudent) {
-      setFormData((prev) => ({ ...prev, student_id: selectedStudent.id }));
-    }
-  }, [selectedStudent]);
-
-  useEffect(() => {
-    const fetchData = async () => {
+    const fetchPlans = async () => {
       try {
-        const resPlans = await Instance.get(
-          `/api/pricing-plans?club_id=${activeId}`,
+        const res = await Instance.get(
+          `/api/pricing-plans?club_id=${activeId}&active=1`,
         );
-        setPlans(resPlans.data || []);
+        setPlans(res.data || []);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchData();
+    if (activeId) fetchPlans();
   }, [activeId]);
-
-  useEffect(() => {
-    if (prefillData) {
-      handlePlanChange(prefillData.pricing_plan_id);
-    }
-  }, [prefillData]);
 
   const handlePlanChange = (planId) => {
     const plan = plans.find((p) => p.id === planId);
-    setSelectedPlan(plan);
-    setFormData({
-      ...formData,
-      pricing_plan_id: planId,
+    setSelectedPlanId(planId);
+    setFormData((prev) => ({
+      ...prev,
       amount_paid: plan ? plan.price : "",
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError({});
+    setSuccess("");
     try {
       const res = await Instance.post("/api/payments", {
+        student_id: selectedStudent?.id,
+        pricing_plan_id: selectedPlanId,
         ...formData,
         club_id: activeId,
       });
       if (res.data.success) {
         setSuccess(res.data.message || "Paiement enregistré avec succès !");
-        if (location.state?.prefill) {
-          window.history.replaceState({}, document.title);
-        }
         setSelectedStudent(null);
-        setSelectedPlan(null);
+        setSelectedPlanId("");
         setFormData({
-          student_id: "",
-          pricing_plan_id: "",
           amount_paid: "",
           payment_method: "cash",
           starts_at: new Date().toISOString().split("T")[0],
           notes: "",
         });
-        setTimeout(() => setSuccess(""), 4000);
+        setTimeout(() => {
+          setSuccess("");
+          onDone?.();
+        }, 1200);
       }
-    } catch (error) {
-      ErrorGlobal({ error, setError });
+    } catch (err) {
+      ErrorGlobal({ error: err, setError });
     } finally {
       setLoading(false);
     }
@@ -153,9 +151,8 @@ const PaymentForm = () => {
       sx={{
         p: 4,
         borderRadius: 4,
-        maxWidth: 600,
+        maxWidth: 640,
         mx: "auto",
-        boxShadow: 3,
         backgroundColor: "background.default",
       }}
     >
@@ -183,7 +180,6 @@ const PaymentForm = () => {
           {error.general}
         </Alert>
       )}
-      {/* afficher alert eleve a une dette de {debtInfo.debt} XOF pour ce forfait */}
       {!debtInfo.isNewPurchase && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           Cet élève a une dette de {debtInfo.debt.toLocaleString()} XOF pour ce
@@ -201,55 +197,49 @@ const PaymentForm = () => {
           label="Choisir un élève"
         />
 
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <FormControl fullWidth error={hasError("pricing_plan_id")} required>
-              <InputLabel id="pricing-plan-label">Type de Forfait</InputLabel>
-              <Select
-                labelId="pricing-plan-label"
-                id="pricing-plan-select"
-                label="Type de Forfait"
-                value={formData.pricing_plan_id}
-                onChange={(e) => handlePlanChange(e.target.value)}
-                MenuProps={{
-                  PaperProps: {
-                    sx: { backgroundColor: "background.default" },
-                  },
-                }}
-              >
-                {plans.length > 0 ? (
-                  plans.map((plan) => (
-                    <MenuItem key={plan.id} value={plan.id}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          width: "100%",
-                        }}
-                      >
-                        <Typography>{plan.label}</Typography>
-                        <Typography
-                          variant="body2"
-                          color="primary.main"
-                          fontWeight="bold"
-                          sx={{ ml: 2 }}
-                        >
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+            Forfait
+          </Typography>
+          <Grid container spacing={1}>
+            {plans.length > 0 ? (
+              plans.map((plan) => {
+                const selected = selectedPlanId === plan.id;
+                return (
+                  <Grid item xs={12} sm={6} key={plan.id}>
+                    <Paper
+                      variant="outlined"
+                      onClick={() => handlePlanChange(plan.id)}
+                      sx={{
+                        p: 1.5,
+                        cursor: "pointer",
+                        borderRadius: 2,
+                        borderColor: selected ? "primary.main" : "divider",
+                        borderWidth: selected ? 2 : 1,
+                        bgcolor: selected ? "action.selected" : "transparent",
+                      }}
+                    >
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography fontWeight={selected ? 700 : 500}>{plan.label}</Typography>
+                        <Typography variant="body2" color="primary.main" fontWeight="bold">
                           {plan.price} XOF
                         </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem disabled>Aucun forfait disponible</MenuItem>
-                )}
-              </Select>
-              {hasError("pricing_plan_id") && (
-                <FormHelperText>{getError("pricing_plan_id")}</FormHelperText>
-              )}
-            </FormControl>
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                );
+              })
+            ) : (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="text.secondary">
+                  Aucun forfait actif. Ajoutez-en un dans l'onglet Tarifs.
+                </Typography>
+              </Grid>
+            )}
           </Grid>
+        </Box>
 
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -271,7 +261,6 @@ const PaymentForm = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            {/* INDICATEUR DE DETTE */}
             <Paper
               variant="outlined"
               sx={{
@@ -279,9 +268,8 @@ const PaymentForm = () => {
                 height: "56px",
                 display: "flex",
                 alignItems: "center",
-                bgcolor: remainingAfterInput > 0 ? "orange.50" : "grey.50",
-                borderColor:
-                  remainingAfterInput > 0 ? "orange.main" : "grey.300",
+                bgcolor: remainingAfterInput > 0 ? "warning.50" : "grey.50",
+                borderColor: remainingAfterInput > 0 ? "warning.main" : "grey.300",
               }}
             >
               <Box>
@@ -291,9 +279,7 @@ const PaymentForm = () => {
                 <Typography
                   variant="body1"
                   fontWeight="bold"
-                  color={
-                    remainingAfterInput > 0 ? "error.main" : "success.main"
-                  }
+                  color={remainingAfterInput > 0 ? "error.main" : "success.main"}
                 >
                   {remainingAfterInput.toLocaleString()} XOF
                 </Typography>
@@ -301,24 +287,27 @@ const PaymentForm = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              fullWidth
-              label="Mode"
+          <Grid item xs={12} sm={7}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+              Mode de paiement
+            </Typography>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
               value={formData.payment_method}
-              onChange={(e) =>
-                setFormData({ ...formData, payment_method: e.target.value })
+              onChange={(e, value) =>
+                value && setFormData({ ...formData, payment_method: value })
               }
             >
-              <MenuItem value="cash">Espèces</MenuItem>
-              <MenuItem value="orange_money">Orange Money</MenuItem>
-              <MenuItem value="moov_money">Moov Money</MenuItem>
-              <MenuItem value="transfer">Virement</MenuItem>
-            </TextField>
+              {PAYMENT_METHODS.map((m) => (
+                <ToggleButton key={m.value} value={m.value} sx={{ textTransform: "none" }}>
+                  {m.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={5}>
             <Tooltip
               title={
                 !debtInfo.isNewPurchase
@@ -336,12 +325,6 @@ const PaymentForm = () => {
                   setFormData({ ...formData, starts_at: e.target.value })
                 }
                 InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiInputBase-input.Mui-disabled": {
-                    WebkitTextFillColor: "#000",
-                    bgcolor: "#f5f5f5",
-                  },
-                }}
               />
             </Tooltip>
           </Grid>
@@ -362,18 +345,15 @@ const PaymentForm = () => {
           variant="contained"
           size="large"
           fullWidth
-          disabled={loading || !selectedStudent || !formData.pricing_plan_id}
-          sx={{ mt: 3, py: 1.5, fontWeight: "bold", fontSize: "1.1rem" }}
+          startIcon={<Save />}
+          disabled={loading || !selectedStudent || !selectedPlanId}
+          sx={{ mt: 3, py: 1.5, fontWeight: "bold" }}
         >
-          {loading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Valider l'encaissement"
-          )}
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Valider l'encaissement"}
         </Button>
       </form>
     </Paper>
   );
 };
 
-export default PaymentForm;
+export default EncaisserTab;

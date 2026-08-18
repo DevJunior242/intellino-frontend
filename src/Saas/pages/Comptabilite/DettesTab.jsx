@@ -1,4 +1,4 @@
-import { WhatsApp, Phone, Payment } from "@mui/icons-material";
+import { WhatsApp, Payment } from "@mui/icons-material";
 import {
   Box,
   IconButton,
@@ -16,20 +16,17 @@ import {
   Button,
   Pagination,
 } from "@mui/material";
-import { Instance } from "../../Api/Axios";
-import PulseLoader from "react-spinners/PulseLoader";
+import { Instance } from "../../../Api/Axios";
 import { useCallback, useEffect, useState } from "react";
-import { UseAuth } from "../../Api/AuthContext";
-import { useNavigate } from "react-router-dom";
-import ConfigSkeleton from "./ConfigSkeleton";
-import ErrorBlock from "./ErrorBlock";
+import { UseAuth } from "../../../Api/AuthContext";
+import ConfigSkeleton from "../ConfigSkeleton";
+import ErrorBlock from "../ErrorBlock";
 
-const DebtPage = () => {
+const DettesTab = ({ onSolder }) => {
   const [debts, setDebts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [totalUnpaid, setTotalUnpaid] = useState(0);
   const { activeId } = UseAuth();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [errorDebts, setErrorDebts] = useState("");
 
@@ -74,18 +71,6 @@ const DebtPage = () => {
     );
   };
 
-  const handleSolder = (debt) => {
-    navigate("/dashboard/payment/store", {
-      state: {
-        prefill: {
-          student: debt.student,
-          pricing_plan_id: debt.pricing_plan_id,
-          amount_remaining: debt.balance,
-        },
-      },
-    });
-  };
-
   if (errorDebts)
     return (
       <ErrorBlock
@@ -94,13 +79,8 @@ const DebtPage = () => {
       />
     );
   return (
-    <Box sx={{ p: 2, backgroundColor: "background.default" }}>
-      <Typography variant="h4" fontWeight="800">
-        Gestion des Recouvrements
-      </Typography>
-
-      {/* Résumé de la dette totale du club */}
-      <Alert severity="warning" sx={{ my: 3, borderRadius: 3 }}>
+    <Box>
+      <Alert severity="warning" sx={{ mb: 3, borderRadius: 3 }}>
         <Typography variant="h6">
           Total à recouvrer : &nbsp;
           <strong>
@@ -128,7 +108,7 @@ const DebtPage = () => {
         sx={{ borderRadius: 3, backgroundColor: "background.default" }}
       >
         <Table>
-          <TableHead sx={{ bgcolor: "blue" }}>
+          <TableHead>
             <TableRow>
               <TableCell>Élève</TableCell>
               <TableCell>Forfait</TableCell>
@@ -144,9 +124,6 @@ const DebtPage = () => {
                   <Typography fontWeight="bold">
                     {debt?.student?.fullname}
                   </Typography>
-                  {/* <Typography variant="caption">
-                    {debt?.student?.phone_parent}
-                  </Typography> */}
                 </TableCell>
                 <TableCell>{debt?.pricing_plan?.label}</TableCell>
                 <TableCell>
@@ -167,17 +144,11 @@ const DebtPage = () => {
                     >
                       <WhatsApp />
                     </IconButton>
-                    {/* <IconButton
-                      color="primary"
-                      href={`tel:${debt.student.phone_parent}`}
-                    >
-                      <Phone />
-                    </IconButton> */}
                     <Button
                       variant="contained"
                       size="small"
                       startIcon={<Payment />}
-                      onClick={() => handleSolder(debt)}
+                      onClick={() => onSolder(debt)}
                     >
                       SOLDER
                     </Button>
@@ -201,4 +172,4 @@ const DebtPage = () => {
     </Box>
   );
 };
-export default DebtPage;
+export default DettesTab;

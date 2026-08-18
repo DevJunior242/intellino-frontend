@@ -63,9 +63,12 @@ const StoreDisp = lazy(() => import("./Saas/pages/StoreDisp"));
 const SessionDetails = lazy(
   () => import("./Saas/pages/Sessions/SessionDetails"),
 );
-const PaymentForm = lazy(() => import("./Saas/pages/PaymentForm"));
-const PricingSettings = lazy(() => import("./Saas/pages/PricingSettings"));
-const PaymentIndex = lazy(() => import("./Saas/pages/PaymentIndex"));
+const ClubComptabilite = lazy(
+  () => import("./Saas/pages/Comptabilite/ClubComptabilite"),
+);
+const HistoriqueTab = lazy(
+  () => import("./Saas/pages/Comptabilite/HistoriqueTab"),
+);
 const EquipmentManager = lazy(() => import("./Saas/pages/EquipmentManager"));
 const InventoryPage = lazy(() => import("./Saas/pages/InventoryPage"));
 const MemberTable = lazy(() => import("./Saas/pages/member/MemberTable"));
@@ -142,7 +145,6 @@ const VuePubliqueKata = lazy(
   () => import("./Saas/pages/League/competion/VuePubliqueKata"),
 );
 const ParentDet = lazy(() => import("./Saas/pages/ParentDet"));
-const DebtPage = lazy(() => import("./Saas/pages/DebtPage"));
 const Program = lazy(() => import("./Saas/pages/Program"));
 const StudentList = lazy(() => import("./Saas/pages/Students/StudentList"));
 const Users = lazy(() => import("./Saas/pages/Users"));
@@ -258,7 +260,6 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={STAFF_CLUB_ROLES} />}>
           <Route path="student/list" element={<StudentDetails />} />
           <Route path="student/store" element={<StoreStudent />} />
-          <Route path="dettes" element={<DebtPage />} />
           <Route path="students-stats" element={<StudentStatsDashboard />} />
           <Route path="examens-stats" element={<ExamenStats />} />
           <Route path="payments" element={<PaymentStat />} />
@@ -277,12 +278,10 @@ const AppRoutes = () => {
           />
           <Route path="licences" element={<LicenceIndex />} />
 
-          <Route path="payment/settings" element={<PricingSettings />} />
-          <Route path="payment/store" element={<PaymentForm />} />
+          <Route path="comptabilite" element={<ClubComptabilite />} />
           <Route path="catalogue" element={<InventoryPage />} />
           <Route path="inventory/prets" element={<EquipmentLoan />} />
           <Route path="stages/ma-ligue" element={<StageSubscribeIndex />} />
-          <Route path="payment-methods" element={<PaymentMethodIndex />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
           <Route index element={<Dashboard />} />
@@ -291,7 +290,7 @@ const AppRoutes = () => {
           <Route path="session/list" element={<SessionList />} />
           <Route path="session/:sessionId/show" element={<SessionDetails />} />
           <Route path="student/attendance" element={<AttendanceIndex />} />
-          <Route path="payment/factures" element={<PaymentIndex />} />
+          <Route path="payment/factures" element={<HistoriqueTab />} />
           <Route path="grades-history" element={<StudentsGradesOverview />} />
           <Route path="examen" element={<ExamenIndex />} />
           <Route path="competition" element={<InscriptionPage />} />

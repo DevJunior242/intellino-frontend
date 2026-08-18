@@ -107,7 +107,7 @@ export default function DebtorsWidget() {
           <Button
             fullWidth
             size="small"
-            onClick={() => navigate("/dashboard/dettes")}
+            onClick={() => navigate("/dashboard/comptabilite?tab=dettes")}
             sx={{ mt: 1, textTransform: "none" }}
           >
             Voir tous les impayés

@@ -41,7 +41,6 @@ import SchoolIcon from "@mui/icons-material/School";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import StarOutlineIcon from "@mui/icons-material/StarOutline";
-import TuneIcon from "@mui/icons-material/Tune";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import { UseAuth } from "../../Api/AuthContext";
@@ -225,23 +224,10 @@ export default function DashboardLayout() {
     {
       section: "Finance",
       items: [
-        //paiement
         {
-          title: "Paiements",
+          title: "Comptabilité",
           icon: <PaymentIcon fontSize="small" />,
-          to: "/dashboard/payment-methods",
-          role: ["admin"],
-        },
-        {
-          title: "Gestion des tarifs",
-          icon: <TuneIcon fontSize="small" />,
-          to: "/dashboard/payment/settings",
-          role: ["admin", "secretaire"],
-        },
-        {
-          title: "Dettes",
-          icon: <ShoppingCartIcon fontSize="small" />,
-          to: "/dashboard/dettes",
+          to: "/dashboard/comptabilite",
           role: ["admin", "secretaire"],
         },
         {
@@ -251,16 +237,10 @@ export default function DashboardLayout() {
           role: ["parent"],
         },
         {
-          title: "Caisse",
-          icon: <PaymentIcon fontSize="small" />,
-          to: "/dashboard/payment/store",
-          role: ["admin", "secretaire"],
-        },
-        {
           title: "Factures",
           icon: <ReceiptIcon fontSize="small" />,
           to: "/dashboard/payment/factures",
-          role: ["admin", "secretaire", "karateka", "parent"],
+          role: ["karateka", "parent"],
         },
       ],
     },

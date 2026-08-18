@@ -349,7 +349,7 @@ function ClubAdminDashboard() {
 
           <Grid item xs={12} sm={6} md={3}>
             <Box
-              onClick={() => navigate("/dashboard/dettes")}
+              onClick={() => navigate("/dashboard/comptabilite?tab=dettes")}
               sx={{ cursor: "pointer" }}
             >
               <StatCard
