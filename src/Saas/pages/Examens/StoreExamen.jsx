@@ -95,7 +95,7 @@ function StoreExamen({ open, handleClose }) {
           ? "/dashboard/league/examen"
           : isFederationUser
             ? "/dashboard/federation/examen"
-            : "examen";
+            : "/dashboard/examen";
 
         navigate(`${routePrefix}/${response.data.data.id}/show`);
         setSuccess(response.data.message);
