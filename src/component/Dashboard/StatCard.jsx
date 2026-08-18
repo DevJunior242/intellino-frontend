@@ -4,13 +4,14 @@ const StatCard = ({ title, value, icon, color, subtitle }) => (
   <Paper
     elevation={0}
     sx={{
-      height: 100,
-      width: 250,
+      minHeight: 100,
+      width: "100%",
       p: 3,
       borderRadius: 4,
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
+      gap: 1,
       //  background: `linear-gradient(135deg, ${color?.[50] || "#f5f5f5"} 0%, #ffffff 100%)`,
       borderColor: color?.[100] || "#e0e0e0",
       border: "1px solid",
