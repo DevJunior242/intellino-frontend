@@ -36,6 +36,7 @@ function ExamenIndex() {
   const [pagination, setPagination] = useState({});
   const { activeId, activeType } = UseAuth();
   const isLigueUser = activeType === "Ligue";
+  const isFederationUser = activeType === "Federation";
 
   const theme = useTheme();
   const colors = tokenTheme(theme.palette.mode);
@@ -191,9 +192,14 @@ function ExamenIndex() {
             const currentStatus =
               statusConfig[examen.status] || statusConfig.draft;
 
-            // On vérifie si c'est la Ligue ou un Club
+            // Qui organise CET examen (peut différer du type du visiteur)
             const isLeague = examen.organisateur_type === "Ligue";
             const isFederation = examen.organisateur_type === "Federation";
+            const badgeColor = isFederation
+              ? "warning.main"
+              : isLeague
+                ? "primary.main"
+                : "success.main";
 
             return (
               <Grid
@@ -221,12 +227,16 @@ function ExamenIndex() {
                     cursor: "pointer",
                     position: "relative",
                     overflow: "hidden",
-                    borderTop: `4px solid ${isLeague ? "#1976d2" : "#4caf50"}`, // Barre de couleur en haut
+                    borderTop: `4px solid ${isFederation ? "#ed6c02" : isLeague ? "#1976d2" : "#4caf50"}`, // Barre de couleur en haut
                     transition: "transform 0.2s",
                     "&:hover": { transform: "translateY(-5px)" },
                   }}
                   onClick={() => {
-                    const routePrefix = isFederation
+                    // Basé sur le type du VISITEUR, pas de l'examen : un club
+                    // qui consulte un examen de sa ligue reste sur une route
+                    // accessible aux clubs, sinon DashboardGeneralLayout le
+                    // redirige aussitôt ailleurs (route réservée Ligue/Fédé).
+                    const routePrefix = isFederationUser
                       ? "/dashboard/federation/examen"
                       : isLigueUser
                         ? "/dashboard/league/examen"
@@ -235,7 +245,7 @@ function ExamenIndex() {
                     navigate(`${routePrefix}/${examen.id}/show`);
                   }}
                 >
-                  {/* Badge de Type (Ligue vs Club) */}
+                  {/* Badge de Type (Club / Ligue / Fédération organisateur) */}
                   <Box
                     sx={{
                       display: "flex",
@@ -244,15 +254,17 @@ function ExamenIndex() {
                     }}
                   >
                     <Chip
-                      icon={isLeague ? <Shield /> : <Business />}
-                      label={isLeague ? "LIGUE" : "CLUB"}
+                      icon={isFederation || isLeague ? <Shield /> : <Business />}
+                      label={
+                        isFederation ? "FÉDÉRATION" : isLeague ? "LIGUE" : "CLUB"
+                      }
                       variant="outlined"
                       size="small"
                       sx={{
                         fontWeight: "bold",
                         fontSize: "0.7rem",
-                        color: isLeague ? "primary.main" : "success.main",
-                        borderColor: isLeague ? "primary.main" : "success.main",
+                        color: badgeColor,
+                        borderColor: badgeColor,
                       }}
                     />
                     <Chip

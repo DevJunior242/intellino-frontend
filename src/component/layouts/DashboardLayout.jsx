@@ -287,14 +287,8 @@ export default function DashboardLayout() {
       items: [
         {
           icon: <FactCheckIcon />,
-          title: "examens",
+          title: "Examens",
           to: "/dashboard/examen",
-          role: ["admin", "instructeur"],
-        },
-        {
-          icon: <FactCheckIcon />,
-          title: "S'inscrire à un examen",
-          to: "/dashboard/examens/disponibles",
           role: ["admin", "instructeur", "secretaire", "karateka"],
         },
       ],
