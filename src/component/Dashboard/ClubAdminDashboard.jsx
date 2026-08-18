@@ -326,7 +326,7 @@ function ClubAdminDashboard() {
         animate={{ opacity: 1 }}
         transition={{ staggerChildren: 0.1 }}
       >
-        <Grid container spacing={3} justifyContent="center">
+        <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Élèves Actifs"
@@ -375,7 +375,7 @@ function ClubAdminDashboard() {
           </Grid>
         </Grid>
 
-        <Grid container spacing={3} justifyContent="center" sx={{ mt: 0.5 }}>
+        <Grid container spacing={3} sx={{ mt: 0.5 }}>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Abonnements à renouveler"
