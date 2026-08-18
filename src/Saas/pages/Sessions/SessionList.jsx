@@ -125,7 +125,7 @@ function SessionList() {
     return (
       <ErrorBlock
         message="Impossible de charger les sessions"
-        onRetry={getSession}
+        onRetry={() => getSession()}
       />
     );
 

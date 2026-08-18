@@ -54,7 +54,7 @@ const InventoryPage = () => {
     return (
       <ErrorBlock
         message="Impossible de charger les équipements"
-        onRetry={fetchInventory}
+        onRetry={() => fetchInventory()}
       />
     );
   return (

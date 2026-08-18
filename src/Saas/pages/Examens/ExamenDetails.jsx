@@ -72,7 +72,7 @@ function ExamenDetails() {
     return (
       <ErrorBlock
         message="Impossible de charger les détails de la examen"
-        onRetry={fetchExamenData}
+        onRetry={() => fetchExamenData()}
       />
     );
   // Logique de permission dynamique

@@ -219,7 +219,7 @@ function MemberTable() {
     return (
       <ErrorBlock
         message="Impossible de charger les membres"
-        onRetry={getMembers}
+        onRetry={() => getMembers()}
       />
     );
   return (

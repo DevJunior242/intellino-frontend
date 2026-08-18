@@ -94,7 +94,7 @@ function MesClubs() {
     getMyClubs(search, status, newPage + 1);
   };
 
-  if (error) return <ErrorBlock message={error} onRetry={getMyClubs} />;
+  if (error) return <ErrorBlock message={error} onRetry={() => getMyClubs()} />;
   const statusList = [
     { label: "Tous", value: "" },
     { label: "En attente", value: 0 },

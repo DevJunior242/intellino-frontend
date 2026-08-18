@@ -90,7 +90,7 @@ function PaymentIndex() {
     return (
       <ErrorBlock
         message="Impossible de charger les paiements"
-        onRetry={getPayment}
+        onRetry={() => getPayment()}
       />
     );
   return (

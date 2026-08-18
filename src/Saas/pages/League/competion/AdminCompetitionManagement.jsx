@@ -52,7 +52,12 @@ export default function AdminCompetitionManagement() {
   };
 
   if (errorInscriptions)
-    return <ErrorBlock message={error} onRetry={fetchInscriptions} />;
+    return (
+      <ErrorBlock
+        message={error}
+        onRetry={() => fetchInscriptions(selectedCompId)}
+      />
+    );
   return (
     <Box>
       {/* SECTION 1 : Swiper pour choisir LA compétition */}

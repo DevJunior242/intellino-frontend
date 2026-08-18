@@ -90,7 +90,7 @@ const DebtPage = () => {
     return (
       <ErrorBlock
         message="Impossible de charger les débits"
-        onRetry={fetchDebts}
+        onRetry={() => fetchDebts()}
       />
     );
   return (

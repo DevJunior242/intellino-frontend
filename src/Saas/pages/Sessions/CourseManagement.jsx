@@ -100,7 +100,7 @@ function CourseManagement({ sessionId }) {
     return (
       <ErrorBlock
         message="Impossible de charger les détails de la session"
-        onRetry={fetchSessionData}
+        onRetry={() => fetchSessionData()}
       />
     );
   // Couleurs dynamiques selon le statutconst statusConfig = {

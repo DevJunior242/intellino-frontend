@@ -84,7 +84,7 @@ function ExamenIndex() {
     return (
       <ErrorBlock
         message="Impossible de charger les examens"
-        onRetry={GetExamens}
+        onRetry={() => GetExamens()}
       />
     );
   }
