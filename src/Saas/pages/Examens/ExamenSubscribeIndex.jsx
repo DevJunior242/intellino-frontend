@@ -316,13 +316,15 @@ export default function ExamenSubscribeIndex() {
   });
 
   const subscribedIds = useMemo(() => {
-    return lots.map((lot) => lot.examen_id).filter(Boolean);
+    return lots.map((lot) => lot.payable_id).filter(Boolean);
   }, [lots]);
 
   const fetchLots = useCallback(async () => {
     setLoadingLots(true);
     try {
-      const { data } = await Instance.get("/api/examen-payments/mes-lots");
+      const { data } = await Instance.get("/api/transactions/mes-lots", {
+        params: { payable_type: "examen" },
+      });
       setLots(data.data || []);
     } catch {
       // silencieux
@@ -485,11 +487,11 @@ export default function ExamenSubscribeIndex() {
         payment={paymentTarget}
         declarerEndpoint={
           paymentTarget
-            ? `/api/examen-payments/${paymentTarget.id}/declarer`
+            ? `/api/transactions/${paymentTarget.id}/declarer`
             : null
         }
-        organisateurId={paymentTarget?.examen?.organisateur_id}
-        organisateurType={paymentTarget?.examen?.organisateur_type}
+        organisateurId={paymentTarget?.organisateur_id}
+        organisateurType={paymentTarget?.organisateur_type}
         onClose={() => setPaymentTarget(null)}
         onSuccess={() => {
           setPaymentTarget(null);

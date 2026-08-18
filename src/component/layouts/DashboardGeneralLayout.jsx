@@ -48,6 +48,7 @@ import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import { BusinessOutlined } from "@mui/icons-material";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 
 // ─── Nav Config ───────────────────────────────────────────────────────────────
 const getNavSections = (activeType) => {
@@ -170,6 +171,14 @@ const getNavSections = (activeType) => {
     {
       label: "General",
       items: [
+        {
+          icon: <AccountBalanceWalletOutlinedIcon fontSize="small" />,
+          label: "Comptabilité",
+          to: isFederation
+            ? "/dashboard/federation/comptabilite"
+            : "/dashboard/league/comptabilite",
+          role: ["admin"],
+        },
         //painement
         {
           icon: <BusinessOutlined fontSize="small" />,

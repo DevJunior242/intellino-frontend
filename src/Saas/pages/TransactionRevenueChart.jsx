@@ -7,23 +7,35 @@ import {
   CircularProgress,
   useTheme,
 } from "@mui/material";
-import { Instance } from "../../../Api/Axios";
+import { Instance } from "../../Api/Axios";
 
-export default function StageRevenueChart() {
+// Remplace Fede/LicenceRevenueChart.jsx et League/StageRevenueChart.jsx —
+// mêmes recettes maintenant unifiées dans /api/transactions, un seul
+// composant paramétrable au lieu de deux quasi-identiques.
+export default function TransactionRevenueChart({
+  title = "Recettes encaissées (6 derniers mois)",
+  payableType = null,
+  seriesLabel = "Recettes",
+  color,
+  height = 420,
+}) {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await Instance.get("/api/stage-payments/statistiques-mensuelles");
+      const res = await Instance.get("/api/transactions/statistiques-mensuelles", {
+        params: payableType ? { payable_type: payableType } : undefined,
+      });
       setData(res.data?.data || []);
     } catch (error) {
-      console.error("Erreur lors de la récupération des recettes stages :", error);
+      console.error("Erreur lors de la récupération des recettes :", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [payableType]);
 
   useEffect(() => {
     fetchData();
@@ -38,7 +50,7 @@ export default function StageRevenueChart() {
         borderRadius: 4,
         border: "1px solid",
         borderColor: "divider",
-        height: 420,
+        height,
       }}
     >
       <Typography
@@ -50,12 +62,12 @@ export default function StageRevenueChart() {
           fontSize: { xs: 12, sm: 16 },
         }}
       >
-        Recettes stages encaissées (6 derniers mois)
+        {title}
       </Typography>
 
       <Box
         sx={{
-          height: 320,
+          height: height - 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -86,13 +98,13 @@ export default function StageRevenueChart() {
             series={[
               {
                 dataKey: "total",
-                label: "Recettes stages",
-                color: theme.palette.primary.main,
+                label: seriesLabel,
+                color: color || theme.palette.primary.main,
               },
             ]}
             borderRadius={8}
             margin={{ left: 60, right: 10, bottom: 30, top: 10 }}
-            height={300}
+            height={height - 120}
           />
         )}
       </Box>

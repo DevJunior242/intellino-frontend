@@ -78,8 +78,7 @@ const darkInputSx = {
 // - payment        : objet StagePayment ou LicencePayment (doit contenir id, amount,
 //                    organisateur_id + organisateur_type pour stages,
 //                    ou federation_id pour licences)
-// - declarerEndpoint : ex: `/api/stage-payments/${id}/declarer`
-//                       ou `/api/licence-payments/${id}/declarer`
+// - declarerEndpoint : ex: `/api/transactions/${id}/declarer`
 // - organisateurId : id de la ligue/fédé dont on veut afficher les moyens de paiement
 // - organisateurType : 'Ligue' ou 'Federation'
 // - onClose        : callback fermeture

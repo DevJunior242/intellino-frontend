@@ -188,6 +188,7 @@ const LicenceTypeIndex = lazy(
   () => import("./Saas/pages/Fede/Licencetypeindex.jsx"),
 );
 const LicenceIndex = lazy(() => import("./Saas/pages/LicenceIndex.jsx"));
+const Comptabilite = lazy(() => import("./Saas/pages/Comptabilite.jsx"));
 const LeagueFederationAffiliation = lazy(
   () => import("./Saas/pages/Fede/LeagueFederationAffiliation.jsx"),
 );
@@ -329,6 +330,7 @@ const AppRoutes = () => {
           <Route path="affiliations" element={<AffiliationTarifIndex />} />
           <Route path="invitation" element={<LeagueFederationAffiliation />} />
           <Route path="structure" element={<FederationStructure />} />
+          <Route path="comptabilite" element={<Comptabilite />} />
           <Route path="payment-methods" element={<PaymentMethodIndex />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="configCategory" element={<SubDisciplinePage />} />
@@ -365,6 +367,7 @@ const AppRoutes = () => {
 
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
+          <Route path="comptabilite" element={<Comptabilite />} />
           <Route path="payment-methods" element={<PaymentMethodIndex />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />

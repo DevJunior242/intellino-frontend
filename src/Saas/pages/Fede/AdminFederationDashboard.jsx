@@ -21,7 +21,7 @@ import {
   Wc,
 } from "@mui/icons-material";
 import { Instance } from "../../../Api/Axios";
-import LicenceRevenueChart from "./LicenceRevenueChart";
+import TransactionRevenueChart from "../TransactionRevenueChart";
 import ClubsParLigueChart from "./ClubsParLigueChart";
 import PromoteCode from "./PromoteCode";
 import ActivityFeed from "../ActivityFeed";
@@ -47,8 +47,8 @@ export default function AdminFederationDashboard() {
 
   const fetchLicencesAVerifier = useCallback(async () => {
     try {
-      const res = await Instance.get("/api/licence-payments", {
-        params: { status: "declared" },
+      const res = await Instance.get("/api/transactions", {
+        params: { status: "declared", payable_type: "licence_lot" },
       });
       setLicencesAVerifier((res.data?.data || []).length);
     } catch (error) {
@@ -320,7 +320,12 @@ export default function AdminFederationDashboard() {
           component={motion.div}
           variants={cardVariants}
         >
-          <LicenceRevenueChart />
+          <TransactionRevenueChart
+            title="Recettes licences encaissées (6 derniers mois)"
+            payableType="licence_lot"
+            seriesLabel="Recettes licences"
+            color={theme.palette.warning.main}
+          />
         </Grid>
 
         <Grid

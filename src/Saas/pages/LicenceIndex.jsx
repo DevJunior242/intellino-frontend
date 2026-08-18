@@ -872,7 +872,9 @@ export default function LicenceIndex() {
   const fetchLots = useCallback(async () => {
     setLoadingLots(true);
     try {
-      const { data } = await Instance.get("/api/licence-payments/mes-lots");
+      const { data } = await Instance.get("/api/transactions/mes-lots", {
+        params: { payable_type: "licence_lot" },
+      });
       setLots(data.data || []);
     } catch {
       // silencieux : section secondaire, ne bloque pas le reste de la page
@@ -1090,11 +1092,11 @@ export default function LicenceIndex() {
         payment={paymentTarget}
         declarerEndpoint={
           paymentTarget
-            ? `/api/licence-payments/${paymentTarget.id}/declarer`
+            ? `/api/transactions/${paymentTarget.id}/declarer`
             : null
         }
-        organisateurId={paymentTarget?.federation_id}
-        organisateurType="Federation"
+        organisateurId={paymentTarget?.organisateur_id}
+        organisateurType={paymentTarget?.organisateur_type}
         onClose={() => setPaymentTarget(null)}
         onSuccess={handlePaymentSuccess}
         setToast={setToast}

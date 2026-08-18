@@ -30,12 +30,12 @@ export default function PendingPaymentsWidget() {
   const fetchLots = useCallback(async () => {
     setLoading(true);
     try {
-      const [stageRes, licenceRes] = await Promise.all([
-        Instance.get("/api/stage-payments/mes-lots"),
-        Instance.get("/api/licence-payments/mes-lots"),
-      ]);
-      setStagesDue(sumPending(stageRes.data?.data || []));
-      setLicencesDue(sumPending(licenceRes.data?.data || []));
+      const { data } = await Instance.get("/api/transactions/mes-lots");
+      const lots = data?.data || [];
+      setStagesDue(sumPending(lots.filter((l) => l.payable_type === "stage")));
+      setLicencesDue(
+        sumPending(lots.filter((l) => l.payable_type === "licence_lot")),
+      );
     } catch (error) {
       console.error("Erreur lors de la récupération des paiements en attente :", error);
     } finally {

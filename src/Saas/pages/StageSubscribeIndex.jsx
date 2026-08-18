@@ -396,13 +396,15 @@ export default function StageSubscribeIndex() {
 
   // ✅ subscribedIds déduit des lots — pas de fetch séparé
   const subscribedIds = useMemo(() => {
-    return lots.map((lot) => lot.stage_id).filter(Boolean);
+    return lots.map((lot) => lot.payable_id).filter(Boolean);
   }, [lots]);
 
   const fetchLots = useCallback(async () => {
     setLoadingLots(true);
     try {
-      const { data } = await Instance.get("/api/stage-payments/mes-lots");
+      const { data } = await Instance.get("/api/transactions/mes-lots", {
+        params: { payable_type: "stage" },
+      });
       setLots(data.data || []);
     } catch {
       // silencieux
@@ -673,11 +675,11 @@ export default function StageSubscribeIndex() {
         payment={paymentTarget}
         declarerEndpoint={
           paymentTarget
-            ? `/api/stage-payments/${paymentTarget.id}/declarer`
+            ? `/api/transactions/${paymentTarget.id}/declarer`
             : null
         }
-        organisateurId={paymentTarget?.stage?.organisateur_id}
-        organisateurType={paymentTarget?.stage?.organisateur_type}
+        organisateurId={paymentTarget?.organisateur_id}
+        organisateurType={paymentTarget?.organisateur_type}
         onClose={() => setPaymentTarget(null)}
         onSuccess={() => {
           setPaymentTarget(null);

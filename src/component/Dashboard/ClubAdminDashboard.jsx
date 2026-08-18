@@ -98,7 +98,7 @@ function ClubAdminDashboard() {
   const fetchAffiliationStatus = useCallback(async () => {
     if (!activeId) return;
     try {
-      const response = await Instance.get("/api/affiliation-payments/mon-statut");
+      const response = await Instance.get("/api/transactions/mon-statut-affiliation");
       setAffiliationStatus(response.data.data);
     } catch {
       // Silencieux : l'alerte ne s'affiche simplement pas si le statut est indisponible
@@ -453,11 +453,11 @@ function ClubAdminDashboard() {
         payment={affiliationStatus?.payment}
         declarerEndpoint={
           affiliationStatus?.payment
-            ? `/api/affiliation-payments/${affiliationStatus.payment.id}/declarer`
+            ? `/api/transactions/${affiliationStatus.payment.id}/declarer`
             : null
         }
-        organisateurId={affiliationStatus?.payment?.federation_id}
-        organisateurType="Federation"
+        organisateurId={affiliationStatus?.payment?.organisateur_id}
+        organisateurType={affiliationStatus?.payment?.organisateur_type}
         onClose={() => setShowAffiliationDialog(false)}
         onSuccess={() => {
           setShowAffiliationDialog(false);

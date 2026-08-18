@@ -746,8 +746,8 @@ export default function LicenceTypeIndex() {
     setLoadingLots(true);
     setLotsError(null);
     try {
-      const { data } = await Instance.get("/api/licence-payments", {
-        params: { status: "declared" },
+      const { data } = await Instance.get("/api/transactions", {
+        params: { status: "declared", payable_type: "licence_lot" },
       });
       setPendingLots(data.data || []);
     } catch (err) {
@@ -769,7 +769,7 @@ export default function LicenceTypeIndex() {
   const handleConfirmLot = async (lot) => {
     setProcessingLotId(lot.id);
     try {
-      await Instance.patch(`/api/licence-payments/${lot.id}/confirmer`);
+      await Instance.patch(`/api/transactions/${lot.id}/confirmer`);
       setPendingLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({
         open: true,
@@ -791,7 +791,7 @@ export default function LicenceTypeIndex() {
   const handleRejectLot = async (lot) => {
     setProcessingLotId(lot.id);
     try {
-      await Instance.patch(`/api/licence-payments/${lot.id}/rejeter`);
+      await Instance.patch(`/api/transactions/${lot.id}/rejeter`);
       setPendingLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({
         open: true,

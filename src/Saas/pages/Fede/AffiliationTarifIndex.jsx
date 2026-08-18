@@ -360,8 +360,8 @@ export default function AffiliationTarifIndex() {
   const fetchPendingPayments = useCallback(async () => {
     setLoadingPayments(true);
     try {
-      const { data } = await Instance.get("/api/affiliation-payments", {
-        params: { status: "declared" },
+      const { data } = await Instance.get("/api/transactions", {
+        params: { status: "declared", payable_type: "affiliation" },
       });
       setPendingPayments(data.data || []);
     } catch {
@@ -395,7 +395,7 @@ export default function AffiliationTarifIndex() {
   const handleConfirm = async (payment) => {
     setProcessingId(payment.id);
     try {
-      await Instance.post(`/api/affiliation-payments/${payment.id}/confirmer`);
+      await Instance.patch(`/api/transactions/${payment.id}/confirmer`);
       setPendingPayments((prev) => prev.filter((p) => p.id !== payment.id));
       setToast({
         open: true,
@@ -417,7 +417,7 @@ export default function AffiliationTarifIndex() {
   const handleReject = async (payment) => {
     setProcessingId(payment.id);
     try {
-      await Instance.post(`/api/affiliation-payments/${payment.id}/rejeter`);
+      await Instance.patch(`/api/transactions/${payment.id}/rejeter`);
       setPendingPayments((prev) => prev.filter((p) => p.id !== payment.id));
       setToast({
         open: true,

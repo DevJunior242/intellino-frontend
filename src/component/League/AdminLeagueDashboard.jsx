@@ -29,7 +29,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import LeagueFederationAffiliation from "../../Saas/pages/Fede/LeagueFederationAffiliation";
 import VitalityGauge from "../../Saas/pages/League/VitalityGauge";
-import StageRevenueChart from "../../Saas/pages/League/StageRevenueChart";
+import TransactionRevenueChart from "../../Saas/pages/TransactionRevenueChart";
 // ─── Icons (inline SVG via MUI SvgIcon approach, using emoji fallback) ───────
 const icons = {
   dashboard: "⊞",
@@ -182,8 +182,8 @@ function AdminLeagueDashboard() {
     // Promise.allSettled : chaque section est indépendante, l'échec de l'une
     // ne doit pas empêcher l'affichage des deux autres.
     const [statsRes, aVerifierRes, examRes] = await Promise.allSettled([
-      Instance.get("/api/stage-payments/statistiques"),
-      Instance.get("/api/stage-payments/a-verifier"),
+      Instance.get("/api/transactions/statistiques"),
+      Instance.get("/api/transactions/a-verifier"),
       Instance.get("/api/examens/vitality-stats"),
     ]);
 
@@ -327,7 +327,10 @@ function AdminLeagueDashboard() {
       {/* Recettes stages par mois + examens */}
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <Box sx={{ flex: 1, minWidth: 320 }}>
-          <StageRevenueChart />
+          <TransactionRevenueChart
+            title="Recettes encaissées (6 derniers mois)"
+            seriesLabel="Recettes"
+          />
         </Box>
         <Box
           sx={{ flex: 1, minWidth: 260, cursor: "pointer" }}

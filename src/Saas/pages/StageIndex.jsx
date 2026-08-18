@@ -591,7 +591,9 @@ export default function StageIndex() {
   const fetchPendingLots = useCallback(async () => {
     setLoadingLots(true);
     try {
-      const { data } = await Instance.get("/api/stage-payments/a-verifier");
+      const { data } = await Instance.get("/api/transactions/a-verifier", {
+        params: { payable_type: "stage" },
+      });
       setPendingLots(data.data || []);
     } catch {
       // silencieux
@@ -607,7 +609,7 @@ export default function StageIndex() {
   const handleConfirmLot = async (lot) => {
     setProcessingLotId(lot.id);
     try {
-      await Instance.patch(`/api/stage-payments/${lot.id}/confirmer`);
+      await Instance.patch(`/api/transactions/${lot.id}/confirmer`);
       setPendingLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({
         open: true,
@@ -628,7 +630,7 @@ export default function StageIndex() {
   const handleRejectLot = async (lot) => {
     setProcessingLotId(lot.id);
     try {
-      await Instance.patch(`/api/stage-payments/${lot.id}/rejeter`);
+      await Instance.patch(`/api/transactions/${lot.id}/rejeter`);
       setPendingLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({
         open: true,

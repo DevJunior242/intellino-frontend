@@ -146,7 +146,9 @@ export default function ExamenPaymentsToVerify() {
   const fetchPendingLots = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await Instance.get("/api/examen-payments/a-verifier");
+      const { data } = await Instance.get("/api/transactions/a-verifier", {
+        params: { payable_type: "examen" },
+      });
       setLots(data.data || []);
     } catch {
       // silencieux
@@ -162,7 +164,7 @@ export default function ExamenPaymentsToVerify() {
   const handleConfirm = async (lot) => {
     setProcessingId(lot.id);
     try {
-      await Instance.patch(`/api/examen-payments/${lot.id}/confirmer`);
+      await Instance.patch(`/api/transactions/${lot.id}/confirmer`);
       setLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({ open: true, message: "Paiement confirmé.", severity: "success" });
     } catch (err) {
@@ -179,7 +181,7 @@ export default function ExamenPaymentsToVerify() {
   const handleReject = async (lot) => {
     setProcessingId(lot.id);
     try {
-      await Instance.patch(`/api/examen-payments/${lot.id}/rejeter`);
+      await Instance.patch(`/api/transactions/${lot.id}/rejeter`);
       setLots((prev) => prev.filter((l) => l.id !== lot.id));
       setToast({ open: true, message: "Déclaration rejetée.", severity: "success" });
     } catch (err) {
