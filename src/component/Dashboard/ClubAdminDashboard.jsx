@@ -373,9 +373,7 @@ function ClubAdminDashboard() {
               subtitle={`${stats.total_instructors || 0} instructeur${stats.total_instructors > 1 ? "s" : ""} · ${stats.total_secretaries || 0} secrétaire${stats.total_secretaries > 1 ? "s" : ""}`}
             />
           </Grid>
-        </Grid>
 
-        <Grid container spacing={3} sx={{ mt: 0.5 }}>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Abonnements à renouveler"
