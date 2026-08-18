@@ -197,9 +197,6 @@ const AdminFederationDashboard = lazy(
 const AffiliationTarifIndex = lazy(
   () => import("./Saas/pages/Fede/AffiliationTarifIndex.jsx"),
 );
-const PaymentMethodIndex = lazy(
-  () => import("./Saas/pages/Paiement/Paymentmethodindex.jsx"),
-);
 
 const ProtectedRoute = ({ allowedRoles }) => {
   const { auth, activeRole, loading } = UseAuth();
@@ -326,7 +323,6 @@ const AppRoutes = () => {
           <Route path="invitation" element={<LeagueFederationAffiliation />} />
           <Route path="structure" element={<FederationStructure />} />
           <Route path="comptabilite" element={<Comptabilite />} />
-          <Route path="payment-methods" element={<PaymentMethodIndex />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="configCategory" element={<SubDisciplinePage />} />
           <Route path="activity" element={<ProgrammeActivites />} />
@@ -363,7 +359,6 @@ const AppRoutes = () => {
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
           <Route path="comptabilite" element={<Comptabilite />} />
-          <Route path="payment-methods" element={<PaymentMethodIndex />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />
         </Route>

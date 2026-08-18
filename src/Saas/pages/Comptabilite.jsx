@@ -11,14 +11,20 @@ import {
   Skeleton,
   Snackbar,
   Alert,
+  Tabs,
+  Tab,
+  Paper,
 } from "@mui/material";
+import { useSearchParams } from "react-router-dom";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { Instance } from "../../Api/Axios";
 import TransactionRevenueChart from "./TransactionRevenueChart";
+import PaymentMethodIndex from "./Paiement/Paymentmethodindex";
 
 const TYPE_LABELS = {
   licence_lot: "Licences",
@@ -62,7 +68,7 @@ function KpiCard({ icon, label, value, color }) {
   );
 }
 
-export default function Comptabilite() {
+function VueEnsembleTab() {
   const [stats, setStats] = useState(null);
   const [byType, setByType] = useState({});
   const [aVerifier, setAVerifier] = useState([]);
@@ -137,13 +143,6 @@ export default function Comptabilite() {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 0.5 }}>
-        Comptabilité
-      </Typography>
-      <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
-        Vue consolidée de tous les paiements — licences, affiliations, stages, examens.
-      </Typography>
-
       {loading ? (
         <Skeleton height={140} sx={{ borderRadius: 3, mb: 3 }} />
       ) : (
@@ -301,6 +300,62 @@ export default function Comptabilite() {
           {toast.message}
         </Alert>
       </Snackbar>
+    </Box>
+  );
+}
+
+const TABS = [
+  { value: "apercu", label: "Vue d'ensemble", icon: <DashboardOutlinedIcon fontSize="small" /> },
+  { value: "moyens", label: "Moyens de paiement", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> },
+];
+
+export default function Comptabilite() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = TABS.some((t) => t.value === searchParams.get("tab"))
+    ? searchParams.get("tab")
+    : "apercu";
+  const [tab, setTab] = useState(initialTab);
+
+  const goTo = (value) => {
+    setTab(value);
+    setSearchParams({ tab: value }, { replace: true });
+  };
+
+  return (
+    <Box>
+      <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 0.5 }}>
+        Comptabilité
+      </Typography>
+      <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+        Vue consolidée de tous les paiements — licences, affiliations, stages, examens.
+      </Typography>
+
+      <Paper
+        elevation={0}
+        sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", mb: 3, bgcolor: "background.paper" }}
+      >
+        <Tabs
+          value={tab}
+          onChange={(e, value) => goTo(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ px: 1 }}
+        >
+          {TABS.map((t) => (
+            <Tab
+              key={t.value}
+              value={t.value}
+              label={t.label}
+              icon={t.icon}
+              iconPosition="start"
+              sx={{ textTransform: "none", minHeight: 56 }}
+            />
+          ))}
+        </Tabs>
+      </Paper>
+
+      {tab === "moyens" ? <PaymentMethodIndex /> : <VueEnsembleTab />}
     </Box>
   );
 }
