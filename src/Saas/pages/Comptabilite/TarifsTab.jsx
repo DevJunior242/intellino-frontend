@@ -20,8 +20,9 @@ import {
   ToggleButtonGroup,
   Switch,
   Tooltip,
+  FormControlLabel,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import { Add, Delete, Check, Close } from "@mui/icons-material";
 import { Instance } from "../../../Api/Axios";
 import { UseAuth } from "../../../Api/AuthContext";
 import ErrorGlobal from "../../../component/ErrorGlobal";
@@ -53,6 +54,11 @@ const TarifsTab = () => {
   const [plans, setPlans] = useState([]);
   const [categories, setCategories] = useState([]);
   const [newPlan, setNewPlan] = useState(EMPTY_PLAN);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryAffectsValidity, setNewCategoryAffectsValidity] = useState(false);
+  const [categorySubmitting, setCategorySubmitting] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState(null);
 
   const { activeId } = UseAuth();
 
@@ -96,6 +102,45 @@ const TarifsTab = () => {
       ErrorGlobal({ error: err, setError });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setCategorySubmitting(true);
+    setError({});
+    try {
+      const res = await Instance.post("/api/payment-categories", {
+        name: newCategoryName.trim(),
+        affects_validity: newCategoryAffectsValidity,
+      });
+      if (res.data.success) {
+        setCategories((prev) => [...prev, res.data.category]);
+        setNewPlan((prev) => ({ ...prev, payment_category_id: res.data.category.id }));
+        setNewCategoryName("");
+        setNewCategoryAffectsValidity(false);
+        setAddingCategory(false);
+      }
+    } catch (err) {
+      ErrorGlobal({ error: err, setError });
+    } finally {
+      setCategorySubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async (cat) => {
+    if (deletingCategoryId) return;
+    setDeletingCategoryId(cat.id);
+    try {
+      await Instance.delete(`/api/payment-categories/${cat.id}`);
+      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+      if (newPlan.payment_category_id === cat.id) {
+        setNewPlan((prev) => ({ ...prev, payment_category_id: "" }));
+      }
+    } catch (err) {
+      ErrorGlobal({ error: err, setError });
+    } finally {
+      setDeletingCategoryId(null);
     }
   };
 
@@ -198,7 +243,7 @@ const TarifsTab = () => {
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
               Catégorie
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
               {categories.map((cat) => (
                 <Chip
                   key={cat.id}
@@ -209,13 +254,75 @@ const TarifsTab = () => {
                   onClick={() =>
                     setNewPlan({ ...newPlan, payment_category_id: cat.id })
                   }
+                  onDelete={
+                    !cat.is_system
+                      ? () => handleDeleteCategory(cat)
+                      : undefined
+                  }
+                  disabled={deletingCategoryId === cat.id}
                 />
               ))}
+              {!addingCategory && (
+                <Chip
+                  label="+ Nouvelle catégorie"
+                  variant="outlined"
+                  clickable
+                  onClick={() => setAddingCategory(true)}
+                  sx={{ borderStyle: "dashed" }}
+                />
+              )}
             </Stack>
             {hasError("payment_category_id") && (
               <FormHelperText error>
                 {getError("payment_category_id")}
               </FormHelperText>
+            )}
+
+            {addingCategory && (
+              <Paper
+                variant="outlined"
+                sx={{ p: 1.5, mt: 1.5, borderRadius: 2, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+              >
+                <TextField
+                  size="small"
+                  autoFocus
+                  label="Nom de la catégorie"
+                  placeholder="ex: Cours particulier"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  sx={{ minWidth: 220 }}
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      size="small"
+                      checked={newCategoryAffectsValidity}
+                      onChange={(e) => setNewCategoryAffectsValidity(e.target.checked)}
+                    />
+                  }
+                  label={
+                    <Typography variant="caption">Affecte la validité de l'adhésion</Typography>
+                  }
+                />
+                <IconButton
+                  color="primary"
+                  size="small"
+                  disabled={categorySubmitting || !newCategoryName.trim()}
+                  onClick={handleAddCategory}
+                >
+                  <Check />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setAddingCategory(false);
+                    setNewCategoryName("");
+                    setNewCategoryAffectsValidity(false);
+                  }}
+                >
+                  <Close />
+                </IconButton>
+              </Paper>
             )}
           </Grid>
 
