@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import {
   Box,
@@ -40,15 +40,20 @@ const items = [
 
 function Navbar() {
   const { auth, logout, user } = UseAuth();
-  useEffect(() => {
-    console.log("AUTH CHANGED", auth);
-  }, [auth]);
-  console.log("auth", auth);
+  const theme = useTheme();
   const navigate = useNavigate();
 
   const [openMenu, setOpenMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openAccount = Boolean(anchorEl);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleOpenMenu = () => setOpenMenu(!openMenu);
   const handleCloseMenu = () => setOpenMenu(false);
@@ -90,11 +95,17 @@ function Navbar() {
         justifyContent: "space-between",
         alignItems: "center",
         p: 2,
-        backgroundColor: "white",
+        position: "sticky",
+        top: 0,
+        zIndex: theme.zIndex.appBar,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: scrolled ? "0 2px 16px rgba(0,0,0,0.1)" : "none",
+        borderBottom: scrolled ? "none" : `1px solid ${theme.palette.divider}`,
+        transition: "box-shadow 0.25s ease, border-color 0.25s ease",
       }}
     >
       <Box sx={{ display: "flex" }}>
-        <ThemeToggle iconColor="rgba(21, 8, 8, 0.88)" />
+        <ThemeToggle />
 
         <motion.img
           src="/Intellino-Logo.png"
@@ -136,29 +147,29 @@ function Navbar() {
                     borderRadius: 2,
                     position: "relative",
                     cursor: "pointer",
-                    color: isActive ? "#1976d2" : "#555",
+                    color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
                     fontWeight: isActive ? 700 : 500,
                     fontSize: 15,
                     bgcolor: isActive
-                      ? "rgba(25, 118, 210, 0.08)"
+                      ? alpha(theme.palette.primary.main, 0.08)
                       : ["Inscription", "Connexion"].includes(item.title) &&
                           !isLogged
-                        ? "rgba(25, 118, 210, 0.1)"
+                        ? alpha(theme.palette.primary.main, 0.1)
                         : "transparent",
                     border: isActive
-                      ? "1px solid rgba(25, 118, 210, 0.2)"
+                      ? `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                       : ["Inscription", "Connexion"].includes(item.title) &&
                           !isLogged
-                        ? "1px solid rgba(25, 118, 210, 0.3)"
+                        ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
                         : "1px solid transparent",
                     transition: "all 0.3s ease",
                     "&:hover": {
-                      color: "#1976d2",
+                      color: theme.palette.primary.main,
                       bgcolor:
                         ["Inscription", "Connexion"].includes(item.title) &&
                         !isLogged
-                          ? "rgba(25, 118, 210, 0.2)"
-                          : "rgba(0, 0, 0, 0.04)",
+                          ? alpha(theme.palette.primary.main, 0.2)
+                          : alpha(theme.palette.text.primary, 0.04),
                     },
                   }}
                 >
@@ -172,7 +183,7 @@ function Navbar() {
                         left: "20%",
                         right: "20%",
                         height: "2px",
-                        background: "#1976d2",
+                        background: theme.palette.primary.main,
                         borderRadius: "2px",
                       }}
                     />
@@ -270,7 +281,7 @@ function Navbar() {
         <NotificationCenter />
 
         <Button onClick={handleOpenMenu}>
-          <MenuIcon sx={{ color: "#0312b8" }} />
+          <MenuIcon sx={{ color: theme.palette.primary.main }} />
         </Button>
 
         <Drawer
@@ -281,7 +292,7 @@ function Navbar() {
             sx: {
               width: "100%",
               height: "100%",
-              bgcolor: "white",
+              bgcolor: theme.palette.background.paper,
               display: "flex",
               flexDirection: "column",
               px: 4,
@@ -295,7 +306,7 @@ function Navbar() {
             {auth && (
               <Box
                 sx={{
-                  borderTop: "1px solid rgba(255,255,255,0.2)",
+                  borderTop: `1px solid ${theme.palette.divider}`,
                   pt: 2,
                   display: "flex",
                   justifyContent: "center",
@@ -307,8 +318,8 @@ function Navbar() {
                       sx={{
                         width: 40,
                         height: 40,
-                        bgcolor: "#fff",
-                        color: "#0606CF",
+                        bgcolor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
                       }}
                     >
                       {user?.fullname?.charAt(0)}
@@ -318,7 +329,7 @@ function Navbar() {
               </Box>
             )}
             <IconButton onClick={handleCloseMenu}>
-              <CloseIcon sx={{ color: "#100b9f", fontSize: 30 }} />
+              <CloseIcon sx={{ color: theme.palette.primary.main, fontSize: 30 }} />
             </IconButton>
           </Box>
 
@@ -343,29 +354,29 @@ function Navbar() {
                       borderRadius: 2,
                       position: "relative",
                       cursor: "pointer",
-                      color: isActive ? "#1976d2" : "#555",
+                      color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
                       fontWeight: isActive ? 700 : 500,
                       fontSize: 15,
                       bgcolor: isActive
-                        ? "rgba(25, 118, 210, 0.08)"
+                        ? alpha(theme.palette.primary.main, 0.08)
                         : ["Inscription", "Connexion"].includes(item.title) &&
                             !isLogged
-                          ? "rgba(25, 118, 210, 0.1)"
+                          ? alpha(theme.palette.primary.main, 0.1)
                           : "transparent",
                       border: isActive
-                        ? "1px solid rgba(25, 118, 210, 0.2)"
+                        ? `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                         : ["Inscription", "Connexion"].includes(item.title) &&
                             !isLogged
-                          ? "1px solid rgba(25, 118, 210, 0.3)"
+                          ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
                           : "1px solid transparent",
                       transition: "all 0.3s ease",
                       "&:hover": {
-                        color: "#1976d2",
+                        color: theme.palette.primary.main,
                         bgcolor:
                           ["Inscription", "Connexion"].includes(item.title) &&
                           !isLogged
-                            ? "rgba(25, 118, 210, 0.2)"
-                            : "rgba(0, 0, 0, 0.04)",
+                            ? alpha(theme.palette.primary.main, 0.2)
+                            : alpha(theme.palette.text.primary, 0.04),
                       },
                     }}
                   >
