@@ -16,6 +16,7 @@ import {
   Paper,
 } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { DataGrid } from "@mui/x-data-grid";
 import { useTheme } from "@mui/material/styles";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
@@ -23,12 +24,31 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import { Instance } from "../../../Api/Axios";
 import PaymentMethodIndex from "../Paiement/Paymentmethodindex";
 
 function formatAmount(amount) {
   return Number(amount || 0).toLocaleString("fr-FR");
 }
+
+function formatDate(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const SUBSCRIPTION_STATUS_META = {
+  pending_payment: { label: "En attente de paiement", color: "warning" },
+  paid: { label: "Actif", color: "success" },
+  expired: { label: "Expiré", color: "default" },
+  cancelled: { label: "Remplacé", color: "default" },
+};
+
+const ORG_TYPE_LABELS = { Club: "Club", Ligue: "Ligue", Federation: "Fédération" };
 
 function KpiCard({ icon, label, value, color }) {
   return (
@@ -274,8 +294,117 @@ function VueEnsembleTab() {
   );
 }
 
+function joursRestants(subscription) {
+  if (subscription.status !== "paid" || !subscription.end_date) return null;
+  const diffMs = new Date(subscription.end_date) - new Date();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function AbonnementsTab() {
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Instance.get("/api/subscriptions")
+      .then(({ data }) => setSubscriptions(data?.subscriptions?.data || []))
+      .catch(() => {
+        // Silencieux : la page reste affichable (liste vide) plutôt que de planter.
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const rows = subscriptions.map((s) => ({ ...s, id: s.id }));
+
+  const columns = [
+    {
+      field: "organisateur",
+      headerName: "Organisation",
+      flex: 1,
+      minWidth: 180,
+      valueGetter: (value, row) => row.organisateur?.name || "—",
+    },
+    {
+      field: "organisateur_type",
+      headerName: "Type",
+      width: 110,
+      renderCell: (params) => (
+        <Chip size="small" label={ORG_TYPE_LABELS[params.value] || params.value} variant="outlined" />
+      ),
+    },
+    {
+      field: "plan",
+      headerName: "Palier",
+      flex: 1,
+      minWidth: 140,
+      valueGetter: (value, row) => row.plan?.name || "—",
+    },
+    {
+      field: "amount",
+      headerName: "Montant",
+      width: 130,
+      valueFormatter: (value) => `${formatAmount(value)} FCFA`,
+    },
+    {
+      field: "status",
+      headerName: "Statut",
+      width: 190,
+      renderCell: (params) => {
+        const meta = SUBSCRIPTION_STATUS_META[params.value] || { label: params.value, color: "default" };
+        return <Chip size="small" label={meta.label} color={meta.color} />;
+      },
+    },
+    {
+      field: "start_date",
+      headerName: "Début",
+      width: 120,
+      valueFormatter: (value) => formatDate(value),
+    },
+    {
+      field: "end_date",
+      headerName: "Fin",
+      width: 120,
+      valueFormatter: (value) => formatDate(value),
+    },
+    {
+      field: "jours_restants",
+      headerName: "Délai restant",
+      width: 130,
+      sortable: false,
+      renderCell: (params) => {
+        const jours = joursRestants(params.row);
+        if (jours === null) return "—";
+        if (jours < 0) return <Chip size="small" label="Expiré" color="error" />;
+        return `${jours} jour${jours > 1 ? "s" : ""}`;
+      },
+    },
+  ];
+
+  return (
+    <Box sx={{ height: "70vh", width: "100%", minWidth: 0 }}>
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        loading={loading}
+        pageSizeOptions={[10, 25, 50]}
+        initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        disableRowSelectionOnClick
+        sx={{
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+        localeText={{
+          noRowsLabel: "Aucun abonnement pour le moment.",
+        }}
+      />
+    </Box>
+  );
+}
+
 const TABS = [
   { value: "apercu", label: "Vue d'ensemble", icon: <DashboardOutlinedIcon fontSize="small" /> },
+  { value: "abonnements", label: "Abonnements", icon: <ReceiptLongOutlinedIcon fontSize="small" /> },
   { value: "moyens", label: "Moyens de paiement", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> },
 ];
 
@@ -321,6 +450,8 @@ export default function SuperAdminComptabilite() {
           apiBase="/api/platform-payment-methods"
           subtitle="Ce que les clubs, ligues et fédérations verront pour régler leur abonnement Intellino"
         />
+      ) : tab === "abonnements" ? (
+        <AbonnementsTab />
       ) : (
         <VueEnsembleTab />
       )}
