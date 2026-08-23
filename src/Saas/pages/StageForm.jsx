@@ -1,22 +1,15 @@
 import React, { useState } from "react";
 import {
   Box,
-  Typography,
   TextField,
   Button,
-  ToggleButton,
-  ToggleButtonGroup,
-  FormHelperText,
   Dialog,
   DialogTitle,
   DialogContent,
 } from "@mui/material";
-import { motion } from "framer-motion";
-import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import { Instance } from "../../Api/Axios";
 import ErrorGlobal from "../../component/ErrorGlobal";
 import Message from "./Message";
-import { UseAuth } from "../../Api/AuthContext";
 
 export default function StageForm({ open, handleClose, onRefresh }) {
   const [formData, setFormData] = useState({
@@ -106,32 +99,17 @@ export default function StageForm({ open, handleClose, onRefresh }) {
               placeholder="Ex: 100"
             />
 
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
-                Type de stage *
-              </Typography>
-              <ToggleButtonGroup
-                exclusive
-                fullWidth
-                value={formData.type}
-                onChange={(e, value) =>
-                  value && setFormData({ ...formData, type: value })
-                }
-              >
-                <ToggleButton value="arbitrage" sx={{ textTransform: "none" }}>
-                  ⚖️ Arbitrage
-                </ToggleButton>
-                <ToggleButton value="technique" sx={{ textTransform: "none" }}>
-                  🥋 Technique (Kihon / Kata)
-                </ToggleButton>
-                <ToggleButton value="combat" sx={{ textTransform: "none" }}>
-                  🥊 Combat (Kumite)
-                </ToggleButton>
-              </ToggleButtonGroup>
-              {hasError("type") && (
-                <FormHelperText error>{getError("type")}</FormHelperText>
-              )}
-            </Box>
+            <TextField
+              label="Type de stage"
+              error={hasError("type")}
+              helperText={getError("type")}
+              name="type"
+              required
+              fullWidth
+              value={formData.type}
+              onChange={handleChange}
+              placeholder="Ex: Arbitrage, Technique, Kumite..."
+            />
 
             <Box display="flex" gap={2}>
               <TextField
