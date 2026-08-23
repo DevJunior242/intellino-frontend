@@ -33,9 +33,43 @@ function TierRange({ plan }) {
   return `${plan.min_users}–${plan.max_users}`;
 }
 
-function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId }) {
+// Détermine ce qu'affiche/fait le bouton d'une carte selon l'abonnement
+// actuel de l'organisation (aucun, un autre palier, ou celui-ci) — c'est ce
+// qui garantit que cliquer sur une carte agit toujours sur CE palier-là,
+// jamais sur un autre abonnement en attente ailleurs.
+function getCardState(plan, mySubscription) {
+  if (!mySubscription) return { action: "new", label: "Commencer", disabled: false };
+
+  const isCurrentPlan = mySubscription.plan_id === plan.id;
+  const hasDeclaredPayment = mySubscription.payments?.some((p) => p.status === "declared");
+
+  if (isCurrentPlan) {
+    if (mySubscription.status === "paid") {
+      return { action: "current", label: "Palier actuel", disabled: true };
+    }
+    if (hasDeclaredPayment) {
+      return { action: "verifying", label: "Vérification en cours", disabled: true };
+    }
+    return { action: "resume", label: "Compléter le paiement", disabled: false };
+  }
+
+  if (mySubscription.status === "pending_payment" && hasDeclaredPayment) {
+    return {
+      action: "blocked",
+      label: "Indisponible",
+      disabled: true,
+      tooltip:
+        "Un paiement pour votre abonnement actuel est en cours de vérification. Patientez avant de changer de palier.",
+    };
+  }
+
+  return { action: "switch", label: "Changer pour ce palier", disabled: false };
+}
+
+function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId, mySubscription }) {
   const isSurMesure = plan.name.toLowerCase().includes("sur-mesure");
   const isGratuit = !isSurMesure && Number(plan.amount) === 0;
+  const cardState = getCardState(plan, mySubscription);
 
   const monthly = Number(plan.amount);
   const annualPerMonth = monthly * (1 - discountPercent / 100);
@@ -64,12 +98,12 @@ function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId }
         {plan.description}
       </Typography>
 
-      <Chip
-        size="small"
-        label={<TierRange plan={plan} />}
-        variant="outlined"
-        sx={{ alignSelf: "flex-start", mb: 2 }}
-      />
+      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+        <Chip size="small" label={<TierRange plan={plan} />} variant="outlined" />
+        {cardState.action === "current" && (
+          <Chip size="small" label="Actuel" color="success" />
+        )}
+      </Stack>
 
       <Box sx={{ mb: 2 }}>
         {isSurMesure ? (
@@ -100,10 +134,11 @@ function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId }
       <Box sx={{ flexGrow: 1 }} />
 
       <Button
-        variant={isSurMesure ? "outlined" : "contained"}
+        variant={isSurMesure || cardState.action === "current" ? "outlined" : "contained"}
         fullWidth
         sx={{ textTransform: "none", mt: 1 }}
-        disabled={subscribingId === plan.id}
+        disabled={subscribingId === plan.id || (!isSurMesure && cardState.disabled)}
+        title={!isSurMesure ? cardState.tooltip : undefined}
         {...(isSurMesure
           ? { href: "/contact" }
           : { onClick: () => onCommencer(plan) })}
@@ -112,7 +147,7 @@ function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId }
           ? "Nous contacter"
           : subscribingId === plan.id
             ? "Création..."
-            : "Commencer"}
+            : cardState.label}
       </Button>
     </Paper>
   );
@@ -132,20 +167,22 @@ export default function Pricing() {
   const [declareOpen, setDeclareOpen] = useState(false);
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
-  // Abonnement déjà créé (en attente de paiement ou de vérification) pour
-  // l'organisation active — permet de reprendre le flux si l'utilisateur a
-  // quitté la page entre "Commencer" et la déclaration du paiement, plutôt
-  // que de le laisser bloqué sans bouton (le backend refuse un 2e abonnement
-  // tant que celui-ci n'est pas payé/rejeté).
-  const [pendingSubscription, setPendingSubscription] = useState(null);
+  // Abonnement actuel de l'organisation active (en attente de paiement, en
+  // vérification, ou déjà actif) — sert à afficher le bon état sur chaque
+  // carte (Commencer / Compléter le paiement / Changer pour ce palier /
+  // Palier actuel) plutôt que d'agir sur "l'abonnement en attente" au sens
+  // large sans savoir de quel palier il s'agit.
+  const [mySubscription, setMySubscription] = useState(null);
 
-  const fetchPendingSubscription = () => {
+  const fetchMySubscription = () => {
     if (!isLogged) return;
     Instance.get("/api/subscriptions")
       .then(({ data }) => {
         const rows = data?.subscriptions?.data || [];
-        const pending = rows.find((s) => s.status === "pending_payment");
-        setPendingSubscription(pending || null);
+        const current = rows.find(
+          (s) => s.status === "pending_payment" || s.status === "paid",
+        );
+        setMySubscription(current || null);
       })
       .catch(() => {
         // Silencieux : l'absence de bannière n'empêche pas la page de fonctionner.
@@ -166,7 +203,7 @@ export default function Pricing() {
       })
       .finally(() => setLoading(false));
 
-    fetchPendingSubscription();
+    fetchMySubscription();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -176,17 +213,23 @@ export default function Pricing() {
       return;
     }
 
-    if (pendingSubscription) {
-      setActiveSubscription(pendingSubscription);
+    const cardState = getCardState(plan, mySubscription);
+    if (cardState.disabled) return;
+
+    if (cardState.action === "resume") {
+      setActiveSubscription(mySubscription);
       setDeclareOpen(true);
       return;
     }
 
+    // "new" (aucun abonnement) ou "switch" (changement de palier) passent
+    // tous les deux par la même création — le backend annule l'ancien
+    // abonnement s'il y en a un différent.
     setSubscribingId(plan.id);
     try {
       const { data } = await Instance.post("/api/subscriptions", { plan_id: plan.id });
       setActiveSubscription(data.subscription);
-      setPendingSubscription(data.subscription);
+      setMySubscription(data.subscription);
       setDeclareOpen(true);
     } catch (err) {
       setToast({
@@ -194,15 +237,13 @@ export default function Pricing() {
         message: err.response?.data?.message || "Impossible de créer l'abonnement.",
         severity: "error",
       });
-      // L'erreur backend la plus fréquente ici est "abonnement déjà en cours" —
-      // on rafraîchit pour faire réapparaître la bannière de reprise.
-      fetchPendingSubscription();
+      fetchMySubscription();
     } finally {
       setSubscribingId(null);
     }
   };
 
-  const hasDeclaredPayment = pendingSubscription?.payments?.some(
+  const hasDeclaredPayment = mySubscription?.payments?.some(
     (p) => p.status === "declared",
   );
 
@@ -235,7 +276,7 @@ export default function Pricing() {
           simplement sur votre nombre d'utilisateurs actifs.
         </Typography>
 
-        {pendingSubscription && (
+        {mySubscription && mySubscription.status === "pending_payment" && (
           <Alert
             severity={hasDeclaredPayment ? "info" : "warning"}
             sx={{ maxWidth: 640, mx: "auto", mb: 4 }}
@@ -246,7 +287,7 @@ export default function Pricing() {
                   size="small"
                   sx={{ textTransform: "none", fontWeight: 700 }}
                   onClick={() => {
-                    setActiveSubscription(pendingSubscription);
+                    setActiveSubscription(mySubscription);
                     setDeclareOpen(true);
                   }}
                 >
@@ -256,8 +297,14 @@ export default function Pricing() {
             }
           >
             {hasDeclaredPayment
-              ? `Votre paiement pour "${pendingSubscription.plan?.name}" (${formatFcfa(pendingSubscription.amount)} FCFA) est en cours de vérification.`
-              : `Vous avez un abonnement en attente de paiement : "${pendingSubscription.plan?.name}" (${formatFcfa(pendingSubscription.amount)} FCFA).`}
+              ? `Votre paiement pour "${mySubscription.plan?.name}" (${formatFcfa(mySubscription.amount)} FCFA) est en cours de vérification.`
+              : `Vous avez un abonnement en attente de paiement : "${mySubscription.plan?.name}" (${formatFcfa(mySubscription.amount)} FCFA).`}
+          </Alert>
+        )}
+
+        {mySubscription && mySubscription.status === "paid" && (
+          <Alert severity="success" sx={{ maxWidth: 640, mx: "auto", mb: 4 }}>
+            {`Abonnement actif : "${mySubscription.plan?.name}" (${formatFcfa(mySubscription.amount)} FCFA/mois). Choisissez un autre palier ci-dessous pour en changer.`}
           </Alert>
         )}
 
@@ -309,6 +356,7 @@ export default function Pricing() {
                     discountPercent={discountPercent}
                     onCommencer={handleCommencer}
                     subscribingId={subscribingId}
+                    mySubscription={mySubscription}
                   />
                 </Grid>
               ))}
@@ -328,7 +376,7 @@ export default function Pricing() {
         onClose={() => setDeclareOpen(false)}
         onSuccess={() => {
           setActiveSubscription(null);
-          fetchPendingSubscription();
+          fetchMySubscription();
         }}
         setToast={setToast}
       />

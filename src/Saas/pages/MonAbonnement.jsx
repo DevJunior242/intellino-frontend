@@ -32,6 +32,7 @@ const STATUS_META = {
   pending_payment: { label: "En attente de paiement", color: "warning" },
   paid: { label: "Actif", color: "success" },
   expired: { label: "Expiré", color: "default" },
+  cancelled: { label: "Remplacé par un changement de palier", color: "default" },
 };
 
 function SubscriptionRow({ subscription, onDeclarer }) {
