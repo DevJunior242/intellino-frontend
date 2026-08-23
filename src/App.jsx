@@ -291,6 +291,7 @@ const AppRoutes = () => {
           <Route path="grades-history" element={<StudentsGradesOverview />} />
           <Route path="examen" element={<ExamenIndex />} />
           <Route path="competition" element={<InscriptionPage />} />
+          <Route path="settings" element={<AccountSettings />} />
         </Route>
         <Route
           element={<ProtectedRoute allowedRoles={["parent", "karateka"]} />}
@@ -323,6 +324,7 @@ const AppRoutes = () => {
           <Route path="invitation" element={<LeagueFederationAffiliation />} />
           <Route path="structure" element={<FederationStructure />} />
           <Route path="comptabilite" element={<Comptabilite />} />
+          <Route path="settings" element={<AccountSettings />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="configCategory" element={<SubDisciplinePage />} />
           <Route path="activity" element={<ProgrammeActivites />} />
@@ -360,6 +362,7 @@ const AppRoutes = () => {
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
           <Route path="comptabilite" element={<Comptabilite />} />
+          <Route path="settings" element={<AccountSettings />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />
         </Route>

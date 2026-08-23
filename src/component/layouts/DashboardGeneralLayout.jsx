@@ -109,9 +109,10 @@ const getNavSections = (activeType) => {
         {
           icon: <CategoryIcon fontSize="small" />,
           label: "Catégories",
-          to: "/dashboard/federation/categories",
+          to: isFederation
+            ? "/dashboard/federation/categories"
+            : "/dashboard/league/categories",
           role: ["admin"],
-          showFor: ["federation"],
         },
         {
           icon: <VerifiedUserIcon fontSize="small" />,
@@ -145,12 +146,7 @@ const getNavSections = (activeType) => {
           to: "/dashboard/league/competitions",
           role: ["admin", "arbitre"],
         },
-        // {
-        //   icon: <FactCheckIcon fontSize="small" />,
-        //   label: "examens",
-        //   to: "/dashboard/league/examen",
-        //   role: ["admin"],
-        // },
+
         {
           icon: <WorkspacePremiumIcon fontSize="small" />,
           label: "Grades & examens",
@@ -189,7 +185,9 @@ const getNavSections = (activeType) => {
         {
           icon: <Settings fontSize="small" />,
           label: "Paramétrage général",
-          to: "/settings",
+          to: isFederation
+            ? "/dashboard/federation/settings"
+            : "/dashboard/league/settings",
           role: ["admin"],
         },
       ],
@@ -296,7 +294,11 @@ function SidebarContent({
         {!isCollapsed && (
           <Box sx={{ flex: 1 }}>
             <Typography
-              sx={{ fontWeight: 700, fontSize: "0.9rem", color: "text.primary" }}
+              sx={{
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                color: "text.primary",
+              }}
             >
               Karaté
               <span style={{ color: theme.palette.primary.main }}>

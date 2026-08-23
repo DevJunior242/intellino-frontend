@@ -296,7 +296,7 @@ export default function DashboardLayout() {
         {
           title: "Paramétrage général",
           icon: <Settings fontSize="small" />,
-          to: "/settings",
+          to: "/dashboard/settings",
           role: ["admin"],
         },
         {

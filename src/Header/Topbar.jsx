@@ -24,7 +24,7 @@ import NotificationCenter from "../component/NotificationCenter";
 
 const TopBar = () => {
   const theme = useTheme();
-  const { auth, logout } = UseAuth();
+  const { auth, logout, activeType } = UseAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -108,7 +108,11 @@ const TopBar = () => {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          <MenuItem onClick={() => navigate("/settings")}>
+          <MenuItem
+            onClick={() =>
+              navigate(activeType === "Club" ? "/dashboard/settings" : "/settings")
+            }
+          >
             <Settings sx={{ mr: 1 }} />
             Paramètres
           </MenuItem>
