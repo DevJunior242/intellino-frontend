@@ -478,7 +478,7 @@ export default function StageSubscribeIndex() {
       >
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 800, color: INK }}>
-            Stages de ma ligue
+            Stages disponibles
           </Typography>
           <Typography variant="body2" sx={{ color: MUTED }}>
             {loading
@@ -631,7 +631,7 @@ export default function StageSubscribeIndex() {
               <Typography variant="body2">
                 {hasActiveFilters
                   ? "Essayez d'ajuster vos filtres."
-                  : "Votre ligue n'a pas encore publié de stage."}
+                  : "Ni votre ligue ni votre fédération n'ont encore publié de stage."}
               </Typography>
             </Box>
           </Grid>
