@@ -39,6 +39,7 @@ const StudentGradCreate = lazy(() => import("./Saas/pages/StudentGradCreate"));
 const AttendanceCreate = lazy(() => import("./Saas/pages/AttendanceReate"));
 const AttendanceIndex = lazy(() => import("./Saas/pages/AttendanceIndex"));
 const About = lazy(() => import("./component/About"));
+const Pricing = lazy(() => import("./Saas/pages/Pricing"));
 const FAQSection = lazy(() => import("./component/Dashboard/FAQSection"));
 
 const NotFound = lazy(() => import("./Saas/pages/NotFound"));
@@ -392,6 +393,7 @@ const AppRoutes = () => {
         {/* non connecté  */}
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQSection />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
