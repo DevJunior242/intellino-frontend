@@ -48,6 +48,7 @@ import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import TrialBanner from "../TrialBanner";
 
 // ─── Nav Config ───────────────────────────────────────────────────────────────
 const getNavSections = (activeType) => {
@@ -730,6 +731,7 @@ export default function DashboardGeneralLayout() {
               },
             })}
           >
+            <TrialBanner />
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeItem}

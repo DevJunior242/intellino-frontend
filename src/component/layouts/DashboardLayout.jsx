@@ -48,6 +48,7 @@ import TopBar from "../../Header/Topbar";
 import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
+import TrialBanner from "../TrialBanner";
 import { Groups, Key, PeopleAlt, Settings } from "@mui/icons-material";
 import BadgeIcon from "@mui/icons-material/Badge";
 
@@ -666,6 +667,7 @@ export default function DashboardLayout() {
             minHeight: "100vh",
           }}
         >
+          <TrialBanner />
           <Suspense fallback={<LoadingScreen />}>
             <Outlet />
           </Suspense>
