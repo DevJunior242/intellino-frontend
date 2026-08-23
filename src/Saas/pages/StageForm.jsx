@@ -4,11 +4,9 @@ import {
   Typography,
   TextField,
   Button,
-  Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormHelperText,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -51,7 +49,7 @@ export default function StageForm({ open, handleClose, onRefresh }) {
         setFormData({
           title: "",
           type: "",
-          prive: "",
+          price: 0,
           start_at: "",
           end_at: "",
         });
@@ -108,23 +106,32 @@ export default function StageForm({ open, handleClose, onRefresh }) {
               placeholder="Ex: 100"
             />
 
-            <FormControl fullWidth required>
-              <InputLabel>Type de stage</InputLabel>
-              <Select
-                label="Type de stage"
-                error={hasError("type")}
-                helperText={getError("type")}
-                name="type"
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+                Type de stage *
+              </Typography>
+              <ToggleButtonGroup
+                exclusive
+                fullWidth
                 value={formData.type}
-                onChange={handleChange}
+                onChange={(e, value) =>
+                  value && setFormData({ ...formData, type: value })
+                }
               >
-                <MenuItem value="arbitrage">⚖️ Arbitrage</MenuItem>
-                <MenuItem value="technique">
+                <ToggleButton value="arbitrage" sx={{ textTransform: "none" }}>
+                  ⚖️ Arbitrage
+                </ToggleButton>
+                <ToggleButton value="technique" sx={{ textTransform: "none" }}>
                   🥋 Technique (Kihon / Kata)
-                </MenuItem>
-                <MenuItem value="combat">🥊 Combat (Kumite)</MenuItem>
-              </Select>
-            </FormControl>
+                </ToggleButton>
+                <ToggleButton value="combat" sx={{ textTransform: "none" }}>
+                  🥊 Combat (Kumite)
+                </ToggleButton>
+              </ToggleButtonGroup>
+              {hasError("type") && (
+                <FormHelperText error>{getError("type")}</FormHelperText>
+              )}
+            </Box>
 
             <Box display="flex" gap={2}>
               <TextField
