@@ -132,6 +132,26 @@ export default function Pricing() {
   const [declareOpen, setDeclareOpen] = useState(false);
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
+  // Abonnement déjà créé (en attente de paiement ou de vérification) pour
+  // l'organisation active — permet de reprendre le flux si l'utilisateur a
+  // quitté la page entre "Commencer" et la déclaration du paiement, plutôt
+  // que de le laisser bloqué sans bouton (le backend refuse un 2e abonnement
+  // tant que celui-ci n'est pas payé/rejeté).
+  const [pendingSubscription, setPendingSubscription] = useState(null);
+
+  const fetchPendingSubscription = () => {
+    if (!isLogged) return;
+    Instance.get("/api/subscriptions")
+      .then(({ data }) => {
+        const rows = data?.subscriptions?.data || [];
+        const pending = rows.find((s) => s.status === "pending_payment");
+        setPendingSubscription(pending || null);
+      })
+      .catch(() => {
+        // Silencieux : l'absence de bannière n'empêche pas la page de fonctionner.
+      });
+  };
+
   useEffect(() => {
     Promise.all([
       Instance.get("/api/public/plans"),
@@ -145,6 +165,9 @@ export default function Pricing() {
         // Silencieux : la page reste affichable (sections vides) plutôt que de planter.
       })
       .finally(() => setLoading(false));
+
+    fetchPendingSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCommencer = async (plan) => {
@@ -153,10 +176,17 @@ export default function Pricing() {
       return;
     }
 
+    if (pendingSubscription) {
+      setActiveSubscription(pendingSubscription);
+      setDeclareOpen(true);
+      return;
+    }
+
     setSubscribingId(plan.id);
     try {
       const { data } = await Instance.post("/api/subscriptions", { plan_id: plan.id });
       setActiveSubscription(data.subscription);
+      setPendingSubscription(data.subscription);
       setDeclareOpen(true);
     } catch (err) {
       setToast({
@@ -164,10 +194,17 @@ export default function Pricing() {
         message: err.response?.data?.message || "Impossible de créer l'abonnement.",
         severity: "error",
       });
+      // L'erreur backend la plus fréquente ici est "abonnement déjà en cours" —
+      // on rafraîchit pour faire réapparaître la bannière de reprise.
+      fetchPendingSubscription();
     } finally {
       setSubscribingId(null);
     }
   };
+
+  const hasDeclaredPayment = pendingSubscription?.payments?.some(
+    (p) => p.status === "declared",
+  );
 
   const plansParType = useMemo(() => {
     const groupes = {};
@@ -197,6 +234,32 @@ export default function Pricing() {
           Un tarif adapté à votre structure — club, ligue ou fédération — basé
           simplement sur votre nombre d'utilisateurs actifs.
         </Typography>
+
+        {pendingSubscription && (
+          <Alert
+            severity={hasDeclaredPayment ? "info" : "warning"}
+            sx={{ maxWidth: 640, mx: "auto", mb: 4 }}
+            action={
+              !hasDeclaredPayment && (
+                <Button
+                  color="inherit"
+                  size="small"
+                  sx={{ textTransform: "none", fontWeight: 700 }}
+                  onClick={() => {
+                    setActiveSubscription(pendingSubscription);
+                    setDeclareOpen(true);
+                  }}
+                >
+                  Compléter le paiement
+                </Button>
+              )
+            }
+          >
+            {hasDeclaredPayment
+              ? `Votre paiement pour "${pendingSubscription.plan?.name}" (${formatFcfa(pendingSubscription.amount)} FCFA) est en cours de vérification.`
+              : `Vous avez un abonnement en attente de paiement : "${pendingSubscription.plan?.name}" (${formatFcfa(pendingSubscription.amount)} FCFA).`}
+          </Alert>
+        )}
 
         <Stack direction="row" justifyContent="center" sx={{ mb: 6 }}>
           <ToggleButtonGroup
@@ -263,7 +326,10 @@ export default function Pricing() {
         methodsEndpoint="/api/platform-payment-methods"
         methodFieldName="platform_payment_method_id"
         onClose={() => setDeclareOpen(false)}
-        onSuccess={() => setActiveSubscription(null)}
+        onSuccess={() => {
+          setActiveSubscription(null);
+          fetchPendingSubscription();
+        }}
         setToast={setToast}
       />
 
