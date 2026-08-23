@@ -294,6 +294,12 @@ export default function DashboardLayout() {
           role: ["admin", "secretaire"],
         },
         {
+          title: "Paramétrage général",
+          icon: <Settings fontSize="small" />,
+          to: "/settings",
+          role: ["admin"],
+        },
+        {
           title: "FAQ",
           icon: <HelpOutlineIcon fontSize="small" />,
           to: "/faq",

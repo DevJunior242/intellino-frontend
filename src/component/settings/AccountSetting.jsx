@@ -1,27 +1,15 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Tabs,
-  Tab,
-  Typography,
-  TextField,
-  Button,
-  Divider,
-  Paper,
-  Container,
-} from "@mui/material";
-import { Delete, ExitToApp, Save, Security, Update } from "@mui/icons-material";
+import React, { useMemo, useState } from "react";
+import { Box, Tabs, Tab, Typography, Container } from "@mui/material";
 import Profile from "../../Saas/pages/Profile";
-import MeClub from "./MeClub";
 import UpdatePassword from "./UpdatePassword";
 import TwoFactorSettings from "./TwoFactorSettings";
 import DeleAccount from "./DeleAccount";
 import StoreSaison from "./StoreSaison";
-import TransferMandateForm from "../../Saas/pages/League/Mandat/TransferMandateForm";
+import OrganisationSettings from "./OrganisationSettings";
 import { UseAuth } from "../../Api/AuthContext";
 
 const AccountSettings = () => {
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tab, setTab] = useState("profil");
 
   const { activeRole, activeType, currentClub, currentLeague } = UseAuth();
 
@@ -39,10 +27,18 @@ const AccountSettings = () => {
         : true; // Federation : toujours indépendante
 
   const authorizedToAccessSaisons = authorized && isIndependentOrg;
-  // 1. Gestion des onglets
-  const handleTabChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
+
+  const tabs = useMemo(
+    () =>
+      [
+        { value: "profil", label: "Profil Public" },
+        { value: "securite", label: "Sécurité & Réglages" },
+        authorized &&
+          activeType && { value: "organisation", label: "Organisation" },
+        authorizedToAccessSaisons && { value: "saisons", label: "Saisons" },
+      ].filter(Boolean),
+    [authorized, activeType, authorizedToAccessSaisons],
+  );
 
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
@@ -59,8 +55,8 @@ const AccountSettings = () => {
         }}
       >
         <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
+          value={tab}
+          onChange={(e, value) => setTab(value)}
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
@@ -80,15 +76,13 @@ const AccountSettings = () => {
             },
           }}
         >
-          <Tab label="Profil Public" />
-          <Tab label="Sécurité & Réglages" />
-          {authorizedToAccessSaisons && <Tab label="Saisons" />}
-          {/* {authorizedToAccessSaisons && <Tab label="Transfert Mandat" />} */}
+          {tabs.map((t) => (
+            <Tab key={t.value} value={t.value} label={t.label} />
+          ))}
         </Tabs>
       </Box>
 
-      {/* --- ONGLET 1 : PROFIL (IDENTITÉ) --- */}
-      {tabIndex === 0 && (
+      {tab === "profil" && (
         <Box
           sx={{
             p: 2,
@@ -101,8 +95,7 @@ const AccountSettings = () => {
         </Box>
       )}
 
-      {/* --- ONGLET 2 : SETTINGS (SÉCURITÉ) --- */}
-      {tabIndex === 1 && (
+      {tab === "securite" && (
         <Container
           maxWidth="md"
           sx={{
@@ -121,21 +114,16 @@ const AccountSettings = () => {
         </Container>
       )}
 
-      {authorizedToAccessSaisons && (
-        <>
-          {/* --- ONGLET 4 : SAISONS (APPARTENANCE) --- */}
-          {tabIndex === 2 && (
-            <Box sx={{ p: 2 }}>
-              <StoreSaison />
-            </Box>
-          )}
-          {/* --- ONGLET 5 : MANDAT (APPARTENANCE) --- */}
-          {/* {tabIndex === 3 && (
-            <Box>
-              <TransferMandateForm />
-            </Box>
-          )} */}
-        </>
+      {tab === "organisation" && authorized && activeType && (
+        <Box sx={{ p: 2 }}>
+          <OrganisationSettings />
+        </Box>
+      )}
+
+      {tab === "saisons" && authorizedToAccessSaisons && (
+        <Box sx={{ p: 2 }}>
+          <StoreSaison />
+        </Box>
       )}
     </Box>
   );
