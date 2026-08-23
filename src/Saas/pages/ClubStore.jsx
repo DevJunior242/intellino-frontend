@@ -303,17 +303,22 @@ function ClubStore() {
               <Key color="primary" sx={{ fontSize: 30, mt: 0.5 }} />
               <Box>
                 <Typography variant="subtitle1" fontWeight="bold">
-                  Clé d'activation requise
+                  Clé d'activation (optionnelle)
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ mt: 0.5 }}
                 >
-                  Pour finaliser la création de <strong>{formData.name}</strong>{" "}
-                  à l'international, veuillez renseigner la clé d'activation
-                  officielle fournie par l'administrateur du SaaS. Cette clé
-                  valide votre licence d'utilisation.
+                  Si vous avez déjà reçu une clé d'activation pour{" "}
+                  <strong>{formData.name}</strong>, renseignez-la ci-dessous.
+                  Sinon, laissez ce champ vide : le club sera créé quand même
+                  et démarrera une période d'essai. Vous serez prévenu du
+                  nombre de jours restants depuis le tableau de bord, et si
+                  aucune clé n'est renseignée avant la fin de l'essai, le
+                  club sera désactivé (plus aucune action possible) jusqu'à
+                  ce qu'une clé valide soit fournie. Contactez le support
+                  pour obtenir la vôtre.
                 </Typography>
               </Box>
             </Box>
@@ -323,12 +328,11 @@ function ClubStore() {
                 error={hasError("activation_key")}
                 helperText={getError("activation_key")}
                 name="activation_key"
-                label="Code de la clé d'activation"
+                label="Code de la clé d'activation (optionnel)"
                 placeholder="Ex: CLUB-2026-XXXX-XXXX"
                 fullWidth
                 value={formData.activation_key}
                 onChange={handleChange}
-                required
                 autoFocus
               />
 
@@ -351,8 +355,10 @@ function ClubStore() {
                   sx={{ textTransform: "none", p: 1.5 }}
                 >
                   {submitting
-                    ? "Vérification de la clé..."
-                    : "Activer et créer le club"}
+                    ? "Création en cours..."
+                    : formData.activation_key.trim()
+                      ? "Activer et créer le club"
+                      : "Créer le club (période d'essai)"}
                 </Button>
               </Box>
             </form>

@@ -289,17 +289,22 @@ function Storeleague() {
               <Key color="primary" sx={{ fontSize: 30, mt: 0.5 }} />
               <Box>
                 <Typography variant="subtitle1" fontWeight="bold">
-                  Clé de licence Ligue requise
+                  Clé de licence Ligue (optionnelle)
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ mt: 0.5 }}
                 >
-                  Pour authentifier et ouvrir l'espace officiel de la{" "}
-                  <strong>{formData.name}</strong>, veuillez renseigner la clé
-                  d'activation sécurisée transmise par l'éditeur du SaaS. Cette
-                  procédure protège les données fédérales de votre pays.
+                  Si vous avez déjà reçu une clé d'activation pour{" "}
+                  <strong>{formData.name}</strong>, renseignez-la ci-dessous.
+                  Sinon, laissez ce champ vide : la ligue sera créée quand
+                  même et démarrera une période d'essai. Vous serez prévenu
+                  du nombre de jours restants depuis le tableau de bord, et
+                  si aucune clé n'est renseignée avant la fin de l'essai, la
+                  ligue sera désactivée (plus aucune action possible) jusqu'à
+                  ce qu'une clé valide soit fournie. Contactez le support
+                  pour obtenir la vôtre.
                 </Typography>
               </Box>
             </Box>
@@ -309,12 +314,11 @@ function Storeleague() {
                 error={hasError("activation_key")}
                 helperText={getError("activation_key")}
                 name="activation_key"
-                label="Code d'activation de la Ligue"
+                label="Code d'activation de la Ligue (optionnel)"
                 placeholder="Ex: LIGUE-2026-XXXX-XXXX"
                 fullWidth
                 value={formData.activation_key}
                 onChange={handleChange}
-                required
                 autoFocus
               />
 
@@ -337,8 +341,10 @@ function Storeleague() {
                   sx={{ textTransform: "none", p: 1.5 }}
                 >
                   {submitting
-                    ? "Vérification de la clé..."
-                    : "Activer et créer la ligue"}
+                    ? "Création en cours..."
+                    : formData.activation_key.trim()
+                      ? "Activer et créer la ligue"
+                      : "Créer la ligue (période d'essai)"}
                 </Button>
               </Box>
             </form>

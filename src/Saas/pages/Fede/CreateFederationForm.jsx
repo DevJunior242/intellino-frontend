@@ -131,13 +131,6 @@ export default function CreateFederationForm() {
   // Soumission finale au backend Laravel
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.activation_key.trim()) {
-      setErrors({
-        activation_key:
-          "La clé d'activation est obligatoire pour l'étape finale.",
-      });
-      return;
-    }
 
     setLoading(true);
     setErrors({});
@@ -560,14 +553,21 @@ export default function CreateFederationForm() {
                 transition={{ duration: 0.25 }}
               >
                 <Stack spacing={2.5}>
-                  <Alert severity="warning" variant="outlined">
-                    La création d'une instance fédérale nécessite une licence
-                    valide émise par le service technique de la plateforme SASS.
+                  <Alert severity="info" variant="outlined">
+                    Optionnel : si vous avez déjà reçu une clé d'activation
+                    fédérale, renseignez-la ci-dessous. Sinon, laissez ce
+                    champ vide — la fédération sera créée quand même et
+                    démarrera une période d'essai. Vous serez prévenu du
+                    nombre de jours restants depuis le tableau de bord ; si
+                    aucune clé n'est renseignée avant la fin de l'essai, la
+                    fédération sera désactivée (plus aucune action possible)
+                    jusqu'à ce qu'une clé valide soit fournie. Contactez le
+                    support pour obtenir la vôtre.
                   </Alert>
 
                   <TextField
                     fullWidth
-                    label="Clé d'activation fédérale"
+                    label="Clé d'activation fédérale (optionnelle)"
                     name="activation_key"
                     value={formData.activation_key}
                     onChange={handleChange}
@@ -579,19 +579,13 @@ export default function CreateFederationForm() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <LockIcon fontSize="small" color="error" />
+                          <LockIcon fontSize="small" color="action" />
                         </InputAdornment>
                       ),
                       sx: {
                         fontFamily: "monospace",
                         letterSpacing: 2,
                         textAlign: "center",
-                      },
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "error.light",
-                        borderWidth: 2,
                       },
                     }}
                   />
@@ -635,8 +629,10 @@ export default function CreateFederationForm() {
                     >
                       {loading ? (
                         <CircularProgress size={22} color="inherit" />
-                      ) : (
+                      ) : formData.activation_key?.trim() ? (
                         "Activer la Fédération"
+                      ) : (
+                        "Créer la Fédération (période d'essai)"
                       )}
                     </Button>
                   </Stack>
