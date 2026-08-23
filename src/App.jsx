@@ -347,6 +347,7 @@ const AppRoutes = () => {
           <Route path="clubs/list" element={<LeagueClub />} />
           <Route path="licences" element={<LicenceTable />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="configCategory" element={<SubDisciplinePage />} />
 
           <Route path="clubs" element={<MesClubs />} />
           <Route path="affiliations/create" element={<StoreAffiliation />} />

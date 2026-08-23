@@ -548,10 +548,10 @@ export default function SubDisciplinePage() {
           <h1
             style={{ fontSize: 26, fontWeight: 700, margin: 0, color: C.text }}
           >
-            Configurer la ligue
+            {activeType === "Federation" ? "Configurer la fédération" : "Configurer la ligue"}
           </h1>
           <p style={{ color: C.textMuted, margin: "6px 0 0", fontSize: 14 }}>
-            Crée la saison, tes disciplines et tes catégories en une seule fois.
+            Définis tes disciplines et tes catégories en une seule fois.
           </p>
         </motion.div>
         <div

@@ -14,7 +14,6 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import CategoryForm from "./CategoryForm";
 import { UseAuth } from "../../../Api/AuthContext";
 import { Instance } from "../../../Api/Axios";
 import { useNavigate } from "react-router-dom";
@@ -39,12 +38,8 @@ export default function CategoriesPage() {
   const { activeId, activeType } = UseAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState(0);
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
   const navigate = useNavigate();
   //auh
 
@@ -84,12 +79,14 @@ export default function CategoriesPage() {
   }
   if (error) return <ErrorBlock message={error} onRetry={getCategories} />;
 
-  const isFederationAdmin = activeType === "Federation";
+  // Réservé à la Fédération et à la Ligue — une ligue affiliée à une
+  // fédération reste en lecture seule côté backend (403 explicite si elle
+  // tente d'écrire), donc pas besoin de le recalculer ici.
+  const canConfigure = activeType === "Federation" || activeType === "Ligue";
 
   return (
     <Box sx={{ p: 1 }}>
-      {/* Bouton Nouvelle Catégorie — réservé à la Fédération, la Ligue consulte en lecture seule */}
-      {isFederationAdmin && (
+      {canConfigure && (
         <Button
           variant="outlined"
           sx={{
@@ -107,9 +104,12 @@ export default function CategoriesPage() {
             },
           }}
           onClick={() =>
-            navigate("/dashboard/federation/configCategory", {
-              replace: true,
-            })
+            navigate(
+              activeType === "Federation"
+                ? "/dashboard/federation/configCategory"
+                : "/dashboard/league/configCategory",
+              { replace: true },
+            )
           }
         >
           + Nouvelle catégorie
@@ -215,8 +215,6 @@ export default function CategoriesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-
-        <CategoryForm open={openModal} handleClose={handleCloseModal} />
       </Paper>
     </Box>
   );
