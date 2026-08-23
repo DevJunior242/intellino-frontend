@@ -48,6 +48,7 @@ import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 import TrialBanner from "../TrialBanner";
 import TierBanner from "../TierBanner";
 
@@ -174,6 +175,14 @@ const getNavSections = (activeType) => {
           to: isFederation
             ? "/dashboard/federation/comptabilite"
             : "/dashboard/league/comptabilite",
+          role: ["admin"],
+        },
+        {
+          icon: <CreditCardIcon fontSize="small" />,
+          label: "Mon abonnement",
+          to: isFederation
+            ? "/dashboard/federation/abonnement"
+            : "/dashboard/league/abonnement",
           role: ["admin"],
         },
         {

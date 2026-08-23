@@ -43,6 +43,7 @@ const AttendanceCreate = lazy(() => import("./Saas/pages/AttendanceReate"));
 const AttendanceIndex = lazy(() => import("./Saas/pages/AttendanceIndex"));
 const About = lazy(() => import("./component/About"));
 const Pricing = lazy(() => import("./Saas/pages/Pricing"));
+const MonAbonnement = lazy(() => import("./Saas/pages/MonAbonnement"));
 const FAQSection = lazy(() => import("./component/Dashboard/FAQSection"));
 
 const NotFound = lazy(() => import("./Saas/pages/NotFound"));
@@ -280,6 +281,7 @@ const AppRoutes = () => {
           <Route path="licences" element={<LicenceIndex />} />
 
           <Route path="comptabilite" element={<ClubComptabilite />} />
+          <Route path="abonnement" element={<MonAbonnement />} />
           <Route path="catalogue" element={<InventoryPage />} />
           <Route path="inventory/prets" element={<EquipmentLoan />} />
           <Route path="stages/ma-ligue" element={<StageSubscribeIndex />} />
@@ -329,6 +331,7 @@ const AppRoutes = () => {
           <Route path="invitation" element={<LeagueFederationAffiliation />} />
           <Route path="structure" element={<FederationStructure />} />
           <Route path="comptabilite" element={<Comptabilite />} />
+          <Route path="abonnement" element={<MonAbonnement />} />
           <Route path="settings" element={<AccountSettings />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="configCategory" element={<SubDisciplinePage />} />
@@ -367,6 +370,7 @@ const AppRoutes = () => {
           <Route path="notes" element={<SaisieNotePage />} />
           <Route path="kumite" element={<KumiteScoreboard />} />
           <Route path="comptabilite" element={<Comptabilite />} />
+          <Route path="abonnement" element={<MonAbonnement />} />
           <Route path="settings" element={<AccountSettings />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />

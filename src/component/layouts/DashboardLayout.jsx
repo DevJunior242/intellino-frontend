@@ -234,6 +234,12 @@ export default function DashboardLayout() {
           role: ["admin", "secretaire"],
         },
         {
+          title: "Mon abonnement",
+          icon: <AccountBalanceWalletOutlinedIcon fontSize="small" />,
+          to: "/dashboard/abonnement",
+          role: ["admin"],
+        },
+        {
           title: "Dette",
           icon: <ShoppingCartIcon fontSize="small" />,
           to: "/dashboard/caisse",
