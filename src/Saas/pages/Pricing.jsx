@@ -10,9 +10,13 @@ import {
   ToggleButtonGroup,
   CircularProgress,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { Instance } from "../../Api/Axios";
+import { UseAuth } from "../../Api/AuthContext";
+import PaymentDeclarationDialog from "./Paiement/Paymentdeclarationdialog";
 
 const SECTIONS = [
   { type: "Club", label: "Club", unite: "élèves actifs" },
@@ -29,7 +33,7 @@ function TierRange({ plan }) {
   return `${plan.min_users}–${plan.max_users}`;
 }
 
-function PlanCard({ plan, billing, discountPercent }) {
+function PlanCard({ plan, billing, discountPercent, onCommencer, subscribingId }) {
   const isSurMesure = plan.name.toLowerCase().includes("sur-mesure");
   const isGratuit = !isSurMesure && Number(plan.amount) === 0;
 
@@ -99,19 +103,34 @@ function PlanCard({ plan, billing, discountPercent }) {
         variant={isSurMesure ? "outlined" : "contained"}
         fullWidth
         sx={{ textTransform: "none", mt: 1 }}
-        href={isSurMesure ? "/contact" : "/register"}
+        disabled={subscribingId === plan.id}
+        {...(isSurMesure
+          ? { href: "/contact" }
+          : { onClick: () => onCommencer(plan) })}
       >
-        {isSurMesure ? "Nous contacter" : "Commencer"}
+        {isSurMesure
+          ? "Nous contacter"
+          : subscribingId === plan.id
+            ? "Création..."
+            : "Commencer"}
       </Button>
     </Paper>
   );
 }
 
 export default function Pricing() {
+  const { auth } = UseAuth();
+  const isLogged = auth?.isLogin === true;
+
   const [plans, setPlans] = useState([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [loading, setLoading] = useState(true);
   const [billing, setBilling] = useState("mensuel");
+
+  const [subscribingId, setSubscribingId] = useState(null);
+  const [activeSubscription, setActiveSubscription] = useState(null);
+  const [declareOpen, setDeclareOpen] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
     Promise.all([
@@ -127,6 +146,28 @@ export default function Pricing() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleCommencer = async (plan) => {
+    if (!isLogged) {
+      window.location.href = "/register";
+      return;
+    }
+
+    setSubscribingId(plan.id);
+    try {
+      const { data } = await Instance.post("/api/subscriptions", { plan_id: plan.id });
+      setActiveSubscription(data.subscription);
+      setDeclareOpen(true);
+    } catch (err) {
+      setToast({
+        open: true,
+        message: err.response?.data?.message || "Impossible de créer l'abonnement.",
+        severity: "error",
+      });
+    } finally {
+      setSubscribingId(null);
+    }
+  };
 
   const plansParType = useMemo(() => {
     const groupes = {};
@@ -199,13 +240,43 @@ export default function Pricing() {
             <Grid container spacing={2.5}>
               {(plansParType[section.type] || []).map((plan) => (
                 <Grid item xs={12} sm={6} md={3} key={plan.id}>
-                  <PlanCard plan={plan} billing={billing} discountPercent={discountPercent} />
+                  <PlanCard
+                    plan={plan}
+                    billing={billing}
+                    discountPercent={discountPercent}
+                    onCommencer={handleCommencer}
+                    subscribingId={subscribingId}
+                  />
                 </Grid>
               ))}
             </Grid>
           </Box>
         ))
       )}
+
+      <PaymentDeclarationDialog
+        open={declareOpen}
+        payment={activeSubscription}
+        declarerEndpoint={
+          activeSubscription ? `/api/subscriptions/${activeSubscription.id}/declarer` : null
+        }
+        methodsEndpoint="/api/platform-payment-methods"
+        methodFieldName="platform_payment_method_id"
+        onClose={() => setDeclareOpen(false)}
+        onSuccess={() => setActiveSubscription(null)}
+        setToast={setToast}
+      />
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert severity={toast.severity} sx={{ width: "100%" }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

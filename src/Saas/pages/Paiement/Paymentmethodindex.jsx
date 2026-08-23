@@ -263,7 +263,7 @@ const EMPTY_FORM = {
   account_name: "",
 };
 
-function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
+function PaymentMethodFormDialog({ open, editing, onClose, onSuccess, apiBase }) {
   const { ACCENT, SURFACE, BORDER, TEXT, MUTED } = useLocalTheme();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
@@ -316,8 +316,8 @@ function PaymentMethodFormDialog({ open, editing, onClose, onSuccess }) {
       };
 
       const response = editing
-        ? await Instance.patch(`/api/payment-methods/${editing.id}`, payload)
-        : await Instance.post("/api/payment-methods", payload);
+        ? await Instance.patch(`${apiBase}/${editing.id}`, payload)
+        : await Instance.post(apiBase, payload);
 
       onSuccess(response.data.data, !!editing);
       onClose();
@@ -506,7 +506,10 @@ function ConfirmDeleteDialog({ open, method, onClose, onConfirm, loading }) {
 // ---------------------------------------------------------------------------
 // Composant principal
 // ---------------------------------------------------------------------------
-export default function PaymentMethodIndex() {
+export default function PaymentMethodIndex({
+  apiBase = "/api/payment-methods",
+  subtitle = "Ce que vos clubs verront pour vous régler",
+}) {
   const { ACCENT, ACCENT_SOFT, BORDER, TEXT, MUTED } = useLocalTheme();
   const [methods, setMethods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -529,7 +532,7 @@ export default function PaymentMethodIndex() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await Instance.get("/api/payment-methods");
+      const { data } = await Instance.get(apiBase);
       setMethods(data.data || []);
     } catch (err) {
       setError(
@@ -539,7 +542,7 @@ export default function PaymentMethodIndex() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiBase]);
 
   useEffect(() => {
     fetchMethods();
@@ -577,7 +580,7 @@ export default function PaymentMethodIndex() {
     setTogglingId(method.id);
     try {
       const { data } = await Instance.patch(
-        `/api/payment-methods/${method.id}/toggle`,
+        `${apiBase}/${method.id}/toggle`,
       );
       setMethods((prev) =>
         prev.map((m) => (m.id === method.id ? data.data : m)),
@@ -598,7 +601,7 @@ export default function PaymentMethodIndex() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await Instance.delete(`/api/payment-methods/${deleteTarget.id}`);
+      await Instance.delete(`${apiBase}/${deleteTarget.id}`);
       setMethods((prev) => prev.filter((m) => m.id !== deleteTarget.id));
       setToast({
         open: true,
@@ -632,9 +635,7 @@ export default function PaymentMethodIndex() {
             Moyens de paiement
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {loading
-              ? "Chargement…"
-              : "Ce que vos clubs verront pour vous régler"}
+            {loading ? "Chargement…" : subtitle}
           </Typography>
         </Box>
 
@@ -731,6 +732,7 @@ export default function PaymentMethodIndex() {
         editing={editing}
         onClose={() => setFormOpen(false)}
         onSuccess={handleFormSuccess}
+        apiBase={apiBase}
       />
 
       <ConfirmDeleteDialog

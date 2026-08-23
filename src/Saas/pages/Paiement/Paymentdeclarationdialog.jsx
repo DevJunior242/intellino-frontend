@@ -94,6 +94,12 @@ export default function PaymentDeclarationDialog({
   setToast,
   organisateurType,
   organisateurId,
+  // Par défaut : moyens de paiement de l'organisateur ciblé (Ligue/Fédération
+  // qu'on paie). Pour un cas différent (ex: abonnement Intellino, payé à la
+  // plateforme elle-même plutôt qu'à un organisateur), passer directement
+  // methodsEndpoint et le nom de champ attendu par declarerEndpoint.
+  methodsEndpoint,
+  methodFieldName = "payment_method_id",
 }) {
   const [methods, setMethods] = useState([]);
   const [loadingMethods, setLoadingMethods] = useState(false);
@@ -120,7 +126,10 @@ export default function PaymentDeclarationDialog({
     setErrors({});
     setServerError(null);
 
-    Instance.get(`/api/payment-methods/${organisateurType}/${organisateurId}`)
+    const endpoint =
+      methodsEndpoint || `/api/payment-methods/${organisateurType}/${organisateurId}`;
+
+    Instance.get(endpoint)
       .then(({ data }) => {
         if (active) setMethods(data.data || []);
       })
@@ -138,7 +147,7 @@ export default function PaymentDeclarationDialog({
     return () => {
       active = false;
     };
-  }, [open, organisateurType, organisateurId]);
+  }, [open, organisateurType, organisateurId, methodsEndpoint]);
 
   const handleClose = () => {
     if (submitting) return;
@@ -161,7 +170,7 @@ export default function PaymentDeclarationDialog({
 
     try {
       const { data } = await Instance.post(declarerEndpoint, {
-        payment_method_id: selectedMethodId,
+        [methodFieldName]: selectedMethodId,
         sender_number: senderNumber.trim(),
         transaction_id: transactionId.trim() || null,
       });

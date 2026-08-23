@@ -21,6 +21,9 @@ import LoadingScreen from "./component/LoadingScreen.jsx";
 
 // Pages chargées à la demande (un chunk séparé par page, téléchargé au moment de la navigation)
 const Plan = lazy(() => import("./Saas/pages/Plan"));
+const SuperAdminComptabilite = lazy(
+  () => import("./Saas/pages/SuperAdmin/SuperAdminComptabilite"),
+);
 const StoreStudent = lazy(() => import("./Saas/pages/StoreStudent"));
 const Instructor = lazy(() => import("./Saas/pages/Instructor"));
 const Course = lazy(() => import("./Saas/pages/Course"));
@@ -312,6 +315,7 @@ const AppRoutes = () => {
           <Route path="karateka/list" element={<StudentList />} />
           <Route path="plan/store" element={<Plan />} />
           <Route path="discipline/store" element={<StoreDisp />} />
+          <Route path="admin/comptabilite" element={<SuperAdminComptabilite />} />
         </Route>
       </Route>
       {/* federation */}

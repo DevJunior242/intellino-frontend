@@ -40,6 +40,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import SchoolIcon from "@mui/icons-material/School";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
@@ -259,6 +260,12 @@ export default function DashboardLayout() {
           title: "Ajouter discipline",
           icon: <AddCircleOutlineIcon fontSize="small" />,
           to: "/dashboard/discipline/store",
+          role: ["super_admin"],
+        },
+        {
+          title: "Comptabilité",
+          icon: <AccountBalanceWalletOutlinedIcon fontSize="small" />,
+          to: "/dashboard/admin/comptabilite",
           role: ["super_admin"],
         },
       ],
