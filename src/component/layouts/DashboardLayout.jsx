@@ -49,6 +49,7 @@ import ContextSwitcher from "../../Saas/pages/ContextSwitcher";
 import DrawerMenu from "../../Saas/pages/DrawerMenu";
 import { useAllowAccess } from "../../Hook/useAllowAccess";
 import TrialBanner from "../TrialBanner";
+import TierBanner from "../TierBanner";
 import { Groups, Key, PeopleAlt, Settings } from "@mui/icons-material";
 import BadgeIcon from "@mui/icons-material/Badge";
 
@@ -668,6 +669,7 @@ export default function DashboardLayout() {
           }}
         >
           <TrialBanner />
+          <TierBanner />
           <Suspense fallback={<LoadingScreen />}>
             <Outlet />
           </Suspense>
