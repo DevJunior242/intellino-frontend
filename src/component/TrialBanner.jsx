@@ -7,6 +7,7 @@ import {
   TextField,
   Collapse,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { Instance } from "../Api/Axios";
 import { UseAuth } from "../Api/AuthContext";
 
@@ -17,6 +18,7 @@ const LABEL_ORG = {
 };
 
 export default function TrialBanner() {
+  const navigate = useNavigate();
   const { activeId, activeType, activeRole } = UseAuth();
   const [trial, setTrial] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -81,23 +83,36 @@ export default function TrialBanner() {
           ? `Il vous reste ${trial.days_remaining} jour${trial.days_remaining > 1 ? "s" : ""}`
           : "Dernier jour"}
       </AlertTitle>
-      Aucune clé d'activation n'a encore été renseignée pour {label} : passé ce
-      délai, elle sera désactivée et plus aucune action n'y sera possible.
+Aucune clé d'activation n'a encore été renseignée pour {label}, et aucun
+      abonnement payé n'est actif : passé ce délai, elle sera désactivée et
+      plus aucune action n'y sera possible.
       {isAdmin ? (
         <>
           {" "}
-          Si vous en avez reçu une, entrez-la ci-dessous.
-          <Box sx={{ mt: 1.5 }}>
+          Si vous avez reçu une clé, entrez-la ci-dessous — sinon vous pouvez
+          souscrire directement à un abonnement.
+          <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
             {!showForm ? (
-              <Button
-                size="small"
-                variant="outlined"
-                color="inherit"
-                onClick={() => setShowForm(true)}
-                sx={{ textTransform: "none" }}
-              >
-                Entrer ma clé d'activation
-              </Button>
+              <>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => setShowForm(true)}
+                  sx={{ textTransform: "none" }}
+                >
+                  Entrer ma clé d'activation
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => navigate("/pricing")}
+                  sx={{ textTransform: "none" }}
+                >
+                  Voir les tarifs
+                </Button>
+              </>
             ) : (
               <Collapse in={showForm}>
                 <Box
