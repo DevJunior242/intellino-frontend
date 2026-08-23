@@ -79,9 +79,8 @@ export default function CategoriesPage() {
   }
   if (error) return <ErrorBlock message={error} onRetry={getCategories} />;
 
-  // Réservé à la Fédération et à la Ligue — une ligue affiliée à une
-  // fédération reste en lecture seule côté backend (403 explicite si elle
-  // tente d'écrire), donc pas besoin de le recalculer ici.
+  // Une ligue (affiliée ou non) et une fédération gèrent chacune leurs
+  // propres catégories, de façon indépendante — voir CategoryController.
   const canConfigure = activeType === "Federation" || activeType === "Ligue";
 
   return (
