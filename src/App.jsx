@@ -339,6 +339,7 @@ const AppRoutes = () => {
           <Route path="examens-stats" element={<ExamenStats />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
           <Route path="competition" element={<InscriptionPage />} />
+          <Route path="competitions" element={<Config />} />
         </Route>
       </Route>
 

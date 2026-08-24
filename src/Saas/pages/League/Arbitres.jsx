@@ -1,7 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Instance } from "../../../Api/Axios";
-import { Avatar, Box, Typography, Button } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { UseAuth } from "../../../Api/AuthContext";
 import { GridToolbar } from "@mui/x-data-grid/internals";
@@ -13,6 +24,14 @@ function Arbitres() {
   const [isLoading, setIsLoading] = useState(true);
   const { activeRole, activeId, activeType } = UseAuth();
   const allowAccess = ["admin"].includes(activeRole);
+  const isFederation = activeType === "Federation";
+
+  // La Ligue et la Fédération ont chacune leur propre contrôleur/table
+  // pivot (league_users / federation_users), donc leur propre endpoint —
+  // pas un seul endpoint générique.
+  const endpointBase = isFederation
+    ? "/api/membres/federation-arbitres"
+    : "/api/membres/arbitres";
 
   const [errorMembers, setErrorMembers] = useState("");
 
@@ -20,12 +39,15 @@ function Arbitres() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const getMembers = useCallback(async () => {
     setIsLoading(true);
     setErrorMembers("");
     try {
       const response = await Instance(
-        `/api/membres/arbitres?organisateur_id=${activeId}&organisateur_type=${activeType}`,
+        `${endpointBase}?organisateur_id=${activeId}&organisateur_type=${activeType}`,
       );
       const membersData = response?.data?.members || [];
 
@@ -36,11 +58,29 @@ function Arbitres() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeId, activeType]);
+  }, [activeId, activeType, endpointBase]);
 
   useEffect(() => {
     getMembers();
   }, [getMembers]);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await Instance.delete(`${endpointBase}/${deleteTarget.id}`);
+      setMembers((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error(error);
+      setErrorMembers(
+        error.response?.data?.message || "Erreur lors de la suppression de l'arbitre",
+      );
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   //columns
 
@@ -78,6 +118,25 @@ function Arbitres() {
           <Avatar>{params?.row?.name.charAt(0)}</Avatar>
         ),
     },
+    ...(allowAccess
+      ? [
+          {
+            field: "actions",
+            headerName: "Action",
+            width: 80,
+            sortable: false,
+            renderCell: (params) => (
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => setDeleteTarget(params.row)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            ),
+          },
+        ]
+      : []),
   ];
 
   if (errorMembers)
@@ -179,6 +238,30 @@ function Arbitres() {
           getMembers={getMembers}
         />
       </Box>
+
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Retirer cet arbitre ?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            <strong>{deleteTarget?.name}</strong> ne sera plus arbitre de{" "}
+            {isFederation ? "cette fédération" : "cette ligue"}.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteTarget(null)} sx={{ textTransform: "none" }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            disabled={deleting}
+            sx={{ textTransform: "none" }}
+          >
+            {deleting ? "Suppression..." : "Retirer"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

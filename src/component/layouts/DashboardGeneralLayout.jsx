@@ -145,7 +145,9 @@ const getNavSections = (activeType) => {
         {
           icon: <EmojiEventsIcon fontSize="small" />,
           label: "Compétitions",
-          to: "/dashboard/league/competitions",
+          to: isFederation
+            ? "/dashboard/federation/competitions"
+            : "/dashboard/league/competitions",
           role: ["admin", "arbitre"],
         },
 

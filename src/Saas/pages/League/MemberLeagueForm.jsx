@@ -33,7 +33,7 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
   const [submitting, setSubmitting] = useState(false);
   const hasError = (field) => !!error?.[field];
   const getError = (field) => error?.[field]?.join(", ");
-  const { StoreLeagueUser, activeId, activeType } = UseAuth();
+  const { StoreLeagueUser, StoreFederationUser, activeId, activeType } = UseAuth();
 
   const [formData, setFormData] = useState({
     fullname: "",
@@ -64,7 +64,10 @@ function MemberLeagueForm({ open, handleClose, getMembers }) {
     setError({});
     setSubmitting(true);
     try {
-      const res = await StoreLeagueUser(formData);
+      const res =
+        activeType === "Federation"
+          ? await StoreFederationUser(formData)
+          : await StoreLeagueUser(formData);
       console.log(res);
       if (res.success) {
         setFormData({
