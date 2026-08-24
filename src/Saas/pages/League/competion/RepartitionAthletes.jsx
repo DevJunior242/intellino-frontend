@@ -13,6 +13,9 @@ import {
   Skeleton,
   Tooltip,
   Fade,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import {
   SwapHoriz,
@@ -21,8 +24,10 @@ import {
   PersonOff,
   CheckCircle,
   Refresh,
+  PersonAddAlt1,
 } from "@mui/icons-material";
 import { Instance } from "../../../../Api/Axios";
+import InscriptionForm from "./InscriptionForm";
 
 // ─── Skeleton carte athlète ───────────────────────────────────────────────────
 const AthleteSkeleton = () => (
@@ -222,6 +227,7 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
   const [submitId, setSubmitId] = useState(null);
   const [erreur, setErreur] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [inscriptionOpen, setInscriptionOpen] = useState(false);
 
   const fetchData = useCallback(
     async (silent = false) => {
@@ -364,6 +370,15 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
               )}
             </IconButton>
           </Tooltip>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<PersonAddAlt1 />}
+            onClick={() => setInscriptionOpen(true)}
+            sx={{ borderRadius: 2, textTransform: "none" }}
+          >
+            Inscrire un athlète
+          </Button>
         </Stack>
 
         <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
@@ -608,6 +623,26 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
           </Grid>
         ))}
       </Grid>
+
+      <Dialog
+        open={inscriptionOpen}
+        onClose={() => setInscriptionOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Inscrire un athlète (arrivée tardive)</DialogTitle>
+        <DialogContent dividers>
+          <InscriptionForm
+            competitionId={competition}
+            subdiscipline="Kata"
+            onSuccess={() => {
+              setInscriptionOpen(false);
+              showSuccess("Athlète inscrit — visible dans « Non assignés ».");
+              fetchData(true);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
