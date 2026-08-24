@@ -12,6 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
+import { Turnstile } from "@marsidev/react-turnstile";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
@@ -114,13 +115,6 @@ const inputSx = {
   },
 };
 
-//           <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
-//             {/* <Turnstile
-//               siteKey="0x4AAAAAACVU_Qe1pMvah8c9"
-//               onSuccess={(token) => setCaptchaToken(token)}
-//               onExpire={() => setCaptchaToken(null)}
-//             /> */}
-//           </Box>
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -142,7 +136,7 @@ export default function Login() {
   const [challengeToken, setChallengeToken] = useState(null);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [useRecoveryCode, setUseRecoveryCode] = useState(false);
-  // const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
     if (searchParams.get("registered") === "1") {
@@ -163,18 +157,19 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError({});
-    setSubmitting(true);
     setSuccess("");
 
-    // if (!captchaToken) {
-    //   alert("Veuillez valider la vérification de sécurité.");
-    //   return;
-    // }
+    if (!captchaToken) {
+      setError({ general: "Veuillez valider la vérification de sécurité." });
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
       const dataSend = {
         ...formData,
-        // captcha_token: captchaToken,
+        captcha_token: captchaToken,
       };
       const result = await login(dataSend);
       if (result.twoFactor) {
@@ -547,6 +542,16 @@ export default function Login() {
               </Typography>
             </Box>
 
+            {/* Vérification de sécurité */}
+            <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
+              <Turnstile
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: "dark" }}
+              />
+            </Box>
+
             {/* Submit */}
             <Box
               component={motion.div}
@@ -577,7 +582,7 @@ export default function Login() {
                     boxShadow: "0 6px 32px rgba(200,16,46,0.6)",
                   },
                 }}
-                disabled={submitting}
+                disabled={submitting || !captchaToken}
               >
                 {submitting ? "connexion..." : " se connecter"}
               </Button>
