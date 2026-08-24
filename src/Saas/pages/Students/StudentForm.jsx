@@ -1,4 +1,7 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Autocomplete,
   Avatar,
   Box,
@@ -7,6 +10,7 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
@@ -21,9 +25,25 @@ import { useState } from "react";
 import { Instance } from "../../../Api/Axios";
 import ErrorGlobal from "../../../component/ErrorGlobal";
 import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import HealthAndSafetyOutlinedIcon from "@mui/icons-material/HealthAndSafetyOutlined";
 
 import Message from "../Message";
 import { UseAuth } from "../../../Api/AuthContext";
+
+const EMPTY_HEALTH = {
+  groupe_sanguin: "",
+  allergies: "",
+  conditions_medicales: "",
+  medecin_nom: "",
+  medecin_telephone: "",
+  contact_urgence_nom: "",
+  contact_urgence_telephone: "",
+  contact_urgence_relation: "",
+  certificat_medical_fourni: false,
+  certificat_medical_expire_le: "",
+  notes: "",
+};
 
 const StudentForm = ({ onSuccess } = {}) => {
   const { activeId, activeType } = UseAuth();
@@ -57,12 +77,18 @@ const StudentForm = ({ onSuccess } = {}) => {
       email: "",
       phone: "",
       createAccount: false,
+      health: { ...EMPTY_HEALTH },
     },
   ]);
 
   const handleStudentChange = (index, field, value) => {
     const newStudents = [...students];
     newStudents[index][field] = value;
+    setStudents(newStudents);
+  };
+  const handleHealthChange = (index, field, value) => {
+    const newStudents = [...students];
+    newStudents[index].health = { ...newStudents[index].health, [field]: value };
     setStudents(newStudents);
   };
   const handleFileChange = (index, file) => {
@@ -115,6 +141,26 @@ const StudentForm = ({ onSuccess } = {}) => {
       if (student.photo) {
         formData.append(`students[${index}][photo]`, student.photo);
       }
+
+      // Fiche santé (optionnelle) — n'envoie l'objet health que si l'admin a
+      // vraiment renseigné quelque chose, sinon le backend créerait une
+      // fiche vide pour chaque élève (le simple flag booléen à false, seul
+      // champ toujours présent en state, ne compte pas comme "renseigné").
+      const healthEntries = student.health ? Object.entries(student.health) : [];
+      const healthHasData = healthEntries.some(([key, value]) =>
+        key === "certificat_medical_fourni"
+          ? value === true
+          : value !== "" && value !== null && value !== undefined,
+      );
+      if (healthHasData) {
+        healthEntries.forEach(([key, value]) => {
+          if (key === "certificat_medical_fourni") {
+            formData.append(`students[${index}][health][${key}]`, value ? 1 : 0);
+          } else if (value !== "" && value !== null && value !== undefined) {
+            formData.append(`students[${index}][health][${key}]`, value);
+          }
+        });
+      }
     });
     console.log("FormData :", formData);
 
@@ -142,6 +188,7 @@ const StudentForm = ({ onSuccess } = {}) => {
             email: "",
             phone: "",
             createAccount: false,
+            health: { ...EMPTY_HEALTH },
           },
         ]);
       }
@@ -396,6 +443,155 @@ const StudentForm = ({ onSuccess } = {}) => {
                   />
                 </Box>
               )}
+
+              {/* Fiche santé (optionnelle, informative — rien n'est bloqué) */}
+              <Accordion
+                sx={{ mt: 2, backgroundColor: "background.paper" }}
+                disableGutters
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <HealthAndSafetyOutlinedIcon fontSize="small" />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      Fiche santé (optionnel)
+                    </Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <TextField
+                      label="Groupe sanguin"
+                      placeholder="Ex: O+"
+                      fullWidth
+                      value={student.health?.groupe_sanguin || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "groupe_sanguin", e.target.value)
+                      }
+                    />
+                  </Box>
+
+                  <TextField
+                    label="Allergies"
+                    placeholder="Ex: arachides, pollen..."
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    sx={{ mb: 2 }}
+                    value={student.health?.allergies || ""}
+                    onChange={(e) =>
+                      handleHealthChange(index, "allergies", e.target.value)
+                    }
+                  />
+
+                  <TextField
+                    label="Conditions médicales particulières"
+                    placeholder="Ex: asthme, cardiaque, épilepsie, handicap..."
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    sx={{ mb: 2 }}
+                    value={student.health?.conditions_medicales || ""}
+                    onChange={(e) =>
+                      handleHealthChange(index, "conditions_medicales", e.target.value)
+                    }
+                  />
+
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                    Médecin traitant
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <TextField
+                      label="Nom"
+                      fullWidth
+                      value={student.health?.medecin_nom || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "medecin_nom", e.target.value)
+                      }
+                    />
+                    <TextField
+                      label="Téléphone"
+                      fullWidth
+                      value={student.health?.medecin_telephone || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "medecin_telephone", e.target.value)
+                      }
+                    />
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                    Contact d'urgence (si différent du parent inscrit)
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <TextField
+                      label="Nom"
+                      fullWidth
+                      value={student.health?.contact_urgence_nom || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "contact_urgence_nom", e.target.value)
+                      }
+                    />
+                    <TextField
+                      label="Téléphone"
+                      fullWidth
+                      value={student.health?.contact_urgence_telephone || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "contact_urgence_telephone", e.target.value)
+                      }
+                    />
+                    <TextField
+                      label="Lien"
+                      placeholder="Ex: Tante"
+                      fullWidth
+                      value={student.health?.contact_urgence_relation || ""}
+                      onChange={(e) =>
+                        handleHealthChange(index, "contact_urgence_relation", e.target.value)
+                      }
+                    />
+                  </Box>
+
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={!!student.health?.certificat_medical_fourni}
+                          onChange={(e) =>
+                            handleHealthChange(
+                              index,
+                              "certificat_medical_fourni",
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label="Certificat médical fourni"
+                    />
+                    <TextField
+                      label="Date d'expiration"
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      value={student.health?.certificat_medical_expire_le || ""}
+                      onChange={(e) =>
+                        handleHealthChange(
+                          index,
+                          "certificat_medical_expire_le",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </Box>
+
+                  <TextField
+                    label="Notes libres pour l'instructeur"
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    value={student.health?.notes || ""}
+                    onChange={(e) =>
+                      handleHealthChange(index, "notes", e.target.value)
+                    }
+                  />
+                </AccordionDetails>
+              </Accordion>
             </Card>
           );
         })}
@@ -403,7 +599,10 @@ const StudentForm = ({ onSuccess } = {}) => {
         <Button
           variant="outlined"
           onClick={() =>
-            setStudents([...students, { fullname: "", createAccount: false }])
+            setStudents([
+              ...students,
+              { fullname: "", createAccount: false, health: { ...EMPTY_HEALTH } },
+            ])
           }
           startIcon={<AddIcon />}
           sx={{ mb: 3, fontSize: { xs: 10, md: 14, textTransform: "none" } }}
