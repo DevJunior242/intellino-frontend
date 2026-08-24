@@ -74,43 +74,97 @@ export const AuthProvider = ({ children }) => {
       const savedId = localStorage.getItem("activeId");
       const savedType = localStorage.getItem("activeType");
 
-      // 1. Si on a déjà des données en cache, on les restaure
-      if (savedRole && (savedId || savedRole === "super_admin")) {
-        setActiveRole(savedRole);
-        setActiveId(savedId);
-        setActiveType(savedType || "Club");
-        setLoading(false);
-        return;
+      // Rôle réel de l'utilisateur pour une organisation donnée, d'après les
+      // données fraîches de CE login — pas ce qui était en cache. Un compte
+      // déjà connu (ex: admin d'un club) peut recevoir un nouveau rôle
+      // ailleurs (ex: arbitre d'une fédération) sans que le cache
+      // localStorage ne le sache jamais.
+      const freshRoleFor = (id, type) => {
+        const list =
+          type === "Federation"
+            ? auth.federations
+            : type === "Ligue" || type === "League"
+              ? auth.leagues
+              : type === "Club"
+                ? auth.clubs
+                : [];
+        return list?.find((org) => org.id === id)?.role?.[0] || null;
+      };
+
+      // Rang de priorité par type d'organisation — même ordre que
+      // LoginController::sessionPayload() côté backend (Fédération > Ligue >
+      // Club) : plus la valeur est basse, plus l'organisation est
+      // prioritaire par défaut.
+      const RANG_TYPE = { Federation: 0, Ligue: 1, League: 1, Club: 2 };
+
+      // Organisation/rôle "idéal" d'après les données fraîches de CE login,
+      // indépendamment de tout cache — sert à la fois de valeur par défaut
+      // et de référence pour savoir si un cache existant est encore
+      // pertinent (voir plus bas).
+      let idealRole = null;
+      let idealId = null;
+      let idealType = "Club";
+
+      if (
+        auth.user?.current_federation_id &&
+        freshRoleFor(auth.user.current_federation_id, "Federation")
+      ) {
+        idealId = auth.user.current_federation_id;
+        idealType = "Federation";
+        idealRole = freshRoleFor(idealId, idealType);
+      } else if (
+        auth.user?.current_league_id &&
+        freshRoleFor(auth.user.current_league_id, "Ligue")
+      ) {
+        idealId = auth.user.current_league_id;
+        idealType = "Ligue";
+        idealRole = freshRoleFor(idealId, idealType);
+      } else if (
+        auth.user?.current_club_id &&
+        freshRoleFor(auth.user.current_club_id, "Club")
+      ) {
+        idealId = auth.user.current_club_id;
+        idealType = "Club";
+        idealRole = freshRoleFor(idealId, idealType);
       }
 
-      // 2. Sinon, on initialise selon la priorité : SuperAdmin > Ligue > Club
-      let role = auth.roleSuperAdmin?.[0] || auth.role?.[0] || null;
-      let targetId = null;
-      let targetType = "Club";
+      // 1. Cache présent : on ne le restaure QUE s'il correspond encore à un
+      // rôle réel (pas périmé) ET qu'aucune organisation plus prioritaire
+      // n'est apparue depuis (ex: un admin de club devenu arbitre d'une
+      // ligue/fédération doit voir ce nouveau rôle par défaut, pas rester
+      // bloqué sur son ancien contexte en cache indéfiniment). Une bascule
+      // manuelle vers une organisation de priorité égale ou supérieure à
+      // l'idéal reste elle bien respectée.
+      if (savedRole && (savedId || savedRole === "super_admin")) {
+        const cacheEncoreValide =
+          savedRole === "super_admin" ||
+          freshRoleFor(savedId, savedType) === savedRole;
 
-      if (role === "super_admin") {
+        const rangCache = RANG_TYPE[savedType] ?? 99;
+        const rangIdeal = idealId ? (RANG_TYPE[idealType] ?? 99) : 99;
+        const cachePasDepasse = rangCache <= rangIdeal;
+
+        if (cacheEncoreValide && (savedRole === "super_admin" || cachePasDepasse)) {
+          setActiveRole(savedRole);
+          setActiveId(savedId);
+          setActiveType(savedType || "Club");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 2. Sinon (pas de cache, cache périmé, ou organisation plus
+      // prioritaire apparue depuis), on utilise l'idéal calculé ci-dessus.
+      if (auth.roleSuperAdmin?.[0] === "super_admin") {
         setActiveRole("super_admin");
         localStorage.setItem("activeRole", "super_admin");
-      }
-      // Priorité à la Ligue si elle est active dans le profil user
-      else if (auth.user?.current_league_id) {
-        targetId = auth.user.current_league_id;
-        targetType = "Ligue";
-      } else if (auth.user?.current_club_id) {
-        targetId = auth.user.current_club_id;
-        targetType = "Club";
-      } else if (auth.user?.current_federation_id) {
-        targetId = auth.user.current_federation_id;
-        targetType = "Federation";
-      }
-
-      if (targetId) {
-        setActiveId(targetId);
-        setActiveType(targetType);
-        setActiveRole(role);
-        localStorage.setItem("activeId", targetId);
-        localStorage.setItem("activeType", targetType);
-        localStorage.setItem("activeRole", role);
+      } else if (idealId) {
+        setActiveId(idealId);
+        setActiveType(idealType);
+        setActiveRole(idealRole);
+        localStorage.setItem("activeId", idealId);
+        localStorage.setItem("activeType", idealType);
+        localStorage.setItem("activeRole", idealRole);
       }
 
       setLoading(false);
