@@ -15,11 +15,47 @@ import {
   TableHead,
   TableRow,
   InputAdornment,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { motion } from "motion/react";
 import { Instance } from "../../Api/Axios";
 import ErrorGlobal from "../../component/ErrorGlobal";
 import Message from "./Message";
+
+function ConfirmDeletePlanDialog({ open, plan, onClose, onConfirm, loading }) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ fontWeight: 700 }}>Supprimer ce palier ?</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary">
+          <strong>{plan?.name}</strong> ne sera plus proposé sur la page
+          Tarifs. Les abonnements déjà souscrits sur ce palier ne sont pas
+          affectés.
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
+          Annuler
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          color="error"
+          disabled={loading}
+          sx={{ textTransform: "none" }}
+        >
+          {loading ? "Suppression..." : "Supprimer"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 const ORG_TYPES = [
   { value: "Club", label: "Club" },
@@ -48,6 +84,9 @@ function Plan() {
 
   const [plans, setPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [discountPercent, setDiscountPercent] = useState("");
   const [discountSuccess, setDiscountSuccess] = useState("");
@@ -82,12 +121,15 @@ function Plan() {
     setError({});
     setSubmitting(true);
     try {
-      const response = await Instance.post("/api/plan/store", formData);
+      const response = editingId
+        ? await Instance.patch(`/api/plan/${editingId}`, formData)
+        : await Instance.post("/api/plan/store", formData);
 
       if (response.data.success) {
         setSuccess(response.data.message);
         setTimeout(() => setSuccess(""), 3000);
         setFormData(EMPTY_PLAN);
+        setEditingId(null);
         fetchPlans();
       } else {
         setError({ general: response.data.message });
@@ -96,6 +138,44 @@ function Plan() {
       ErrorGlobal({ error, setError });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEdit = (plan) => {
+    setError({});
+    setEditingId(plan.id);
+    setFormData({
+      name: plan.name,
+      description: plan.description || "",
+      amount: plan.amount,
+      organisateur_type: plan.organisateur_type,
+      min_users: plan.min_users,
+      max_users: plan.max_users ?? "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData(EMPTY_PLAN);
+    setError({});
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await Instance.delete(`/api/plan/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      if (editingId === deleteTarget.id) handleCancelEdit();
+      fetchPlans();
+    } catch (err) {
+      setError({
+        general: err.response?.data?.message || "Impossible de supprimer ce palier.",
+      });
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -174,7 +254,7 @@ function Plan() {
         sx={{ mt: 4, boxShadow: 6, borderRadius: 2, p: 4 }}
       >
         <Typography variant="h5" fontWeight={800} gutterBottom>
-          Ajouter un palier de tarification
+          {editingId ? "Modifier le palier" : "Ajouter un palier de tarification"}
         </Typography>
         {success && <Message text={success} type="success" />}
         {error.general && <Message text={error.general} type="error" />}
@@ -269,15 +349,30 @@ function Plan() {
             <FormHelperText error>{error.amount.join(", ")}</FormHelperText>
           )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={submitting}
-            sx={{ mt: 2, textTransform: "none" }}
-          >
-            {submitting ? "Enregistrement..." : "Ajouter le palier"}
-          </Button>
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={submitting}
+              sx={{ textTransform: "none" }}
+            >
+              {submitting
+                ? "Enregistrement..."
+                : editingId
+                  ? "Enregistrer les modifications"
+                  : "Ajouter le palier"}
+            </Button>
+            {editingId && (
+              <Button
+                onClick={handleCancelEdit}
+                disabled={submitting}
+                sx={{ textTransform: "none" }}
+              >
+                Annuler
+              </Button>
+            )}
+          </Box>
         </form>
       </Box>
 
@@ -294,12 +389,13 @@ function Plan() {
                 <TableCell>Nom</TableCell>
                 <TableCell>Utilisateurs</TableCell>
                 <TableCell align="right">Prix / mois</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {!loadingPlans && plans.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4}>Aucun palier pour le moment</TableCell>
+                  <TableCell colSpan={5}>Aucun palier pour le moment</TableCell>
                 </TableRow>
               )}
               {plans.map((plan) => (
@@ -313,12 +409,28 @@ function Plan() {
                   <TableCell align="right">
                     {Number(plan.amount) === 0 ? "—" : `${formatFcfa(plan.amount)} XOF`}
                   </TableCell>
+                  <TableCell align="right">
+                    <IconButton size="small" onClick={() => handleEdit(plan)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => setDeleteTarget(plan)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Paper>
       </Box>
+
+      <ConfirmDeletePlanDialog
+        open={!!deleteTarget}
+        plan={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+      />
     </Container>
   );
 }
