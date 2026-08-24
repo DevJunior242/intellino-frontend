@@ -1,17 +1,16 @@
 import {
   Box,
-  CircularProgress,
-  Tab,
-  Tabs,
   Button,
   Typography,
-  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   IconButton,
 } from "@mui/material";
 import React, { useState } from "react";
 import { UseAuth } from "../../../Api/AuthContext";
-import { Link } from "react-router-dom";
-import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import StudentForm from "./StudentForm";
 import StudentList from "./StudentList";
 import StudentGradCreate from "../StudentGradCreate";
@@ -25,55 +24,103 @@ function StudentDetails() {
     "secretaire",
     "super_admin",
   ].includes(activeRole);
-  const tabs = [
-    ...(allowAccess ? [{ label: "Inscriptions", key: "inscriptions" }] : []),
 
-    { label: "Listes des eleves", key: "listes des eleves" },
-    { label: "Grades", key: "grades" },
-  ];
-  const [tab, setTab] = useState(0);
+  const [inscriptionOpen, setInscriptionOpen] = useState(false);
+  const [gradeStudent, setGradeStudent] = useState(null);
+  // Incrémenté après une inscription ou une attribution de grade réussie,
+  // pour forcer StudentList à recharger sans lui donner le contrôle des
+  // modals qui vivent ici.
+  const [refreshSignal, setRefreshSignal] = useState(0);
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Box sx={{ p: 3 }}>
-        {/* TABS */}
         <Box
-          sx={{ mb: 2, display: "flex", gap: 2, backgroundColor: "#020224" }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 3,
+          }}
         >
-          <Tabs
-            value={tab}
-            onChange={(e, newValue) => setTab(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            aria-label="scrollable tabs"
-            sx={{
-              width: "100%",
-              "& .MuiTabs-flexContainer": {
-                justifyContent: "center",
-              },
-              "& .MuiTabs-indicator": { height: 3 },
-              "& .MuiTab-root": {
-                color: "rgba(255,255,255,0.7)",
-                fontWeight: 500,
-              },
-              "& .MuiTab-root.Mui-selected": {
-                color: "#fff",
-              },
-            }}
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: "bold", fontSize: { xs: 18, md: 24 } }}
           >
-            {tabs.map((tab) => (
-              <Tab key={tab.key} label={tab.label} />
-            ))}
-          </Tabs>
+            Élèves
+          </Typography>
+
+          {allowAccess && (
+            <Button
+              variant="contained"
+              startIcon={<PersonAddAltIcon />}
+              onClick={() => setInscriptionOpen(true)}
+              sx={{ textTransform: "none" }}
+            >
+              Inscrire un élève
+            </Button>
+          )}
         </Box>
 
-        {/* CONTENU */}
-
-        {tabs[tab]?.key === "inscriptions" && <StudentForm />}
-        {tabs[tab]?.key === "listes des eleves" && <StudentList />}
-        {tabs[tab]?.key === "grades" && <StudentGradCreate />}
+        <StudentList
+          onAssignGrade={setGradeStudent}
+          refreshSignal={refreshSignal}
+        />
       </Box>
+
+      <Dialog
+        open={inscriptionOpen}
+        onClose={() => setInscriptionOpen(false)}
+        maxWidth="md"
+        fullWidth
+        scroll="paper"
+      >
+        <DialogTitle
+          sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          Inscription élève(s)
+          <IconButton onClick={() => setInscriptionOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <StudentForm
+            onSuccess={() => {
+              setInscriptionOpen(false);
+              setRefreshSignal((s) => s + 1);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!gradeStudent}
+        onClose={() => setGradeStudent(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          Attribuer un grade{gradeStudent ? ` — ${gradeStudent.fullname}` : ""}
+          <IconButton onClick={() => setGradeStudent(null)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {gradeStudent && (
+            <StudentGradCreate
+              student={gradeStudent}
+              onSuccess={() => {
+                setGradeStudent(null);
+                setRefreshSignal((s) => s + 1);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

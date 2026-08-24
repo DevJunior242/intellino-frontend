@@ -18,19 +18,31 @@ import { UseAuth } from "../../Api/AuthContext";
 import ConfigSkeleton from "./ConfigSkeleton";
 import StudentWithoutGrade from "./StudentWithoutGrade";
 
-function StudentGradCreate() {
+function StudentGradCreate({ student = null, onSuccess } = {}) {
+  // Mode "embarqué" (ouvert depuis le menu 3 points d'un élève, avec l'élève
+  // déjà connu) vs. mode page autonome (route /dashboard/grade/store, avec
+  // son propre sélecteur d'élève) — même formulaire, chrome différent.
+  const embedded = !!student;
+
   const [error, setError] = useState({});
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [selectStudent, setSelectStudent] = useState(null);
+  const [selectStudent, setSelectStudent] = useState(student);
   const { activeId } = UseAuth();
   const [grade, setGrade] = useState([]);
   const [selectCurrentGrade, setSelectCurrentGrade] = useState(null);
   const hasError = (field) => !!error?.[field];
-  const getError = (field) => error?.[field]?.join(", ");
+  // error[field] peut être une chaîne (voir le catch plus bas) ou un
+  // tableau selon le chemin d'erreur — .join() plantait dès qu'une erreur
+  // arrivait sous forme de chaîne, même correction que StudentForm.jsx.
+  const getError = (field) => {
+    const val = error?.[field];
+    if (!val) return undefined;
+    return Array.isArray(val) ? val.join(", ") : val;
+  };
   const [formData, setFormData] = useState({
-    student_id: null,
+    student_id: student?.id ?? null,
     current_grade_id: null,
     awarded_at: "",
     club_id: activeId,
@@ -99,10 +111,13 @@ function StudentGradCreate() {
       );
       console.log(response);
       if (response.data.success) {
-        setSelectStudent(null);
+        setSelectStudent(embedded ? student : null);
         setSelectCurrentGrade(null);
         setFormData({
+          student_id: embedded ? (student?.id ?? null) : null,
+          current_grade_id: null,
           awarded_at: "",
+          club_id: activeId,
         });
         setSuccess(response.data.message);
         getGrade();
@@ -110,6 +125,7 @@ function StudentGradCreate() {
         setTimeout(() => {
           setSuccess("");
         }, 3000);
+        onSuccess?.();
       } else {
         setError(response.data.message);
         setSuccess("");
@@ -124,21 +140,10 @@ function StudentGradCreate() {
   if (isLoading) {
     return <ConfigSkeleton />;
   }
-  return (
-    <Container maxWidth="md">
-      <Box
-        component={motion.div}
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -50 }}
-        transition={{ duration: 0.5 }}
-        sx={{
-          mt: 8,
-          boxShadow: 10,
-          borderRadius: 2,
-          p: 4,
-        }}
-      >
+
+  const formContent = (
+    <>
+      {!embedded && (
         <Typography
           variant="h4"
           component={"h1"}
@@ -147,9 +152,19 @@ function StudentGradCreate() {
         >
           Attribution de grade a un eleve
         </Typography>
-        {success && <Message text={success} type="success" />}
-        {error.general && <Message text={error.general} type="error" />}
-        <form onSubmit={handleSubmit}>
+      )}
+      {success && <Message text={success} type="success" />}
+      {error?.general && <Message text={error.general} type="error" />}
+      <form onSubmit={handleSubmit}>
+        {embedded ? (
+          <TextField
+            label="Élève"
+            value={student?.fullname || ""}
+            fullWidth
+            margin="normal"
+            disabled
+          />
+        ) : (
           <StudentWithoutGrade
             activeId={activeId}
             value={selectStudent}
@@ -158,7 +173,8 @@ function StudentGradCreate() {
             getError={getError}
             label="il vous faut choisir un eleve"
           />
-          <Autocomplete
+        )}
+        <Autocomplete
             slotProps={{
               paper: {
                 sx: { backgroundColor: "background.default" },
@@ -212,16 +228,39 @@ function StudentGradCreate() {
             <FormHelperText error>{getError("awarded_at")}</FormHelperText>
           )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
-            disabled={submitting}
-          >
-            {submitting ? "Enregistrement..." : "Association de grade"}
-          </Button>
-        </form>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          sx={{ mt: 2, textTransform: "none", fontSize: { xs: 8, md: 14 } }}
+          disabled={submitting}
+        >
+          {submitting ? "Enregistrement..." : "Association de grade"}
+        </Button>
+      </form>
+    </>
+  );
+
+  if (embedded) {
+    return formContent;
+  }
+
+  return (
+    <Container maxWidth="md">
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -50 }}
+        transition={{ duration: 0.5 }}
+        sx={{
+          mt: 8,
+          boxShadow: 10,
+          borderRadius: 2,
+          p: 4,
+        }}
+      >
+        {formContent}
       </Box>
     </Container>
   );

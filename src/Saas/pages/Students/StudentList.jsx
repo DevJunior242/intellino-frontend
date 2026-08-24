@@ -6,13 +6,18 @@ import {
   Avatar,
   Box,
   Chip,
-  Typography,
   Button,
   IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
 import { UseAuth } from "../../../Api/AuthContext";
 import { GridToolbar } from "@mui/x-data-grid/internals";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import EditIcon from "@mui/icons-material/Edit";
 import EditStudent from "../EditStudent";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -20,7 +25,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import ConfigSkeleton from "../ConfigSkeleton";
 import Message from "../Message";
 import ErrorBlock from "../ErrorBlock";
-function StudentList() {
+function StudentList({ onAssignGrade, refreshSignal } = {}) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openEditModel, setOpenEditModel] = useState(false);
@@ -28,6 +33,20 @@ function StudentList() {
   const { auth, activeId } = UseAuth();
   const [errorStudent, setErrorStudent] = useState("");
   const { error, setError } = useState({});
+
+  // Menu 3 points partagé par toutes les lignes (un seul Menu monté, plutôt
+  // qu'un par ligne) — menuStudent n'est lu qu'à l'ouverture, jamais null
+  // tant que le Menu est affiché (voir open={!!menuAnchor} plus bas).
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [menuStudent, setMenuStudent] = useState(null);
+  const handleOpenMenu = (event, student) => {
+    setMenuAnchor(event.currentTarget);
+    setMenuStudent(student);
+  };
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+    setMenuStudent(null);
+  };
 
   //
 
@@ -57,7 +76,9 @@ function StudentList() {
 
   useEffect(() => {
     getStudents();
-  }, [getStudents]);
+    // refreshSignal : incrémenté par le parent (ex: après une inscription
+    // réussie depuis le modal) pour forcer un rechargement de la liste.
+  }, [getStudents, refreshSignal]);
   //retry
   const retryStudents = useCallback(async () => {
     setErrorStudent("");
@@ -181,26 +202,15 @@ function StudentList() {
     {
       field: "actions",
       headerName: "Action",
-      flex: 1,
-      minWidth: 130,
+      width: 70,
       sortable: false,
       renderCell: (params) => (
-        <>
-          <IconButton
-            size="small"
-            color="success"
-            onClick={() => handleOpenEditModal(params.row)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleSoftDelete(params.row)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </>
+        <IconButton
+          size="small"
+          onClick={(e) => handleOpenMenu(e, params.row)}
+        >
+          <MoreVertIcon />
+        </IconButton>
       ),
     },
   ];
@@ -249,9 +259,6 @@ function StudentList() {
       return oldRow;
     }
   };
-  // if (loading) {
-  //   return <ConfigSkeleton />;
-  // }
 
   if (errorStudent)
     return (
@@ -267,12 +274,6 @@ function StudentList() {
         backgroundColor: "background.default",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{ mt: 10, fontWeight: "bold", fontSize: { xs: 10, md: 24 } }}
-      >
-        Liste des étudiants
-      </Typography>
       {error && <Message text={error} type="error" />}
 
       <Box sx={{ height: "70vh", width: "100%", minWidth: 0 }}>
@@ -339,6 +340,43 @@ function StudentList() {
           />
         )}
       </Box>
+
+      <Menu anchorEl={menuAnchor} open={!!menuAnchor} onClose={handleCloseMenu}>
+        <MenuItem
+          onClick={() => {
+            onAssignGrade?.(menuStudent);
+            handleCloseMenu();
+          }}
+        >
+          <ListItemIcon>
+            <WorkspacePremiumIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Attribuer un grade</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuStudent) handleOpenEditModal(menuStudent);
+            handleCloseMenu();
+          }}
+        >
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Modifier</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuStudent) handleSoftDelete(menuStudent);
+            handleCloseMenu();
+          }}
+          sx={{ color: "error.main" }}
+        >
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <ListItemText>Supprimer</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
