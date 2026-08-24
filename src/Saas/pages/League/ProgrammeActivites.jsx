@@ -9,10 +9,14 @@ import {
   Chip,
   Avatar,
   IconButton,
+  Button,
 } from "@mui/material";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 import { Instance } from "../../../Api/Axios";
+import { UseAuth } from "../../../Api/AuthContext";
 import ConfigSkeleton from "../ConfigSkeleton";
 import ErrorBlock from "../ErrorBlock";
 
@@ -205,22 +209,36 @@ const KanbanColumn = ({ title, count, color, children, isEmpty }) => {
 // --- COMPOSANT PRINCIPAL : Page Programme d'activités ---
 export default function ProgrammeActivites() {
   const theme = useLocalTheme();
+  const navigate = useNavigate();
+  const { activeType } = UseAuth();
   const CATEGORY_COLUMN = getCategoryColumn(theme);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // "aucune_saison_active" mérite un traitement différent d'une vraie
+  // panne : ce n'est pas une erreur, juste une organisation tout juste
+  // créée qui n'a pas encore de saison — un bandeau rouge "Réessayer" y
+  // était trompeur (retenter n'y changera rien tant que personne n'a créé
+  // de saison).
+  const [noSaison, setNoSaison] = useState(false);
 
   const fetchActivites = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setNoSaison(false);
     try {
       const response = await Instance.get("/api/programmes/activites");
       setData(response.data);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Impossible de charger le programme d'activités.",
-      );
+      if (err.response?.data?.code === "aucune_saison_active") {
+        setNoSaison(true);
+        setError(err.response.data.message);
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Impossible de charger le programme d'activités.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -233,6 +251,45 @@ export default function ProgrammeActivites() {
   if (loading) {
     return <ConfigSkeleton />;
   }
+
+  if (noSaison) {
+    const settingsPath =
+      activeType === "Federation" ? "/dashboard/federation/settings" : "/dashboard/league/settings";
+    return (
+      <Box sx={{ p: { xs: 2, md: 4 } }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            textAlign: "center",
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: theme.paper,
+          }}
+        >
+          <EventBusyOutlinedIcon sx={{ fontSize: 40, color: theme.textSecondary, mb: 1 }} />
+          <Typography variant="h6" sx={{ color: theme.textMain, fontWeight: 700, mb: 1 }}>
+            Aucune saison active
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: theme.textSecondary, maxWidth: 480, mx: "auto", mb: 3 }}
+          >
+            {error}
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{ textTransform: "none" }}
+            onClick={() => navigate(settingsPath)}
+          >
+            Aller à Paramétrage général
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
+
   if (error) {
     return <ErrorBlock message={error} onRetry={fetchActivites} />;
   }
