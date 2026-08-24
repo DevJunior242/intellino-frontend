@@ -12,7 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { Turnstile } from "@marsidev/react-turnstile";
+// import { Turnstile } from "@marsidev/react-turnstile";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
@@ -136,7 +136,7 @@ export default function Login() {
   const [challengeToken, setChallengeToken] = useState(null);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [useRecoveryCode, setUseRecoveryCode] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
+  // const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
     if (searchParams.get("registered") === "1") {
@@ -164,7 +164,7 @@ export default function Login() {
     try {
       const dataSend = {
         ...formData,
-        captcha_token: captchaToken,
+        // captcha_token: captchaToken,
       };
       const result = await login(dataSend);
       if (result.twoFactor) {
@@ -538,14 +538,14 @@ export default function Login() {
             </Box>
 
             {/* Vérification de sécurité */}
-            <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
+            {/* <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
               <Turnstile
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
                 onSuccess={(token) => setCaptchaToken(token)}
                 onExpire={() => setCaptchaToken(null)}
                 options={{ theme: "dark" }}
               />
-            </Box>
+            </Box> */}
 
             {/* Submit */}
             <Box
