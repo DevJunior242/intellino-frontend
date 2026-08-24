@@ -159,11 +159,6 @@ export default function Login() {
     setError({});
     setSuccess("");
 
-    if (!captchaToken) {
-      setError({ general: "Veuillez valider la vérification de sécurité." });
-      return;
-    }
-
     setSubmitting(true);
 
     try {
@@ -582,7 +577,7 @@ export default function Login() {
                     boxShadow: "0 6px 32px rgba(200,16,46,0.6)",
                   },
                 }}
-                disabled={submitting || !captchaToken}
+                disabled={submitting}
               >
                 {submitting ? "connexion..." : " se connecter"}
               </Button>
