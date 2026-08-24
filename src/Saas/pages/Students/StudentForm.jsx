@@ -193,8 +193,14 @@ const StudentForm = ({ onSuccess } = {}) => {
         ]);
       }
     } catch (err) {
-      if (err.response && err.response.status === 422) {
-        const backErrors = err.response.data.errors;
+      const backErrors = err.response?.data?.errors;
+
+      // Une 422 n'a pas toujours d'objet "errors" détaillé par champ (ex:
+      // conflit de numéro de téléphone détecté manuellement côté
+      // contrôleur, pas par le FormRequest) — dans ce cas Object.keys()
+      // plantait sur undefined et masquait le vrai message d'erreur
+      // derrière un message générique.
+      if (err.response && err.response.status === 422 && backErrors) {
         const newErrors = {};
 
         Object.keys(backErrors).forEach((key) => {
@@ -208,6 +214,8 @@ const StudentForm = ({ onSuccess } = {}) => {
           }
         });
         setError(newErrors);
+      } else if (err.response?.data?.message) {
+        setError({ general: err.response.data.message });
       } else {
         ErrorGlobal({ error: err, setError });
       }
