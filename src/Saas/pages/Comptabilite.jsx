@@ -25,6 +25,8 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { Instance } from "../../Api/Axios";
 import TransactionRevenueChart from "./TransactionRevenueChart";
 import PaymentMethodIndex from "./Paiement/Paymentmethodindex";
+import MonAbonnement from "./MonAbonnement";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 
 const TYPE_LABELS = {
   licence_lot: "Licences",
@@ -307,6 +309,7 @@ function VueEnsembleTab() {
 const TABS = [
   { value: "apercu", label: "Vue d'ensemble", icon: <DashboardOutlinedIcon fontSize="small" /> },
   { value: "moyens", label: "Moyens de paiement", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> },
+  { value: "abonnement", label: "Mon abonnement", icon: <CreditCardIcon fontSize="small" /> },
 ];
 
 export default function Comptabilite() {
@@ -355,7 +358,13 @@ export default function Comptabilite() {
         </Tabs>
       </Paper>
 
-      {tab === "moyens" ? <PaymentMethodIndex /> : <VueEnsembleTab />}
+      {tab === "moyens" ? (
+        <PaymentMethodIndex />
+      ) : tab === "abonnement" ? (
+        <MonAbonnement />
+      ) : (
+        <VueEnsembleTab />
+      )}
     </Box>
   );
 }

@@ -13,6 +13,8 @@ import TarifsTab from "./TarifsTab";
 import DettesTab from "./DettesTab";
 import HistoriqueTab from "./HistoriqueTab";
 import PaymentMethodIndex from "../Paiement/Paymentmethodindex";
+import MonAbonnement from "../MonAbonnement";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 
 const TABS = [
   { value: "apercu", label: "Aperçu", icon: <DashboardOutlinedIcon fontSize="small" /> },
@@ -21,6 +23,7 @@ const TABS = [
   { value: "dettes", label: "Dettes", icon: <MoneyOffOutlinedIcon fontSize="small" /> },
   { value: "historique", label: "Factures", icon: <ReceiptLongOutlinedIcon fontSize="small" /> },
   { value: "moyens", label: "Moyens de paiement", icon: <AccountBalanceWalletOutlinedIcon fontSize="small" /> },
+  { value: "abonnement", label: "Mon abonnement", icon: <CreditCardIcon fontSize="small" /> },
 ];
 
 export default function ClubComptabilite() {
@@ -66,6 +69,8 @@ export default function ClubComptabilite() {
         return <HistoriqueTab key={refreshKey} />;
       case "moyens":
         return <PaymentMethodIndex />;
+      case "abonnement":
+        return <MonAbonnement />;
       case "apercu":
       default:
         return <ApercuTab key={refreshKey} />;
