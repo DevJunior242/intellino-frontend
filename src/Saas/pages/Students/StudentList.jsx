@@ -65,6 +65,7 @@ function StudentList({ onAssignGrade, refreshSignal } = {}) {
           status: student?.status,
           photo: student?.photo,
           clubName: student?.club ? student?.club?.name : "_",
+          hasGrade: !!student?.has_grade,
         })),
       );
     } catch (error) {
@@ -342,17 +343,21 @@ function StudentList({ onAssignGrade, refreshSignal } = {}) {
       </Box>
 
       <Menu anchorEl={menuAnchor} open={!!menuAnchor} onClose={handleCloseMenu}>
-        <MenuItem
-          onClick={() => {
-            onAssignGrade?.(menuStudent);
-            handleCloseMenu();
-          }}
-        >
-          <ListItemIcon>
-            <WorkspacePremiumIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Attribuer un grade</ListItemText>
-        </MenuItem>
+        {/* Le premier grade se donne à la main ; les suivants s'obtiennent
+            via les examens — plus proposé une fois que l'élève a déjà un grade. */}
+        {!menuStudent?.hasGrade && (
+          <MenuItem
+            onClick={() => {
+              onAssignGrade?.(menuStudent);
+              handleCloseMenu();
+            }}
+          >
+            <ListItemIcon>
+              <WorkspacePremiumIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Attribuer un grade</ListItemText>
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             if (menuStudent) handleOpenEditModal(menuStudent);
