@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { Instance } from "./Axios";
@@ -54,6 +55,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [emailVerificationRequired, setEmailVerificationRequired] =
     useState(false);
+  // Le choix du contexte actif par défaut (voir l'effet plus bas) ne doit se
+  // faire qu'UNE FOIS par connexion — sinon un simple refetch ailleurs dans
+  // l'app (qui change la référence de auth.clubs/leagues/federations) peut
+  // redéclencher l'effet et écraser un switch manuel fait entre-temps via
+  // switchPortal() vers une organisation moins prioritaire (ex: Club alors
+  // que current_federation_id pointe vers une Fédération).
+  const contexteInitialResolu = useRef(false);
 
   // Signal global émis par l'interceptor axios (Axios.jsx) sur n'importe quelle
   // route protégée par le middleware 'verified' : le composant appelant n'a pas
@@ -69,7 +77,10 @@ export const AuthProvider = ({ children }) => {
   //////////////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
+    if (contexteInitialResolu.current) return;
+
     if (auth?.isLogin) {
+      contexteInitialResolu.current = true;
       const savedRole = localStorage.getItem("activeRole");
       const savedId = localStorage.getItem("activeId");
       const savedType = localStorage.getItem("activeType");
@@ -323,6 +334,7 @@ export const AuthProvider = ({ children }) => {
             federations: [],
             isLogin: false,
           });
+          contexteInitialResolu.current = false;
           navigate("/login");
         }
       } finally {
@@ -357,6 +369,9 @@ export const AuthProvider = ({ children }) => {
     setActiveRole(null);
     setActiveId(null);
     setActiveType(null);
+    // Une reconnexion (même session SPA, sans rechargement de page) doit
+    // pouvoir re-résoudre le contexte actif par défaut depuis zéro.
+    contexteInitialResolu.current = false;
   }, []);
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -567,6 +582,7 @@ export const AuthProvider = ({ children }) => {
         federations: [],
         isLogin: false,
       });
+      contexteInitialResolu.current = false;
       navigate("/login");
     }
   }, [setAuth, navigate]);
