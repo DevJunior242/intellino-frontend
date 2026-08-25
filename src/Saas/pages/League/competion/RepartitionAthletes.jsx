@@ -87,12 +87,19 @@ const CarteNonAssigne = ({ inscription, configs, onAssigner, submitId }) => {
           sx={{ flexShrink: 0 }}
         >
           {configs.map((config) => (
-            <Tooltip key={config.id} title={`Assigner → ${config.plateau_nom}`}>
+            <Tooltip
+              key={config.id}
+              title={
+                config.est_valide
+                  ? `Tableau déjà généré sur ${config.plateau_nom} — assignation impossible`
+                  : `Assigner → ${config.plateau_nom}`
+              }
+            >
               <span>
                 <IconButton
                   size="small"
                   color="success"
-                  disabled={isLoading}
+                  disabled={isLoading || config.est_valide}
                   onClick={() => onAssigner(inscription.id, config.id)}
                   sx={{
                     width: 28,
@@ -121,9 +128,16 @@ const CarteNonAssigne = ({ inscription, configs, onAssigner, submitId }) => {
               key={config.id}
               label={config?.plateau_nom}
               size="small"
-              sx={{ height: 16, fontSize: "0.6rem", cursor: "pointer" }}
+              sx={{
+                height: 16,
+                fontSize: "0.6rem",
+                cursor: config.est_valide ? "not-allowed" : "pointer",
+                opacity: config.est_valide ? 0.5 : 1,
+              }}
               onClick={() =>
-                !isLoading && onAssigner(inscription.id, config.id)
+                !isLoading &&
+                !config.est_valide &&
+                onAssigner(inscription.id, config.id)
               }
             />
           ))}
@@ -276,6 +290,16 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
       return;
     }
 
+    // Le tableau de ce tatami a déjà été généré — une nouvelle affectation
+    // ne serait jamais intégrée au tableau (voir OrdrePassageController::assigner).
+    const config = configs.find((c) => c.id === configId);
+    if (config?.est_valide) {
+      setErreur(
+        `Le tableau a déjà été généré sur ${config.plateau_nom} — impossible d'y assigner un nouvel athlète.`,
+      );
+      return;
+    }
+
     setSubmitId(inscriptionId);
     try {
       await Instance.post(`/api/ordre-passages/assigner`, {
@@ -283,7 +307,6 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
         config_notation_id: configId,
       });
       await fetchData(true);
-      const config = configs.find((c) => c.id === configId);
       showSuccess(`Athlète assigné à ${config?.plateau_nom ?? "tatami"}`);
     } catch (err) {
       setErreur(err.response?.data?.message || "Erreur d'assignation");
@@ -586,6 +609,20 @@ export default function RepartitionAthletes({ competition, configs, onBack }) {
                 >
                   {config.discipline} · {config.niveau}
                 </Typography>
+                {config.est_valide && (
+                  <Chip
+                    label="Tableau généré — assignation fermée"
+                    size="small"
+                    sx={{
+                      mt: 0.5,
+                      height: 18,
+                      fontSize: "0.6rem",
+                      bgcolor: "rgba(255,255,255,0.25)",
+                      color: "white",
+                      fontWeight: 700,
+                    }}
+                  />
+                )}
               </Box>
 
               {/* Liste */}
