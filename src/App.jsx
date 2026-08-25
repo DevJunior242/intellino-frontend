@@ -63,6 +63,9 @@ const StudentDetails = lazy(
   () => import("./Saas/pages/Students/StudentDetails"),
 );
 const StudentForm = lazy(() => import("./Saas/pages/Students/StudentForm"));
+const AthletesIndependants = lazy(
+  () => import("./Saas/pages/League/AthletesIndependants"),
+);
 const StoreDisp = lazy(() => import("./Saas/pages/StoreDisp"));
 const SessionDetails = lazy(
   () => import("./Saas/pages/Sessions/SessionDetails"),
@@ -338,6 +341,7 @@ const AppRoutes = () => {
           <Route path="examen/:examenId/show" element={<ExamenDetails />} />
           <Route path="examens-stats" element={<ExamenStats />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
+          <Route path="athletes" element={<AthletesIndependants />} />
           <Route path="competition" element={<InscriptionPage />} />
           <Route path="competitions" element={<Config />} />
         </Route>
@@ -370,6 +374,7 @@ const AppRoutes = () => {
           <Route path="comptabilite" element={<Comptabilite />} />
           <Route path="settings" element={<AccountSettings />} />
           <Route path="athletes/inscription" element={<StudentForm />} />
+          <Route path="athletes" element={<AthletesIndependants />} />
           <Route path="competition" element={<InscriptionPage />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={STAFF_LEAGUE_ROLES} />}>

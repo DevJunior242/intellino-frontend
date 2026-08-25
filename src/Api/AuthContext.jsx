@@ -97,10 +97,6 @@ export const AuthProvider = ({ children }) => {
       // prioritaire par défaut.
       const RANG_TYPE = { Federation: 0, Ligue: 1, League: 1, Club: 2 };
 
-      // Organisation/rôle "idéal" d'après les données fraîches de CE login,
-      // indépendamment de tout cache — sert à la fois de valeur par défaut
-      // et de référence pour savoir si un cache existant est encore
-      // pertinent (voir plus bas).
       let idealRole = null;
       let idealId = null;
       let idealType = "Club";
@@ -144,7 +140,10 @@ export const AuthProvider = ({ children }) => {
         const rangIdeal = idealId ? (RANG_TYPE[idealType] ?? 99) : 99;
         const cachePasDepasse = rangCache <= rangIdeal;
 
-        if (cacheEncoreValide && (savedRole === "super_admin" || cachePasDepasse)) {
+        if (
+          cacheEncoreValide &&
+          (savedRole === "super_admin" || cachePasDepasse)
+        ) {
           setActiveRole(savedRole);
           setActiveId(savedId);
           setActiveType(savedType || "Club");
@@ -171,7 +170,9 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, [auth.isLogin, auth.clubs, auth.leagues, activeId, activeRole]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.isLogin, auth.clubs, auth.leagues, auth.federations]);
 
   const switchPortal = useCallback(
     (id, type, roleName) => {
@@ -339,6 +340,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("roleSuperAdmin");
     localStorage.removeItem("activeRole");
     localStorage.removeItem("activeId");
+    localStorage.removeItem("activeType");
     localStorage.removeItem("clubs");
     localStorage.removeItem("leagues");
     localStorage.removeItem("federations");
@@ -470,7 +472,11 @@ export const AuthProvider = ({ children }) => {
       if (res.data.two_factor) {
         // Pas de session ouverte pour l'instant : juste le jeton temporaire
         // que verifyTwoFactor() devra échanger contre la vraie session.
-        return { success: true, twoFactor: true, challengeToken: res.data.token };
+        return {
+          success: true,
+          twoFactor: true,
+          challengeToken: res.data.token,
+        };
       }
 
       if (!res.data.token) {

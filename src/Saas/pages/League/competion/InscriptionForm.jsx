@@ -88,6 +88,13 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
     isPoidsHorsBornes(champs.poids_declare),
   );
 
+  // Kata WKF Art. 5.1 : un athlète doit présenter un kata précis du
+  // catalogue officiel — laisser ce champ vide produit un passage sans nom
+  // de kata affiché aux juges/écran public (bug déjà rencontré en prod).
+  const hasKataManquant =
+    subdiscipline === "Kata" &&
+    Object.values(selected).some((champs) => !champs.kata_id);
+
   const filteredStudents = (Array.isArray(students) ? students : []).filter(
     (s) => (s.fullname || "").toLowerCase().includes(search.toLowerCase()),
   );
@@ -142,6 +149,10 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
       setError({
         general: `Un ou plusieurs poids déclarés sont hors de la catégorie (${poidsLabel}). Corrigez-les avant d'inscrire.`,
       });
+      return;
+    }
+    if (hasKataManquant) {
+      setError({ general: "Veuillez saisir votre kata." });
       return;
     }
     setSubmitting(true);
@@ -323,7 +334,12 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
                             )
                           }
                           renderInput={(params) => (
-                            <TextField {...params} label="Kata" />
+                            <TextField
+                              {...params}
+                              label="Kata"
+                              required
+                              error={!selected[student.id]?.kata_id}
+                            />
                           )}
                           sx={{ width: { xs: "100%", sm: 220 } }}
                         />
@@ -368,7 +384,12 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
             type="submit"
             variant="contained"
             fullWidth
-            disabled={selectedCount === 0 || submitting || hasPoidsHorsBornes}
+            disabled={
+              selectedCount === 0 ||
+              submitting ||
+              hasPoidsHorsBornes ||
+              hasKataManquant
+            }
             sx={{
               mt: 2,
               textTransform: "none",
@@ -379,9 +400,11 @@ function InscriptionForm({ competitionId, subdiscipline, onSuccess }) {
               ? "Enregistrement en cours..."
               : hasPoidsHorsBornes
                 ? `Poids hors catégorie (${poidsLabel})`
-                : selectedCount > 0
-                  ? `Inscrire ${selectedCount} athlète${selectedCount > 1 ? "s" : ""}`
-                  : "Sélectionnez au moins un athlète"}
+                : hasKataManquant
+                  ? "Veuillez saisir votre kata"
+                  : selectedCount > 0
+                    ? `Inscrire ${selectedCount} athlète${selectedCount > 1 ? "s" : ""}`
+                    : "Sélectionnez au moins un athlète"}
           </Button>
         </form>
       </Box>

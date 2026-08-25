@@ -48,6 +48,7 @@ import GradingIcon from "@mui/icons-material/Grading";
 import InsertInvitationSharpIcon from "@mui/icons-material/InsertInvitationSharp";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"; // ─── Theme ────────────────────────────────────────────────────────────────────
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import PersonOffOutlinedIcon from "@mui/icons-material/PersonOffOutlined";
 import TrialBanner from "../TrialBanner";
 import TierBanner from "../TierBanner";
 
@@ -122,6 +123,14 @@ const getNavSections = (activeType) => {
           to: "/dashboard/federation/affiliations",
           role: ["admin"],
           showFor: ["federation"],
+        },
+        {
+          icon: <PersonOffOutlinedIcon fontSize="small" />,
+          label: "Athlètes sans club",
+          to: isFederation
+            ? "/dashboard/federation/athletes"
+            : "/dashboard/league/athletes",
+          role: ["admin"],
         },
         {
           icon: <SupervisorAccountIcon fontSize="small" />,

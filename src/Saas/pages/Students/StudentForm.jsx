@@ -311,6 +311,7 @@ const StudentForm = ({ onSuccess } = {}) => {
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
+                  type="email"
                   error={hasError("parent_email")}
                   helperText={getError("parent_email")}
                   value={parentData.email}
@@ -407,13 +408,24 @@ const StudentForm = ({ onSuccess } = {}) => {
                 control={
                   <Switch
                     checked={student.createAccount}
-                    onChange={(e) =>
-                      handleStudentChange(
-                        index,
-                        "createAccount",
-                        e.target.checked,
-                      )
-                    }
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      const newStudents = [...students];
+                      newStudents[index] = {
+                        ...newStudents[index],
+                        createAccount: checked,
+                        // Le champ email/téléphone disparaît quand on
+                        // décoche (sauf si isOwnResponsible le garde
+                        // affiché) — on vide sa valeur dans ce cas, sinon un
+                        // email mal formé tapé avant de décocher reste dans
+                        // l'état et part quand même au serveur (champ
+                        // devenu invisible, impossible à corriger).
+                        ...(!checked && !isOwnResponsible
+                          ? { email: "", phone: "" }
+                          : {}),
+                      };
+                      setStudents(newStudents);
+                    }}
                   />
                 }
                 label="Créer un compte d'accès pour cet élève"
@@ -428,6 +440,7 @@ const StudentForm = ({ onSuccess } = {}) => {
               {(student.createAccount || isOwnResponsible) && (
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                   <TextField
+                    type="email"
                     value={student.email}
                     label="Email"
                     fullWidth

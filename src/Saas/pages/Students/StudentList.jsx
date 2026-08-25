@@ -25,7 +25,7 @@ import ErrorGlobal from "../../../component/ErrorGlobal";
 import ConfigSkeleton from "../ConfigSkeleton";
 import Message from "../Message";
 import ErrorBlock from "../ErrorBlock";
-function StudentList({ onAssignGrade, refreshSignal } = {}) {
+function StudentList({ onAssignGrade, refreshSignal, scope } = {}) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openEditModel, setOpenEditModel] = useState(false);
@@ -54,7 +54,9 @@ function StudentList({ onAssignGrade, refreshSignal } = {}) {
     setLoading(true);
     setErrorStudent("");
     try {
-      const response = await Instance(`/api/students?club_id=${activeId}`);
+      const query =
+        scope === "independants" ? "independants=1" : `club_id=${activeId}`;
+      const response = await Instance(`/api/students?${query}`);
       setStudents(
         (response.data.students || []).map((student) => ({
           id: student.id,
@@ -73,7 +75,7 @@ function StudentList({ onAssignGrade, refreshSignal } = {}) {
     } finally {
       setLoading(false);
     }
-  }, [activeId]);
+  }, [activeId, scope]);
 
   useEffect(() => {
     getStudents();
