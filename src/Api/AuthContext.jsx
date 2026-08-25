@@ -199,8 +199,14 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("activeType", type);
       localStorage.setItem("activeRole", normalizedRole);
 
+      // "/dashboard" (index) est protégé par ALL_CLUB_ROLES (App.jsx), qui
+      // ne contient pas "arbitre" — y envoyer un contexte Ligue/Fédération
+      // bloque direct un arbitre au switch, avant même d'atteindre le vrai
+      // dashboard de son organisation.
       if (type === "Ligue") {
         navigate("/dashboard/league/stats");
+      } else if (type === "Federation") {
+        navigate("/dashboard/federation/stats");
       } else {
         navigate("/dashboard");
       }

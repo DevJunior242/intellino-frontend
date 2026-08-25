@@ -198,8 +198,8 @@ const Comptabilite = lazy(() => import("./Saas/pages/Comptabilite.jsx"));
 const LeagueFederationAffiliation = lazy(
   () => import("./Saas/pages/Fede/LeagueFederationAffiliation.jsx"),
 );
-const AdminFederationDashboard = lazy(
-  () => import("./Saas/pages/Fede/AdminFederationDashboard.jsx"),
+const DashboardFederation = lazy(
+  () => import("./Saas/pages/Fede/DashboardFederation.jsx"),
 );
 const AffiliationTarifIndex = lazy(
   () => import("./Saas/pages/Fede/AffiliationTarifIndex.jsx"),
@@ -287,8 +287,14 @@ const AppRoutes = () => {
           <Route path="inventory/prets" element={<EquipmentLoan />} />
           <Route path="stages/ma-ligue" element={<StageSubscribeIndex />} />
         </Route>
-        <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
+        {/* Point d'entrée générique post-login : accessible à n'importe quel
+            rôle authentifié (y compris "arbitre", absent de ALL_CLUB_ROLES
+            car ce n'est pas un rôle club) — GlobalRole (via Dashboard) fait
+            lui-même le tri du bon dashboard selon activeType/activeRole. */}
+        <Route element={<ProtectedRoute />}>
           <Route index element={<Dashboard />} />
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={ALL_CLUB_ROLES} />}>
           <Route path="members" element={<MemberTable />} />
           <Route path="examen/:examenId/show" element={<ExamenDetails />} />
           <Route path="session/list" element={<SessionList />} />
@@ -326,7 +332,7 @@ const AppRoutes = () => {
         <Route
           element={<ProtectedRoute allowedRoles={STAFF_FEDERATION_ROLES} />}
         >
-          <Route path="stats" element={<AdminFederationDashboard />} />
+          <Route path="stats" element={<DashboardFederation />} />
           <Route path="licences" element={<LicenceTypeIndex />} />
           <Route path="affiliations" element={<AffiliationTarifIndex />} />
           <Route path="invitation" element={<LeagueFederationAffiliation />} />
